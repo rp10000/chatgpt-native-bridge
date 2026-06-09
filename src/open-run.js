@@ -3,6 +3,7 @@ const path = require("node:path");
 
 const { spawnSync } = require("node:child_process");
 const { copyToClipboard } = require("./clipboard");
+const { getHandoffSummary } = require("./handoff-summary");
 const { resolveRunId } = require("./id");
 
 async function openRun(options) {
@@ -14,6 +15,7 @@ async function openRun(options) {
 
   let copied = false;
   let opened = false;
+  let folderOpened = false;
   if (options.copyPrompt !== false) {
     copyToClipboard(ask);
     copied = true;
@@ -24,7 +26,20 @@ async function openRun(options) {
     opened = true;
   }
 
-  return { id, outboxDir, askPath, copied, opened };
+  if (options.openFolder === true) {
+    openPath(outboxDir);
+    folderOpened = true;
+  }
+
+  return {
+    id,
+    outboxDir,
+    askPath,
+    copied,
+    opened,
+    folderOpened,
+    summary: await getHandoffSummary(outboxDir)
+  };
 }
 
 function openUrl(url) {
@@ -42,6 +57,23 @@ function openUrl(url) {
   }
 
   spawnSync("xdg-open", [url], { stdio: "ignore" });
+}
+
+function openPath(targetPath) {
+  if (process.platform === "win32") {
+    spawnSync("explorer.exe", [targetPath], {
+      stdio: "ignore",
+      windowsHide: true
+    });
+    return;
+  }
+
+  if (process.platform === "darwin") {
+    spawnSync("open", [targetPath], { stdio: "ignore" });
+    return;
+  }
+
+  spawnSync("xdg-open", [targetPath], { stdio: "ignore" });
 }
 
 module.exports = {

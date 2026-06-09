@@ -36,12 +36,19 @@ The user controls the visible ChatGPT session.
    - screenshots
    - specific questions
 3. Run `cgn open {id}` to open ChatGPT and copy the prompt.
-4. Let the user use ChatGPT natively.
-5. Import the result with `cgn import {id}` or `cgn done`.
-6. Read `.chatgpt-native/inbox/{id}/reply.md`.
-7. Continue local execution using Codex judgment.
-8. Run relevant tests.
-9. Summarize what was accepted, ignored, or deferred.
+   - Use `--mode assist` for the default open-and-copy flow.
+   - Use `--mode manual` when the user wants paths only.
+   - Use `--mode auto` to also open the outbox folder. This does not paste, upload, submit, or scrape ChatGPT.
+4. Tell the user exactly what the CLI printed:
+   - `Paste prompt`
+   - `Upload/select in ChatGPT`
+   - `Outbox`
+5. Let the user use ChatGPT natively.
+6. Import the result with `cgn import {id}` or `cgn done`.
+7. Read `.chatgpt-native/inbox/{id}/reply.md`.
+8. Continue local execution using Codex judgment.
+9. Run relevant tests.
+10. Summarize what was accepted, ignored, or deferred.
 
 ## Minimal safety
 

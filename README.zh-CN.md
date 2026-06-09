@@ -264,8 +264,28 @@ cgn open latest
 ```text
 打开 ChatGPT
 把 ask.md 复制到剪贴板
+告诉你 Paste prompt 路径
+列出 Upload/select 附件清单
 告诉你 outbox 文件夹位置
 ```
+
+这些模式同样适用于 `cgn handoff` 和 `cgn open`。
+
+如果你只想看路径、不打开浏览器、不碰剪贴板：
+
+```bash
+cgn handoff --task "..." --mode manual
+cgn open latest --mode manual
+```
+
+如果你想让它尽量自动准备：
+
+```bash
+cgn handoff --task "..." --mode auto
+cgn open latest --mode auto
+```
+
+`auto` 会打开 ChatGPT、复制 `ask.md`、打开 outbox 文件夹；它不会自动粘贴、自动上传或自动发送。
 
 ### 第 6 步：在 ChatGPT 里操作
 
@@ -371,7 +391,9 @@ cgn handoff --task "..." --type plan,ux-review --include-diff
 cgn done
 cgn init
 cgn ask --task "..." --type plan,ux-review --include-diff
-cgn open latest
+cgn open latest --mode assist
+cgn open latest --mode manual
+cgn open latest --mode auto
 cgn import latest --from-clipboard
 cgn status
 cgn demo

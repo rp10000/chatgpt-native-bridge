@@ -12,6 +12,18 @@ No. It does not read DOM output, cookies, localStorage, IndexedDB, tokens, or ne
 
 Browser automation is fragile and would blur the safety boundary. This project keeps the user in control of the visible ChatGPT session.
 
+## Can I choose automatic or manual mode?
+
+Yes, but automatic means preparation, not submission:
+
+```bash
+cgn open latest --mode manual
+cgn open latest --mode assist
+cgn open latest --mode auto
+```
+
+`manual` prints paths only. `assist` opens ChatGPT and copies `ask.md`. `auto` also opens the outbox folder so you can see and select attachments. It does not paste, upload, click send, or scrape ChatGPT output.
+
 ## Do I need ChatGPT Plus or Pro?
 
 The bridge can create handoff packs regardless of your ChatGPT plan. ChatGPT feature availability depends on your account and workspace.

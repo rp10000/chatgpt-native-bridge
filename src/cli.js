@@ -1,9 +1,8 @@
-const path = require("node:path");
-
 const { createAsk, VALID_TYPES } = require("./ask");
 const { demoText } = require("./demo");
 const { formatDoctorReport, getDoctorReport } = require("./doctor");
 const { codexGuideText } = require("./guide");
+const { formatHandoffSummary, getHandoffSummary } = require("./handoff-summary");
 const { importReply } = require("./import-reply");
 const { initProject } = require("./init");
 const { openRun } = require("./open-run");
@@ -75,8 +74,8 @@ async function main(argv, io = defaultIo()) {
       includeScreenshots: parsed.flags["include-screenshots"]
     });
     io.stdout.write(`Created handoff: ${result.id}\n`);
-    io.stdout.write(`Outbox: ${result.outboxDir}\n`);
-    io.stdout.write(`Ask: ${path.join(result.outboxDir, "ask.md")}\n`);
+    const summary = await getHandoffSummary(result.outboxDir);
+    io.stdout.write(formatHandoffSummary(summary, { mode: "manual", copied: false, opened: false }));
     for (const warning of result.warnings) {
       io.stderr.write(`warning: ${warning}\n`);
     }
@@ -95,36 +94,45 @@ async function main(argv, io = defaultIo()) {
       includeScreenshots: parsed.flags["include-screenshots"]
     });
     io.stdout.write(`Created handoff: ${ask.id}\n`);
-    io.stdout.write(`Outbox: ${ask.outboxDir}\n`);
-    io.stdout.write(`Ask: ${path.join(ask.outboxDir, "ask.md")}\n`);
     for (const warning of ask.warnings) {
       io.stderr.write(`warning: ${warning}\n`);
     }
+    const openOptions = resolveOpenOptions(parsed.flags);
     const opened = await openRun({
       cwd: io.cwd,
       id: ask.id,
-      openBrowser: !parsed.flags["no-browser"] && !parsed.flags["dry-run"],
-      copyPrompt: !parsed.flags["no-clipboard"] && !parsed.flags["dry-run"]
+      openBrowser: openOptions.openBrowser,
+      copyPrompt: openOptions.copyPrompt,
+      openFolder: openOptions.openFolder
     });
     io.stdout.write(`Run: ${opened.id}\n`);
-    io.stdout.write(`Ask copied: ${opened.copied ? "yes" : "no"}\n`);
-    io.stdout.write(`Browser opened: ${opened.opened ? "yes" : "no"}\n`);
+    io.stdout.write(formatHandoffSummary(opened.summary, {
+      mode: openOptions.mode,
+      copied: opened.copied,
+      opened: opened.opened,
+      folderOpened: opened.folderOpened
+    }));
     return;
   }
 
   if (command === "open") {
     const parsed = parseArgs(rest);
     const id = parsed.positionals[0] || "latest";
+    const openOptions = resolveOpenOptions(parsed.flags);
     const result = await openRun({
       cwd: io.cwd,
       id,
-      openBrowser: !parsed.flags["no-browser"] && !parsed.flags["dry-run"],
-      copyPrompt: !parsed.flags["no-clipboard"] && !parsed.flags["dry-run"]
+      openBrowser: openOptions.openBrowser,
+      copyPrompt: openOptions.copyPrompt,
+      openFolder: openOptions.openFolder
     });
     io.stdout.write(`Run: ${result.id}\n`);
-    io.stdout.write(`Outbox: ${result.outboxDir}\n`);
-    io.stdout.write(`Ask copied: ${result.copied ? "yes" : "no"}\n`);
-    io.stdout.write(`Browser opened: ${result.opened ? "yes" : "no"}\n`);
+    io.stdout.write(formatHandoffSummary(result.summary, {
+      mode: openOptions.mode,
+      copied: result.copied,
+      opened: result.opened,
+      folderOpened: result.folderOpened
+    }));
     return;
   }
 
@@ -169,7 +177,7 @@ async function main(argv, io = defaultIo()) {
 function parseArgs(args) {
   const flags = {};
   const positionals = [];
-  const valueFlags = new Set(["task", "type", "include-files", "include-screenshots", "lang"]);
+  const valueFlags = new Set(["task", "type", "include-files", "include-screenshots", "lang", "mode"]);
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -201,6 +209,40 @@ function parseArgs(args) {
   return { flags, positionals };
 }
 
+function resolveOpenOptions(flags) {
+  const requestedMode = flags.mode || (flags.manual ? "manual" : "assist");
+  const dryRun = Boolean(flags["dry-run"]);
+
+  if (requestedMode === "manual") {
+    return {
+      mode: "manual",
+      openBrowser: false,
+      copyPrompt: false,
+      openFolder: false
+    };
+  }
+
+  if (requestedMode === "assist" || requestedMode === "assisted") {
+    return {
+      mode: "assist",
+      openBrowser: !flags["no-browser"] && !dryRun,
+      copyPrompt: !flags["no-clipboard"] && !dryRun,
+      openFolder: false
+    };
+  }
+
+  if (requestedMode === "auto") {
+    return {
+      mode: "auto",
+      openBrowser: !flags["no-browser"] && !dryRun,
+      copyPrompt: !flags["no-clipboard"] && !dryRun,
+      openFolder: !flags["no-folder"] && !dryRun
+    };
+  }
+
+  throw new Error("--mode must be manual, assist, or auto.");
+}
+
 function addFlag(flags, key, value) {
   if (flags[key] === undefined) {
     flags[key] = value;
@@ -230,7 +272,8 @@ Usage:
   cgn setup
   cgn ask --task "Review pricing page" --type ux-review,naming-copy --include-diff
   cgn handoff --task "Review pricing page" --type ux-review --include-diff
-  cgn open {id|latest}
+  cgn handoff --task "Review pricing page" --mode manual
+  cgn open {id|latest} --mode assist
   cgn import {id|latest} [reply.md]
   cgn import {id|latest} --from-clipboard
   cgn done
@@ -244,6 +287,11 @@ Request types:
 
 Safety:
   No OpenAI API key, no hidden endpoints, no ChatGPT scraping.
+
+Modes:
+  --mode assist  Open ChatGPT and copy ask.md. This is the default.
+  --mode manual  Print paths only. No browser or clipboard.
+  --mode auto    Open ChatGPT, copy ask.md, and open the outbox folder. It does not submit or upload automatically.
 `;
 }
 
@@ -257,5 +305,6 @@ function defaultIo() {
 
 module.exports = {
   main,
-  parseArgs
+  parseArgs,
+  resolveOpenOptions
 };

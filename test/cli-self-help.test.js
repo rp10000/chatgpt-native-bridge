@@ -32,6 +32,8 @@ test("help lists beginner guidance commands", async () => {
   assert.match(io.output(), /cgn demo/);
   assert.match(io.output(), /cgn doctor/);
   assert.match(io.output(), /cgn guide codex/);
+  assert.match(io.output(), /--mode manual/);
+  assert.match(io.output(), /--mode auto/);
 });
 
 test("guide codex prints a ready-to-copy Codex prompt", async () => {
@@ -81,9 +83,45 @@ test("handoff creates a handoff and opens it in dry-run mode", async () => {
   await main(["handoff", "--task", "Review onboarding UX", "--type", "plan,ux-review", "--dry-run"], io);
 
   assert.match(io.output(), /Created handoff:/);
+  assert.match(io.output(), /Mode: assist/);
+  assert.match(io.output(), /Paste prompt:/);
+  assert.match(io.output(), /Upload\/select in ChatGPT:/);
+  assert.match(io.output(), /Context:/);
   assert.match(io.output(), /Ask copied: no/);
   assert.match(io.output(), /Browser opened: no/);
   assert.equal((await listOutboxIds(cwd)).length, 1);
+});
+
+test("handoff manual mode prints paths without browser or clipboard actions", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-handoff-manual-"));
+  const io = createIo(cwd);
+
+  await main(["handoff", "--task", "Review onboarding UX", "--mode", "manual"], io);
+
+  assert.match(io.output(), /Mode: manual/);
+  assert.match(io.output(), /Paste prompt:/);
+  assert.match(io.output(), /Ask copied: no/);
+  assert.match(io.output(), /Browser opened: no/);
+  assert.match(io.output(), /Outbox folder opened: no/);
+});
+
+test("open auto mode can be dry-run without opening browser or folder", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-open-auto-"));
+  const ask = await createAsk({
+    cwd,
+    task: "Review current diff",
+    types: ["diff-review"],
+    now: new Date("2026-06-09T12:04:00.000Z")
+  });
+  const io = createIo(cwd);
+
+  await main(["open", ask.id, "--mode", "auto", "--dry-run"], io);
+
+  assert.match(io.output(), /Mode: auto/);
+  assert.match(io.output(), /Ask copied: no/);
+  assert.match(io.output(), /Browser opened: no/);
+  assert.match(io.output(), /Outbox folder opened: no/);
+  assert.match(io.output(), /Upload\/select in ChatGPT:/);
 });
 
 test("done imports the latest reply from a file", async () => {

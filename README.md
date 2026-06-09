@@ -159,7 +159,20 @@ cgn ask \
 cgn open latest
 ```
 
-This opens ChatGPT and copies `ask.md` to your clipboard. Upload `context.md`, `diff.patch`, selected files, and screenshots from the outbox when the task needs them.
+This opens ChatGPT, copies `ask.md` to your clipboard, and prints the exact prompt path plus the upload/select list from the outbox. Upload `context.md`, `diff.patch`, selected files, and screenshots only when the task needs them.
+
+The same modes work with both `cgn handoff` and `cgn open`:
+
+```bash
+cgn handoff --task "Review pricing page" --mode assist
+cgn handoff --task "Review pricing page" --mode manual
+cgn handoff --task "Review pricing page" --mode auto
+cgn open latest --mode assist  # default: open ChatGPT and copy ask.md
+cgn open latest --mode manual  # print paths only
+cgn open latest --mode auto    # open ChatGPT, copy ask.md, and open the outbox folder
+```
+
+`--mode auto` prepares the handoff only. It does not paste, upload, or submit inside ChatGPT.
 
 ### 6. Import ChatGPT's answer
 
@@ -213,7 +226,9 @@ cgn init
 cgn setup
 cgn ask --task "Review pricing page" --type ux-review,naming-copy --include-diff
 cgn handoff --task "Review pricing page" --type ux-review --include-diff
-cgn open latest
+cgn open latest --mode assist
+cgn open latest --mode manual
+cgn open latest --mode auto
 cgn import latest --from-clipboard
 cgn done
 cgn status

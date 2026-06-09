@@ -31,9 +31,37 @@ cgn open latest --dry-run
 
 Then open `https://chatgpt.com` manually and paste `.chatgpt-native/outbox/{id}/ask.md`.
 
+To print paths only:
+
+```bash
+cgn open latest --mode manual
+```
+
+To open both ChatGPT and the outbox folder:
+
+```bash
+cgn open latest --mode auto
+```
+
 ## Clipboard copy failed
 
 Open the outbox path printed by `cgn open`, then manually copy `ask.md`.
+
+## I cannot see what to upload
+
+Run:
+
+```bash
+cgn open latest --mode manual
+```
+
+Check the output sections:
+
+```text
+Paste prompt
+Upload/select in ChatGPT
+Outbox
+```
 
 ## Latest handoff not found
 
