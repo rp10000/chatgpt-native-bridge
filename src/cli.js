@@ -3,6 +3,7 @@ const path = require("node:path");
 const { createAsk, VALID_TYPES } = require("./ask");
 const { demoText } = require("./demo");
 const { formatDoctorReport, getDoctorReport } = require("./doctor");
+const { codexGuideText } = require("./guide");
 const { importReply } = require("./import-reply");
 const { initProject } = require("./init");
 const { openRun } = require("./open-run");
@@ -37,6 +38,16 @@ async function main(argv, io = defaultIo()) {
   if (command === "doctor") {
     const report = await getDoctorReport({ cwd: io.cwd });
     io.stdout.write(formatDoctorReport(report));
+    return;
+  }
+
+  if (command === "guide") {
+    const parsed = parseArgs(rest);
+    const subject = parsed.positionals[0];
+    if (subject !== "codex") {
+      throw new Error('Unknown guide. Run "cgn guide codex".');
+    }
+    io.stdout.write(codexGuideText(parsed.flags.lang || "en"));
     return;
   }
 
@@ -103,7 +114,7 @@ async function main(argv, io = defaultIo()) {
 function parseArgs(args) {
   const flags = {};
   const positionals = [];
-  const valueFlags = new Set(["task", "type", "include-files", "include-screenshots"]);
+  const valueFlags = new Set(["task", "type", "include-files", "include-screenshots", "lang"]);
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -168,6 +179,7 @@ Usage:
   cgn status
   cgn demo
   cgn doctor
+  cgn guide codex
 
 Request types:
   ${VALID_TYPES.join(", ")}

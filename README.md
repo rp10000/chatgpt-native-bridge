@@ -1,5 +1,7 @@
 # chatgpt-native-bridge
 
+English | [简体中文](README.zh-CN.md)
+
 Use ChatGPT's native web app as a visible planning, review, research, and visual-direction layer for Codex.
 
 Codex executes locally. ChatGPT thinks, critiques, researches, reviews screenshots, and uses native ChatGPT tools. No API key. No hidden endpoints. No scraping.
@@ -20,6 +22,14 @@ Codex is strong at local repo work: editing files, reading diffs, running tests,
 - second-pass review of Codex diffs and reports
 
 This bridge gives you a clean handoff between the two. It packages the right local context consistently, leaves the visible ChatGPT session under your control, then imports the answer so Codex can continue locally.
+
+## For Chinese Users
+
+如果你第一次接触 Codex Skill、ChatGPT Project、handoff、outbox/inbox，建议从中文入口开始：
+
+- [中文 README](README.zh-CN.md)
+- [在 Codex 中使用](docs/zh-CN/在-Codex-中使用.md)
+- [快速开始](docs/zh-CN/快速开始.md)
 
 ## Core workflow
 
@@ -162,9 +172,10 @@ cgn import latest --from-clipboard
 cgn status
 cgn demo
 cgn doctor
+cgn guide codex
 ```
 
-`cgn demo` prints the end-to-end workflow. `cgn doctor` checks whether a project has the skill, Project instructions, outbox/inbox folders, and latest handoff/reply state.
+`cgn demo` prints the end-to-end workflow. `cgn doctor` checks whether a project has the skill, Project instructions, outbox/inbox folders, and latest handoff/reply state. `cgn guide codex` prints a ready-to-copy prompt for Codex, and `cgn guide codex --lang zh-CN` prints the Chinese version.
 
 ## Request types
 

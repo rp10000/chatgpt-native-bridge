@@ -22,6 +22,41 @@ test("demo prints the end-to-end native handoff workflow", async () => {
   assert.match(io.output(), /\.chatgpt-native\/inbox\/<id>\/reply\.md/);
 });
 
+test("help lists beginner guidance commands", async () => {
+  const io = createIo(await fs.mkdtemp(path.join(os.tmpdir(), "cgn-help-")));
+
+  await main(["--help"], io);
+
+  assert.match(io.output(), /cgn demo/);
+  assert.match(io.output(), /cgn doctor/);
+  assert.match(io.output(), /cgn guide codex/);
+});
+
+test("guide codex prints a ready-to-copy Codex prompt", async () => {
+  const io = createIo(await fs.mkdtemp(path.join(os.tmpdir(), "cgn-guide-")));
+
+  await main(["guide", "codex"], io);
+
+  assert.match(io.output(), /Copy this into Codex:/);
+  assert.match(io.output(), /Use chatgpt-native-bridge for this task/);
+  assert.match(io.output(), /cgn ask/);
+  assert.match(io.output(), /cgn open latest/);
+  assert.match(io.output(), /cgn import latest --from-clipboard/);
+  assert.match(io.output(), /\.chatgpt-native\/inbox\/<id>\/reply\.md/);
+});
+
+test("guide codex supports Chinese output", async () => {
+  const io = createIo(await fs.mkdtemp(path.join(os.tmpdir(), "cgn-guide-zh-")));
+
+  await main(["guide", "codex", "--lang", "zh-CN"], io);
+
+  assert.match(io.output(), /复制下面这段给 Codex/);
+  assert.match(io.output(), /请使用 chatgpt-native-bridge/);
+  assert.match(io.output(), /你来运行 cgn ask 生成 handoff/);
+  assert.match(io.output(), /cgn import latest --from-clipboard/);
+  assert.match(io.output(), /只采纳合理建议/);
+});
+
 test("doctor reports initialized bridge setup and latest reply state", async () => {
   const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-doctor-"));
   await initProject({ cwd });
