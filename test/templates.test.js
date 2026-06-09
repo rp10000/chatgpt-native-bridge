@@ -7,12 +7,15 @@ test("skill template starts with valid YAML frontmatter", async () => {
   const skill = await fs.readFile(path.join(__dirname, "..", "templates", "skill", "SKILL.md"), "utf8");
   const lines = skill.split(/\r?\n/);
 
+  assert.match(skill, /^---\r?\nname: chatgpt-native-bridge\r?\ndescription: .+\r?\n---\r?\n/s);
   assert.equal(lines[0], "---");
   assert.equal(lines[1], "name: chatgpt-native-bridge");
   assert.match(lines[2], /^description: .+/);
   assert.equal(lines[3], "---");
   assert.equal(lines[4], "");
   assert.match(lines[5], /^# /);
+  assert.ok(lines.length > 40, "SKILL.md should keep readable line breaks");
+  assert.equal(skill.startsWith("--- name:"), false);
 });
 
 test("skill metadata template declares display metadata and implicit invocation", async () => {
@@ -22,19 +25,24 @@ test("skill metadata template declares display metadata and implicit invocation"
   );
   const lines = metadata.split(/\r?\n/);
 
+  assert.match(metadata, /^interface:\r?\n  display_name:/);
+  assert.match(metadata, /\r?\n  default_prompt: \|\r?\n/);
+  assert.match(metadata, /\r?\npolicy:\r?\n  allow_implicit_invocation: true\r?\n?$/);
   assert.equal(lines[0], "interface:");
   assert.equal(lines[1], '  display_name: "ChatGPT Native Bridge"');
   assert.match(lines[2], /^  short_description: ".+"/);
   assert.equal(lines[3], "  default_prompt: |");
   assert.equal(lines[9], "policy:");
   assert.equal(lines[10], "  allow_implicit_invocation: true");
+  assert.ok(lines.length >= 10, "openai.yaml should keep nested YAML line breaks");
+  assert.equal(metadata.startsWith("interface: display_name:"), false);
 });
 
 test("primary user-facing docs keep readable line breaks", async () => {
   const files = [
-    ["README.md", 50],
-    ["README.zh-CN.md", 50],
-    [path.join("templates", "skill", "SKILL.md"), 20],
+    ["README.md", 120],
+    ["README.zh-CN.md", 180],
+    [path.join("templates", "skill", "SKILL.md"), 40],
     [path.join("templates", "chatgpt", "project-instructions.md"), 20]
   ];
 
@@ -42,6 +50,25 @@ test("primary user-facing docs keep readable line breaks", async () => {
     const text = await fs.readFile(path.join(__dirname, "..", file), "utf8");
     assert.ok(countLines(text) > minimumLines, `${file} should have more than ${minimumLines} lines`);
   }
+});
+
+test("readme files keep expected section breaks", async () => {
+  const readme = await fs.readFile(path.join(__dirname, "..", "README.md"), "utf8");
+  const readmeZh = await fs.readFile(path.join(__dirname, "..", "README.zh-CN.md"), "utf8");
+
+  assert.ok(readme.includes("\n## Why use this?\n"));
+  assert.ok(readmeZh.includes("\n## 最简单用法：把这段复制给 Codex\n"));
+});
+
+test("ci workflow keeps valid nested YAML shape", async () => {
+  const ci = await fs.readFile(path.join(__dirname, "..", ".github", "workflows", "ci.yml"), "utf8");
+
+  assert.ok(countLines(ci) > 20, "ci.yml should keep readable line breaks");
+  assert.ok(ci.includes("\non:\n"));
+  assert.ok(ci.includes("\n  pull_request:\n"));
+  assert.ok(ci.includes("\n    strategy:\n"));
+  assert.ok(ci.includes("\n      matrix:\n"));
+  assert.ok(ci.includes("node-version: [18, 20, 22]"));
 });
 
 function countLines(text) {
