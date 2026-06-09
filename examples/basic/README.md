@@ -1,14 +1,56 @@
-# Basic handoff
+# Basic planning handoff
+
+This example shows the smallest useful bridge flow: Codex asks ChatGPT for planning and requirements feedback, then imports the answer and continues locally.
+
+## Problem
+
+You are about to implement a new onboarding flow, but the requirements are still fuzzy. Codex should not start editing until the plan is clearer.
+
+## Why use ChatGPT web?
+
+This is a planning and product-judgment task. ChatGPT can reason through goals, risks, and acceptance criteria in a visible Project session, while Codex keeps local execution.
+
+## Command
 
 ```bash
-cgn init
-cgn ask --task "Plan the first MVP implementation" --type plan,requirements
+cgn ask \
+  --task "Plan the first MVP onboarding flow" \
+  --type plan,requirements
+
 cgn open latest
 ```
 
-After ChatGPT replies, save the response:
+## Generated files
+
+```text
+.chatgpt-native/outbox/<id>/
+  ask.md
+  context.md
+```
+
+See:
+
+- [sample-ask.md](sample-ask.md)
+- [sample-context.md](sample-context.md)
+
+## In ChatGPT
+
+1. Paste `ask.md`.
+2. Upload `context.md` if it contains useful repo context.
+3. Ask ChatGPT to end with `Codex next actions`.
+
+## Import
+
+After ChatGPT replies:
 
 ```bash
-cgn import latest ./reply.md
-cgn status
+cgn import latest --from-clipboard
 ```
+
+Sample reply:
+
+- [sample-reply.md](sample-reply.md)
+
+Codex follow-up:
+
+- [codex-next-actions.md](codex-next-actions.md)

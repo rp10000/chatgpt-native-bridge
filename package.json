@@ -21,6 +21,7 @@
   },
   "files": [
     "bin",
+    "docs",
     "src",
     "templates",
     "examples",

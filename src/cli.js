@@ -1,6 +1,8 @@
 const path = require("node:path");
 
 const { createAsk, VALID_TYPES } = require("./ask");
+const { demoText } = require("./demo");
+const { formatDoctorReport, getDoctorReport } = require("./doctor");
 const { importReply } = require("./import-reply");
 const { initProject } = require("./init");
 const { openRun } = require("./open-run");
@@ -24,6 +26,17 @@ async function main(argv, io = defaultIo()) {
     const parsed = parseArgs(rest);
     const result = await initProject({ cwd: io.cwd, force: Boolean(parsed.flags.force) });
     printCreated(io, result);
+    return;
+  }
+
+  if (command === "demo") {
+    io.stdout.write(demoText());
+    return;
+  }
+
+  if (command === "doctor") {
+    const report = await getDoctorReport({ cwd: io.cwd });
+    io.stdout.write(formatDoctorReport(report));
     return;
   }
 
@@ -153,6 +166,8 @@ Usage:
   cgn import <id|latest> [reply.md]
   cgn import <id|latest> --from-clipboard
   cgn status
+  cgn demo
+  cgn doctor
 
 Request types:
   ${VALID_TYPES.join(", ")}

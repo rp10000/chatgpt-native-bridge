@@ -12,8 +12,8 @@ const DEFAULT_CONFIG = {
   includeScreenshots: "when-found",
   simpleSecretGuard: true,
   preferredChatGPTModes: {
-    reasoning: "GPT-5.5 Pro",
-    nativeTools: "GPT-5.5 Thinking"
+    reasoning: "best available reasoning model",
+    nativeTools: "best available ChatGPT mode with native tools"
   }
 };
 

@@ -1,160 +1,172 @@
 # chatgpt-native-bridge
 
-Use ChatGPT's native web app as a visible advisor for Codex.
+Use ChatGPT's native web app as a visible planning, review, research, and visual-direction layer for Codex.
 
-No OpenAI API key. No hidden endpoints. No browser scraping. No rigid JSON protocol.
+Codex executes locally. ChatGPT thinks, critiques, researches, reviews screenshots, and uses native ChatGPT tools. No API key. No hidden endpoints. No scraping.
 
-Codex runs locally. ChatGPT plans, critiques, researches, reviews, and creates visual direction using the tools you already have in ChatGPT. The user controls the visible ChatGPT web session.
+![chatgpt-native-bridge flow](docs/assets/flow.svg)
 
-## What it is
+## Why use this?
 
-`chatgpt-native-bridge` is a small local npm CLI plus a Codex Skill template.
+Codex is strong at local repo work: editing files, reading diffs, running tests, and carrying implementation through. ChatGPT's web app is useful for native workflows that are awkward to force through a local CLI:
 
-It packages local context into a handoff folder:
+- long-context planning
+- architecture critique
+- product and copy judgment
+- UI/UX screenshot review
+- web research and deep research
+- image generation and visual direction
+- file analysis, Canvas work, and long-running Project context
+- second-pass review of Codex diffs and reports
 
-- task prompt
-- repo context
-- optional git diff
-- optional test output
-- selected files
-- selected screenshots
+This bridge gives you a clean handoff between the two. It packages the right local context consistently, leaves the visible ChatGPT session under your control, then imports the answer so Codex can continue locally.
 
-Then it opens ChatGPT, copies the prompt, and leaves the user in control of the ChatGPT session. When the user copies ChatGPT's answer back, Codex imports the reply and continues local execution.
+## Core workflow
 
-## What it does not do
+```text
+Codex local task
+  -> cgn ask
+  -> .chatgpt-native/outbox/<id>/
+  -> ChatGPT web app with native tools
+  -> cgn import
+  -> .chatgpt-native/inbox/<id>/reply.md
+  -> Codex continues local implementation
+```
 
-- It does not use the OpenAI API.
-- It does not read cookies, tokens, localStorage, IndexedDB, DOM output, or network requests.
-- It does not scrape ChatGPT.
-- It does not automate ChatGPT as a browser robot.
-- It does not force ChatGPT replies into JSON.
-- It does not act as a SaaS proxy.
+## 30-second quickstart
 
-## Install
+### 1. Initialize inside your Codex project
 
-Inside a Codex project:
+From this GitHub repo before npm publication:
+
+```bash
+npx github:rp10000/chatgpt-native-bridge init
+```
+
+After npm publication:
 
 ```bash
 npx chatgpt-native-bridge init
 ```
 
-When installed locally or globally, the short command is:
+For local development:
 
 ```bash
+git clone https://github.com/rp10000/chatgpt-native-bridge.git
+cd chatgpt-native-bridge
+npm link
 cgn init
 ```
 
-`init` creates:
+This creates:
 
 ```text
-.agents/
-  skills/
-    chatgpt-native-bridge/
-      SKILL.md
-
-.chatgpt-native/
-  config.json
-  project-instructions.md
-  outbox/
-  inbox/
-  assets/
-  runs/
-  prompts/
+.agents/skills/chatgpt-native-bridge/SKILL.md
+.chatgpt-native/project-instructions.md
+.chatgpt-native/outbox/
+.chatgpt-native/inbox/
 ```
 
-Open ChatGPT, create a Project such as `Codex Native Advisor`, and paste `.chatgpt-native/project-instructions.md` into the Project instructions.
+### 2. Create a ChatGPT Project
 
-## Commands
+Open ChatGPT, create a Project named:
 
-### `cgn init`
-
-Create the local Codex Skill and `.chatgpt-native` workspace.
-
-```bash
-cgn init
+```text
+Codex Native Advisor
 ```
 
-### `cgn ask`
+Paste this file into the Project instructions:
 
-Create a ChatGPT-native handoff pack.
+```text
+.chatgpt-native/project-instructions.md
+```
+
+### 3. Ask Codex to use the bridge
+
+In Codex:
+
+```text
+Use chatgpt-native-bridge when this task needs planning, UX review, research, visual direction, or diff review.
+```
+
+### 4. Create a handoff
 
 ```bash
 cgn ask \
   --task "Review the new pricing page" \
   --type ux-review,naming-copy \
-  --include-diff
+  --include-diff \
+  --include-screenshots "screenshots/*.png"
 ```
 
-Useful options:
-
-```bash
---task "..."
---type plan,requirements,architecture,naming-copy,ux-review,research,image-direction,diff-review
---include-diff
---include-tests
---include-files "src/*.js,README.md"
---include-screenshots "screenshots/*.png"
-```
-
-The command writes:
-
-```text
-.chatgpt-native/outbox/<id>/
-  ask.md
-  context.md
-  diff.patch
-  test-output.md
-  files/
-  screenshots/
-```
-
-Only files that exist and pass the lightweight secret guard are copied.
-
-### `cgn open`
-
-Open ChatGPT and copy `ask.md` to the clipboard.
+### 5. Open ChatGPT
 
 ```bash
 cgn open latest
 ```
 
-For dry runs:
+This opens ChatGPT and copies `ask.md` to your clipboard. Upload `context.md`, `diff.patch`, selected files, and screenshots from the outbox when the task needs them.
 
-```bash
-cgn open latest --dry-run
-```
+### 6. Import ChatGPT's answer
 
-### `cgn import`
-
-Import the user-provided ChatGPT reply.
-
-```bash
-cgn import latest ./reply.md
-```
-
-Or from the clipboard:
+After ChatGPT responds, copy the answer and run:
 
 ```bash
 cgn import latest --from-clipboard
 ```
 
-The reply is saved to:
+Codex can now read:
 
 ```text
 .chatgpt-native/inbox/<id>/reply.md
 ```
 
-### `cgn status`
+## Why not just copy and paste?
 
-Show pending handoffs and imported replies.
+| Approach | Tradeoff |
+| --- | --- |
+| Manual copy-paste | Easy to miss diffs, test output, screenshots, or relevant files. Context format changes every time. |
+| Codex only | Good for local execution, but product judgment, visual critique, research, and second-pass review may benefit from ChatGPT web workflows. |
+| OpenAI API only | Does not naturally use your visible ChatGPT Projects, Canvas, file upload, image generation, or other web-native workflows. |
+| Browser RPA | Fragile, high-maintenance, and touches boundaries this project intentionally avoids. |
+| `chatgpt-native-bridge` | Codex packages context, ChatGPT works natively in a visible session, then Codex imports the answer and continues locally. |
+
+## When to use it
+
+| Scenario | Command shape |
+| --- | --- |
+| Complex requirement breakdown | `cgn ask --task "..." --type plan,requirements` |
+| Architecture review before a refactor | `cgn ask --task "..." --type architecture --include-files "src/**/*.js"` |
+| Page design or copy critique | `cgn ask --task "..." --type ux-review,naming-copy --include-screenshots "screenshots/*.png"` |
+| Research or current-source synthesis | `cgn ask --task "..." --type research` |
+| Visual direction or image prompts | `cgn ask --task "..." --type image-direction --include-screenshots "screenshots/*.png"` |
+| Final review after Codex changes | `cgn ask --task "..." --type diff-review --include-diff --include-tests` |
+
+## When not to use it
+
+Do not use this for:
+
+- typo-only changes
+- formatting-only changes
+- deterministic test fixes
+- lockfile-only updates
+- tasks containing secrets you are not willing to upload to ChatGPT
+
+## Commands
 
 ```bash
+cgn init
+cgn ask --task "Review pricing page" --type ux-review,naming-copy --include-diff
+cgn open latest
+cgn import latest --from-clipboard
 cgn status
+cgn demo
+cgn doctor
 ```
 
-## Request types
+`cgn demo` prints the end-to-end workflow. `cgn doctor` checks whether a project has the skill, Project instructions, outbox/inbox folders, and latest handoff/reply state.
 
-The CLI includes eight small prompt modules:
+## Request types
 
 - `plan`
 - `requirements`
@@ -180,42 +192,32 @@ The bridge has a lightweight secret guard. It blocks obvious sensitive paths or 
 
 This is intentionally not an enterprise data-loss-prevention system. Review what you include before uploading anything to ChatGPT.
 
+## Docs
+
+- [Quickstart tutorial](docs/quickstart.md)
+- [Why this exists](docs/why.md)
+- [Codex workflow prompts](docs/codex-workflow.md)
+- [ChatGPT Project setup](docs/chatgpt-project-setup.md)
+- [UX review tutorial](docs/tutorials/ux-review.md)
+- [Image direction tutorial](docs/tutorials/image-direction.md)
+- [Diff review tutorial](docs/tutorials/diff-review.md)
+- [FAQ](docs/faq.md)
+- [Troubleshooting](docs/troubleshooting.md)
+
 ## Examples
 
-Planning:
-
-```bash
-cgn ask --task "Plan a small refactor for onboarding" --type plan,requirements
-cgn open latest
-```
-
-Architecture review:
-
-```bash
-cgn ask --task "Review the local handoff protocol" --type architecture --include-files "src/*.js"
-```
-
-UX screenshot review:
-
-```bash
-cgn ask --task "Critique the first-run UI" --type ux-review,naming-copy --include-screenshots "screenshots/*.png"
-```
-
-Image direction:
-
-```bash
-cgn ask --task "Suggest a hero image direction for the app" --type image-direction
-```
-
-Diff review:
-
-```bash
-cgn ask --task "Review Codex's current diff" --type diff-review --include-diff
-```
+- [Basic planning handoff](examples/basic/README.md)
+- [Frontend UX review](examples/frontend-ux-review/README.md)
+- [Image direction](examples/image-direction/README.md)
 
 ## Development
 
 ```bash
+git clone https://github.com/rp10000/chatgpt-native-bridge.git
+cd chatgpt-native-bridge
+npm install
+npm link
+cgn --help
 npm test
 npm run smoke
 npm pack --dry-run

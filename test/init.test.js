@@ -22,6 +22,10 @@ test("initProject creates the Codex skill and ChatGPT workspace files", async ()
   assert.equal(await exists(path.join(cwd, ".chatgpt-native", "inbox")), true);
   assert.equal(await exists(path.join(cwd, ".chatgpt-native", "assets")), true);
   assert.equal(await exists(path.join(cwd, ".chatgpt-native", "runs")), true);
+
+  const config = await fs.readFile(path.join(cwd, ".chatgpt-native", "config.json"), "utf8");
+  assert.doesNotMatch(config, /GPT-5\.5/);
+  assert.match(config, /best available reasoning model/);
 });
 
 async function exists(filePath) {

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="360" viewBox="0 0 900 360" role="img" aria-labelledby="title">
+  <title id="title">Paste Project instructions</title>
+  <rect width="900" height="360" fill="#f8fafc"/>
+  <rect x="70" y="55" width="300" height="250" rx="14" fill="#ffffff" stroke="#334155" stroke-width="2"/>
+  <text x="100" y="100" fill="#0f172a" font-family="Arial, sans-serif" font-size="22" font-weight="700">Local file</text>
+  <text x="100" y="145" fill="#475569" font-family="Arial, sans-serif" font-size="17">.chatgpt-native/</text>
+  <text x="100" y="175" fill="#475569" font-family="Arial, sans-serif" font-size="17">project-instructions.md</text>
+  <path d="M390 180 H500" stroke="#64748b" stroke-width="4" marker-end="url(#arrow)"/>
+  <defs><marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M2,2 L10,6 L2,10 Z" fill="#64748b"/></marker></defs>
+  <rect x="520" y="55" width="310" height="250" rx="14" fill="#ecfeff" stroke="#0891b2" stroke-width="2"/>
+  <text x="555" y="100" fill="#0f172a" font-family="Arial, sans-serif" font-size="22" font-weight="700">ChatGPT Project</text>
+  <text x="555" y="145" fill="#475569" font-family="Arial, sans-serif" font-size="17">Codex Native Advisor</text>
+  <text x="555" y="195" fill="#475569" font-family="Arial, sans-serif" font-size="17">Paste instructions here</text>
+  <text x="70" y="330" fill="#334155" font-family="Arial, sans-serif" font-size="18">Step 2: create a Project and paste the generated instructions.</text>
+</svg>

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="360" viewBox="0 0 900 360" role="img" aria-labelledby="title">
+  <title id="title">Use ChatGPT native tools</title>
+  <rect width="900" height="360" fill="#f8fafc"/>
+  <rect x="80" y="55" width="760" height="250" rx="14" fill="#ffffff" stroke="#334155" stroke-width="2"/>
+  <text x="120" y="105" fill="#0f172a" font-family="Arial, sans-serif" font-size="26" font-weight="700">ChatGPT native session</text>
+  <text x="125" y="155" fill="#475569" font-family="Arial, sans-serif" font-size="18">Planning</text>
+  <text x="125" y="190" fill="#475569" font-family="Arial, sans-serif" font-size="18">Research</text>
+  <text x="125" y="225" fill="#475569" font-family="Arial, sans-serif" font-size="18">File and screenshot analysis</text>
+  <text x="500" y="155" fill="#475569" font-family="Arial, sans-serif" font-size="18">Canvas</text>
+  <text x="500" y="190" fill="#475569" font-family="Arial, sans-serif" font-size="18">Image generation</text>
+  <text x="500" y="225" fill="#475569" font-family="Arial, sans-serif" font-size="18">Diff critique</text>
+  <text x="70" y="330" fill="#334155" font-family="Arial, sans-serif" font-size="18">Step 5: use the visible ChatGPT tools that fit the task.</text>
+</svg>
