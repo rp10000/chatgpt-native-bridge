@@ -143,38 +143,33 @@ In Codex:
 Use chatgpt-native-bridge when this task needs planning, UX review, research, visual direction, or diff review.
 ```
 
-### 4. Create a handoff
+### 4. Recommended beginner flow
 
 ```bash
-cgn ask \
+cgn handoff \
   --task "Review the new pricing page" \
   --type ux-review,naming-copy \
   --include-diff \
   --include-screenshots "screenshots/*.png"
 ```
 
-### 5. Open ChatGPT
+This creates the handoff, opens ChatGPT, copies `01_PASTE_TO_CHATGPT.md` to your clipboard, and prints the exact prompt path plus the upload/select list from the outbox. Then follow:
 
-```bash
-cgn open latest
+```text
+.chatgpt-native/outbox/{id}/START_HERE.md
 ```
 
-This opens ChatGPT, copies `01_PASTE_TO_CHATGPT.md` to your clipboard, and prints the exact prompt path plus the upload/select list from the outbox. Upload `context.md`, `diff.patch`, selected files, and screenshots only when the task needs them.
-
-The same modes work with both `cgn handoff` and `cgn open`:
+The same modes work with `cgn handoff`:
 
 ```bash
 cgn handoff --task "Review pricing page" --mode assist
 cgn handoff --task "Review pricing page" --mode manual
 cgn handoff --task "Review pricing page" --mode auto
-cgn open latest --mode assist  # default: open ChatGPT and copy 01_PASTE_TO_CHATGPT.md
-cgn open latest --mode manual  # print paths only
-cgn open latest --mode auto    # open ChatGPT, copy the prompt, and open the outbox folder
 ```
 
 `--mode auto` prepares the handoff only. It does not paste, upload, or submit inside ChatGPT.
 
-### 6. Import ChatGPT's answer
+### 5. Import ChatGPT's answer
 
 After ChatGPT responds, copy the answer and run:
 
@@ -187,6 +182,18 @@ Codex can now read:
 ```text
 .chatgpt-native/inbox/{id}/reply.md
 ```
+
+### Advanced split flow
+
+Advanced users can split the beginner command into separate steps:
+
+```bash
+cgn ask --task "Review pricing page" --type ux-review,naming-copy --include-diff
+cgn open latest
+cgn import latest --from-clipboard
+```
+
+`cgn handoff` is the recommended path for new users. `cgn ask`, `cgn open`, and `cgn import` remain available for advanced workflows and Codex automation.
 
 ## Self-Explaining Handoff Files
 
@@ -221,12 +228,12 @@ After `cgn done`, the inbox also contains:
 
 | Scenario | Command shape |
 | --- | --- |
-| Complex requirement breakdown | `cgn ask --task "..." --type plan,requirements` |
-| Architecture review before a refactor | `cgn ask --task "..." --type architecture --include-files "src/**/*.js"` |
-| Page design or copy critique | `cgn ask --task "..." --type ux-review,naming-copy --include-screenshots "screenshots/*.png"` |
-| Research or current-source synthesis | `cgn ask --task "..." --type research` |
-| Visual direction or image prompts | `cgn ask --task "..." --type image-direction --include-screenshots "screenshots/*.png"` |
-| Final review after Codex changes | `cgn ask --task "..." --type diff-review --include-diff --include-tests` |
+| Complex requirement breakdown | `cgn handoff --task "..." --type plan,requirements` |
+| Architecture review before a refactor | `cgn handoff --task "..." --type architecture --include-files "src/**/*.js"` |
+| Page design or copy critique | `cgn handoff --task "..." --type ux-review,naming-copy --include-screenshots "screenshots/*.png"` |
+| Research or current-source synthesis | `cgn handoff --task "..." --type research` |
+| Visual direction or image prompts | `cgn handoff --task "..." --type image-direction --include-screenshots "screenshots/*.png"` |
+| Final review after Codex changes | `cgn handoff --task "..." --type diff-review --include-diff --include-tests` |
 
 ## When not to use it
 
@@ -241,15 +248,18 @@ Do not use this for:
 ## Commands
 
 ```bash
+# Beginner path
 cgn init
 cgn setup
-cgn ask --task "Review pricing page" --type ux-review,naming-copy --include-diff
 cgn handoff --task "Review pricing page" --type ux-review --include-diff
+cgn done
+
+# Advanced split flow
+cgn ask --task "Review pricing page" --type ux-review,naming-copy --include-diff
 cgn open latest --mode assist
 cgn open latest --mode manual
 cgn open latest --mode auto
 cgn import latest --from-clipboard
-cgn done
 cgn status
 cgn demo
 cgn doctor

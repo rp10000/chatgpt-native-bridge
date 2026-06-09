@@ -148,7 +148,7 @@ Codex 很适合做本地执行：
 Codex 负责：
 
 - 读 repo、看 diff、整理上下文
-- 运行 `cgn ask` 生成 handoff
+- 运行 `cgn handoff` 生成 handoff
 - 本地修改代码、跑测试、总结结果
 - 读取 `reply.md` 后继续执行
 
@@ -230,37 +230,21 @@ cgn guide codex --lang zh-CN
 
 把输出复制给 Codex。
 
-### 第 4 步：Codex 会生成 outbox
+### 第 4 步：推荐新手流程
 
 Codex 会运行类似：
 
 ```bash
-cgn ask \
+cgn handoff \
   --task "Review the new pricing page" \
   --type ux-review,naming-copy \
   --include-diff
 ```
 
-生成：
+它会生成 outbox、打开 ChatGPT、复制 `01_PASTE_TO_CHATGPT.md`，并打印下一步卡片。然后按这个文件走：
 
 ```text
-.chatgpt-native/outbox/{id}/
-  01_PASTE_TO_CHATGPT.md
-  START_HERE.md
-  02_UPLOAD_THESE_FILES.md
-  03_AFTER_CHATGPT_REPLY.md
-  ask.md
-  context.md
-  diff.patch
-  screenshots/
-```
-
-### 第 5 步：打开 ChatGPT
-
-Codex 或你运行：
-
-```bash
-cgn open latest
+.chatgpt-native/outbox/{id}/START_HERE.md
 ```
 
 它会：
@@ -273,25 +257,23 @@ cgn open latest
 告诉你 outbox 文件夹位置
 ```
 
-这些模式同样适用于 `cgn handoff` 和 `cgn open`。
+这些模式适用于 `cgn handoff`。
 
 如果你只想看路径、不打开浏览器、不碰剪贴板：
 
 ```bash
 cgn handoff --task "..." --mode manual
-cgn open latest --mode manual
 ```
 
 如果你想让它尽量自动准备：
 
 ```bash
 cgn handoff --task "..." --mode auto
-cgn open latest --mode auto
 ```
 
 `auto` 会打开 ChatGPT、复制 `01_PASTE_TO_CHATGPT.md`、打开 outbox 文件夹；它不会自动粘贴、自动上传或自动发送。
 
-### 第 6 步：在 ChatGPT 里操作
+### 第 5 步：在 ChatGPT 里操作
 
 在 ChatGPT 里：
 
@@ -302,7 +284,7 @@ cgn open latest --mode auto
 4. 复制 ChatGPT 最终回复
 ```
 
-### 第 7 步：导回本地
+### 第 6 步：导回本地
 
 ```bash
 cgn done
@@ -315,6 +297,18 @@ cgn done
 ```
 
 继续本地执行。
+
+### 高级拆分流程
+
+高级用户仍然可以把新手命令拆开：
+
+```bash
+cgn ask --task "Review pricing page" --type ux-review,naming-copy --include-diff
+cgn open latest
+cgn import latest --from-clipboard
+```
+
+新手主路径是 `cgn handoff` 和 `cgn done`。`cgn ask`、`cgn open`、`cgn import` 继续保留给高级流程和 Codex 自动调用。
 
 ## 自解释 handoff 文件
 
@@ -348,17 +342,11 @@ cgn done
 Codex 先运行：
 
 ```bash
-cgn ask \
+cgn handoff \
   --task "Plan and critique a new pricing page" \
   --type plan,naming-copy,ux-review \
   --include-files "src/**/*pricing*" \
   --include-screenshots "screenshots/*.png"
-```
-
-然后运行：
-
-```bash
-cgn open latest
 ```
 
 你在 ChatGPT 里：
@@ -409,9 +397,12 @@ cgn done
 ## 常用命令
 
 ```bash
+# 新手主路径
 cgn setup
 cgn handoff --task "..." --type plan,ux-review --include-diff
 cgn done
+
+# 高级拆分流程
 cgn init
 cgn ask --task "..." --type plan,ux-review --include-diff
 cgn open latest --mode assist

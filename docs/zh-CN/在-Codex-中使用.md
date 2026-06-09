@@ -73,8 +73,7 @@ cgn doctor
 你自己运行：
 
 ```bash
-cgn ask --task "Review current diff" --type diff-review --include-diff
-cgn open latest
+cgn handoff --task "Review current diff" --type diff-review --include-diff
 ```
 
 在 ChatGPT 里完成分析后：
@@ -112,6 +111,14 @@ Codex 会负责：
 3. 告诉你 outbox 文件夹里哪些文件要上传
 4. 等你导入回复后读取 reply.md
 5. 继续本地修改和测试
+```
+
+高级用户也可以拆开执行：
+
+```bash
+cgn ask --task "Review current diff" --type diff-review --include-diff
+cgn open latest
+cgn import latest --from-clipboard
 ```
 
 ## 模式 C：作为项目固定流程

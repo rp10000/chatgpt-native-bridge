@@ -24,28 +24,24 @@ Create a ChatGPT Project named `Codex Native Advisor`, then paste:
 
 into the Project instructions.
 
-## 3. Create a handoff pack
+## 3. Create and open a handoff
 
 ![Create handoff](assets/quickstart/03-create-handoff.svg)
 
 ```bash
-cgn ask \
+cgn handoff \
   --task "Review the new pricing page" \
   --type ux-review,naming-copy \
   --include-diff
 ```
 
-The outbox contains the prompt, context, and optional attachments.
+The outbox contains self-explaining handoff files, context, and optional attachments.
 
-## 4. Open ChatGPT
+## 4. Work in ChatGPT
 
 ![Open ChatGPT](assets/quickstart/04-open-chatgpt.svg)
 
-```bash
-cgn open latest
-```
-
-Paste the copied `01_PASTE_TO_CHATGPT.md` prompt into ChatGPT. Upload files listed in `02_UPLOAD_THESE_FILES.md` only if the task needs them.
+Paste the copied `01_PASTE_TO_CHATGPT.md` prompt into ChatGPT. Upload files listed in `02_UPLOAD_THESE_FILES.md` only if the task needs them. Open `START_HERE.md` if you want the full local checklist.
 
 ## 5. Use ChatGPT native tools
 

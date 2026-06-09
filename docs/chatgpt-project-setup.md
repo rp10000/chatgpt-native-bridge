@@ -29,8 +29,7 @@ Paste the file into the ChatGPT Project instructions.
 After:
 
 ```bash
-cgn ask --task "..." --type plan,ux-review
-cgn open latest
+cgn handoff --task "..." --type plan,ux-review
 ```
 
 paste `01_PASTE_TO_CHATGPT.md` into ChatGPT.

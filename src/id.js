@@ -20,12 +20,12 @@ async function resolveRunId(cwd, requested) {
     entries = await fs.readdir(outbox, { withFileTypes: true });
   } catch (error) {
     if (error.code === "ENOENT") {
-      throw new Error("No handoff runs found. Run cgn ask first.");
+      throw new Error("No handoff runs found. Run cgn handoff first.");
     }
     throw error;
   }
   const ids = entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
-  if (!ids.length) throw new Error("No handoff runs found. Run cgn ask first.");
+  if (!ids.length) throw new Error("No handoff runs found. Run cgn handoff first.");
   return ids[ids.length - 1];
 }
 

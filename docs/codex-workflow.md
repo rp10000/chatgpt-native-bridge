@@ -17,12 +17,11 @@ First decide whether the task needs ChatGPT-native planning, architecture critiq
 UX review, naming/copy review, research, image direction, or diff review.
 
 If yes:
-1. Run cgn ask with the right --type values.
-2. Run cgn open latest.
-3. Tell me exactly what to paste or upload into ChatGPT.
-4. After I import the reply with cgn import, read the reply.md.
-5. Continue implementation locally.
-6. Run relevant tests.
+1. Run cgn handoff with the right --type values.
+2. Tell me exactly which `01_PASTE_TO_CHATGPT.md` prompt to paste and which files `02_UPLOAD_THESE_FILES.md` lists.
+3. After I import the reply with cgn done, read reply.md and CODEX_READ_THIS.md.
+4. Continue implementation locally.
+5. Run relevant tests.
 ```
 
 ## Planning and requirements
