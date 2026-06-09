@@ -10,6 +10,10 @@
 不强制 JSON。
 你仍然在 ChatGPT 网页里使用原生功能。
 
+![chatgpt-native-bridge 使用效果图](docs/assets/marketing/hero.jpg)
+
+> Public beta：核心 Codex -> ChatGPT -> Codex handoff 流程已经可用，但仍期待真实试用反馈。
+
 ![chatgpt-native-bridge 中文流程](docs/assets/flow.zh-CN.svg)
 
 ## 最简单用法：把这段复制给 Codex

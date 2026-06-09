@@ -1,10 +1,16 @@
 # chatgpt-native-bridge
 
+[![CI](https://github.com/rp10000/chatgpt-native-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/rp10000/chatgpt-native-bridge/actions/workflows/ci.yml)
+
 English | [简体中文](README.zh-CN.md)
 
 Use ChatGPT's native web app as a visible planning, review, research, and visual-direction layer for Codex.
 
 Codex executes locally. ChatGPT thinks, critiques, researches, reviews screenshots, and uses native ChatGPT tools. No API key. No hidden endpoints. No scraping.
+
+![chatgpt-native-bridge usage preview](docs/assets/marketing/hero.jpg)
+
+> Public beta: the core Codex -> ChatGPT -> Codex handoff workflow is usable, but feedback is expected.
 
 ![chatgpt-native-bridge flow](docs/assets/flow.svg)
 
