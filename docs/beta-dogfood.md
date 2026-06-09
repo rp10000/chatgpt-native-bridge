@@ -48,5 +48,29 @@ Fix:
 
 ## Follow-up
 
-- Re-run the public GitHub install path after the release tag is moved to the fix commit.
 - Keep future beta feedback focused on install, Skill triggering, handoff packaging, `done`, and Codex continuation.
+
+## 2026-06-09 post-fix public tag retest
+
+After moving `v0.1.0` to the placeholder fix commit, the public GitHub install path was tested again from a fresh Windows temp project with a fresh npm cache:
+
+```bash
+npx --yes github:rp10000/chatgpt-native-bridge#v0.1.0 setup --lang zh-CN
+npx --yes github:rp10000/chatgpt-native-bridge#v0.1.0 handoff \
+  --task "Post-fix public beta dogfood" \
+  --type plan,diff-review \
+  --include-diff \
+  --dry-run
+npx --yes github:rp10000/chatgpt-native-bridge#v0.1.0 done dogfood-reply.md
+npx --yes github:rp10000/chatgpt-native-bridge#v0.1.0 status
+npx --yes github:rp10000/chatgpt-native-bridge#v0.1.0 doctor
+```
+
+Result:
+
+- `setup` completed and `doctor` reported `Result: ready`.
+- `handoff --dry-run` created a new outbox.
+- Generated `ask.md` contained the task text and did not contain `{{task}}`.
+- `done` imported the reply.
+- `status` showed no pending runs and one ready run.
+- `doctor` reported latest handoff and latest reply as ready.
