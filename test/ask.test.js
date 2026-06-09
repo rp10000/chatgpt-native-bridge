@@ -29,6 +29,7 @@ test("createAsk writes a Markdown handoff pack and skips unsafe files", async ()
   assert.match(ask, /# ChatGPT Native Bridge Handoff/);
   assert.match(ask, /Review the onboarding flow/);
   assert.match(ask, /## Codex next actions/);
+  assert.doesNotMatch(ask, /\{\{task\}\}/);
   assert.match(context, /src\/app\.js/);
   assert.equal(await exists(path.join(result.outboxDir, "files", "src", "app.js")), true);
   assert.equal(await exists(path.join(result.outboxDir, "files", ".env")), false);

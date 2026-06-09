@@ -11,3 +11,4 @@ Initial public beta.
 - Advanced commands: `init`, `ask`, `open`, `import`, `status`, `demo`, `doctor`, `guide codex`
 - Lightweight secret guard
 - Tests and smoke checks
+- Prompt templates render the handoff task without raw `{{task}}` placeholders

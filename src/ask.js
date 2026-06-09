@@ -230,7 +230,7 @@ function buildAsk(input) {
     : "- None.";
 
   const modules = input.promptModules
-    .map((module) => `## ${module.type}\n\n${module.content.trim()}`)
+    .map((module) => `## ${module.type}\n\n${renderPromptContent(module.content, input)}`)
     .join("\n\n");
 
   return `# ChatGPT Native Bridge Handoff
@@ -265,6 +265,10 @@ Please end with this section when possible:
 
 ${modules}
 `;
+}
+
+function renderPromptContent(content, input) {
+  return content.trim().replaceAll("{{task}}", input.task);
 }
 
 async function findTestOutput(cwd) {
