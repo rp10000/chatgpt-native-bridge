@@ -30,7 +30,7 @@
   <line class="arrow" x1="505" y1="170" x2="550" y2="170" />
   <rect class="box" x="550" y="80" width="180" height="180" />
   <text class="text" x="590" y="122">outbox</text>
-  <text class="sub" x="585" y="150">ask.md</text>
+  <text class="sub" x="575" y="150">01_PASTE</text>
   <text class="sub" x="585" y="172">context.md</text>
   <text class="sub" x="585" y="194">diff.patch</text>
   <text class="sub" x="585" y="216">screenshots/</text>

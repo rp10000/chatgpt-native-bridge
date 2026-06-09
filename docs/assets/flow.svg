@@ -26,7 +26,7 @@
   <line class="arrow" x1="390" y1="165" x2="450" y2="165" />
   <rect class="box" x="450" y="80" width="185" height="170" />
   <text class="text" x="485" y="125">outbox</text>
-  <text class="sub" x="480" y="152">ask.md</text>
+  <text class="sub" x="470" y="152">01_PASTE</text>
   <text class="sub" x="480" y="174">context.md</text>
   <text class="sub" x="480" y="196">diff.patch</text>
   <text class="sub" x="480" y="218">screenshots/</text>

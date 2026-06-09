@@ -148,6 +148,7 @@ async function main(argv, io = defaultIo()) {
     });
     io.stdout.write(`Imported reply: ${result.id}\n`);
     io.stdout.write(`Reply: ${result.replyPath}\n`);
+    io.stdout.write(`Codex guide: ${result.codexReadThisPath}\n`);
     return;
   }
 
@@ -162,6 +163,7 @@ async function main(argv, io = defaultIo()) {
     });
     io.stdout.write(`Imported reply: ${result.id}\n`);
     io.stdout.write(`Reply: ${result.replyPath}\n`);
+    io.stdout.write(`Codex guide: ${result.codexReadThisPath}\n`);
     return;
   }
 
@@ -289,9 +291,9 @@ Safety:
   No OpenAI API key, no hidden endpoints, no ChatGPT scraping.
 
 Modes:
-  --mode assist  Open ChatGPT and copy ask.md. This is the default.
+  --mode assist  Open ChatGPT and copy 01_PASTE_TO_CHATGPT.md. This is the default.
   --mode manual  Print paths only. No browser or clipboard.
-  --mode auto    Open ChatGPT, copy ask.md, and open the outbox folder. It does not submit or upload automatically.
+  --mode auto    Open ChatGPT, copy the prompt, and open the outbox folder. It does not submit or upload automatically.
 `;
 }
 

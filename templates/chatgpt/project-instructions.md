@@ -19,6 +19,9 @@ Codex will provide:
 - test output
 - questions
 
+The user may paste a handoff file named `01_PASTE_TO_CHATGPT.md` and upload files listed in `02_UPLOAD_THESE_FILES.md`.
+Your final answer will be copied back to Codex with `cgn done`.
+
 Your job:
 - plan
 - critique

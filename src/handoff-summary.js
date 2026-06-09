@@ -2,7 +2,17 @@ const fs = require("node:fs/promises");
 const path = require("node:path");
 
 async function getHandoffSummary(outboxDir) {
-  const askPath = path.join(outboxDir, "ask.md");
+  const id = path.basename(outboxDir);
+  const bridgeDir = path.dirname(path.dirname(outboxDir));
+  const cwd = path.dirname(bridgeDir);
+  const pastePromptPath = await firstExistingPath([
+    path.join(outboxDir, "01_PASTE_TO_CHATGPT.md"),
+    path.join(outboxDir, "ask.md")
+  ]);
+  const startHerePath = path.join(outboxDir, "START_HERE.md");
+  const uploadListPath = path.join(outboxDir, "02_UPLOAD_THESE_FILES.md");
+  const afterReplyPath = path.join(outboxDir, "03_AFTER_CHATGPT_REPLY.md");
+  const replyPath = path.join(cwd, ".chatgpt-native", "inbox", id, "reply.md");
   const uploadItems = [];
 
   for (const item of uploadCandidates(outboxDir)) {
@@ -11,8 +21,13 @@ async function getHandoffSummary(outboxDir) {
   }
 
   return {
+    id,
     outboxDir,
-    askPath,
+    startHerePath,
+    pastePromptPath,
+    uploadListPath,
+    afterReplyPath,
+    replyPath,
     uploadItems
   };
 }
@@ -25,39 +40,62 @@ function formatHandoffSummary(summary, state = {}) {
 
   const lines = [
     "",
-    "ChatGPT handoff:",
+    "ChatGPT handoff ready",
+    "",
+    "Run id:",
+    `  ${summary.id}`,
+    "",
     `Mode: ${mode}`,
-    `Outbox: ${summary.outboxDir}`,
-    `Paste prompt: ${summary.askPath}`,
     `Ask copied: ${copied}`,
     `Browser opened: ${browserOpened}`
   ];
 
   if (folderOpened !== null) lines.push(`Outbox folder opened: ${folderOpened}`);
 
-  lines.push("", "Upload/select in ChatGPT:");
-  if (summary.uploadItems.length) {
-    for (const item of summary.uploadItems) {
-      const hint = item.kind === "directory" ? "open this folder and choose relevant files" : item.hint;
-      lines.push(`- ${item.label}: ${item.path}${hint ? ` (${hint})` : ""}`);
-    }
-  } else {
-    lines.push("- None.");
-  }
-
   const pasteStep = state.copied
-    ? "1. Paste the copied prompt into ChatGPT."
-    : "1. Copy ask.md manually, then paste it into ChatGPT.";
+    ? "1. Paste the copied prompt into ChatGPT:"
+    : "1. Copy this file, then paste it into ChatGPT:";
 
   lines.push(
     "",
-    "Next:",
     pasteStep,
-    "2. Upload only the listed files that the task needs.",
-    "3. After ChatGPT replies, copy the final answer and run: cgn done"
+    "Paste prompt file:",
+    `  ${summary.pastePromptPath}`,
+    "",
+    "2. Upload/select files listed here:",
+    "Upload/select in ChatGPT:",
+    `  ${summary.uploadListPath}`,
+    "",
+    "3. If you want the full local instructions, open:",
+    `  ${summary.startHerePath}`,
+    "",
+    "4. After ChatGPT replies, follow this file:",
+    `  ${summary.afterReplyPath}`,
+    "  Then copy the final answer and run:",
+    "  cgn done",
+    "",
+    "5. Codex should then read:",
+    `  ${summary.replyPath}`,
+    "",
+    "Outbox:",
+    `  ${summary.outboxDir}`,
+    "",
+    "Local upload candidates:",
+    ...formatUploadItems(summary.uploadItems),
+    "",
+    "Safety:",
+    "  No browser automation, no auto-upload, no auto-submit, no ChatGPT scraping."
   );
 
   return `${lines.join("\n")}\n`;
+}
+
+function formatUploadItems(uploadItems) {
+  if (!uploadItems.length) return ["- None."];
+  return uploadItems.map((item) => {
+    const hint = item.kind === "directory" ? "open this folder and choose relevant files" : item.hint;
+    return `- ${item.label}: ${item.path}${hint ? ` (${hint})` : ""}`;
+  });
 }
 
 function uploadCandidates(outboxDir) {
@@ -96,6 +134,13 @@ async function existingKind(filePath) {
     if (error.code === "ENOENT") return null;
     throw error;
   }
+}
+
+async function firstExistingPath(candidates) {
+  for (const candidate of candidates) {
+    if (await existingKind(candidate)) return candidate;
+  }
+  return candidates[0];
 }
 
 module.exports = {

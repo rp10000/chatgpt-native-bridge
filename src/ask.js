@@ -3,6 +3,7 @@ const path = require("node:path");
 
 const { ensureDir, pathExists, toPosix } = require("./fs-utils");
 const { getGitDiff, getGitStatus } = require("./git");
+const { writeOutboxHandoffFiles } = require("./handoff-files");
 const { makeRunId } = require("./id");
 const { inspectCandidate } = require("./secret-guard");
 const { copySelectedFiles } = require("./select-files");
@@ -27,7 +28,9 @@ async function createAsk(options) {
   }
 
   const types = normalizeTypes(options.types);
-  const id = options.id || makeRunId(task, options.now || new Date());
+  const now = options.now || new Date();
+  const createdAt = now.toISOString();
+  const id = options.id || makeRunId(task, now);
   const bridgeDir = path.join(cwd, ".chatgpt-native");
   const outboxDir = path.join(bridgeDir, "outbox", id);
   const warnings = [];
@@ -124,6 +127,20 @@ async function createAsk(options) {
     warnings
   });
   await fs.writeFile(path.join(outboxDir, "ask.md"), ask);
+  await writeOutboxHandoffFiles({
+    cwd,
+    id,
+    outboxDir,
+    task,
+    types,
+    createdAt,
+    ask,
+    copiedFiles,
+    copiedScreenshots,
+    diffPath,
+    testOutputPath,
+    warnings
+  });
 
   await ensureDir(path.join(bridgeDir, "runs"));
   await fs.writeFile(
@@ -133,7 +150,7 @@ async function createAsk(options) {
         id,
         task,
         types,
-        createdAt: (options.now || new Date()).toISOString(),
+        createdAt,
         outbox: toPosix(path.relative(cwd, outboxDir)),
         warnings
       },
@@ -258,6 +275,8 @@ ${warnings}
 ## How to respond
 
 Use clear Markdown. Prefer direct advice over rigid schemas. When reviewing, separate must-fix from nice-to-have. When researching, cite sources if web search is used. When doing visual work, include prompts and placement guidance.
+
+The user will copy your final response back to Codex with \`cgn done\`.
 
 Please end with this section when possible:
 

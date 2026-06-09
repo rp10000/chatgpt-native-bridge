@@ -45,7 +45,7 @@ The outbox contains the prompt, context, and optional attachments.
 cgn open latest
 ```
 
-Paste the copied prompt into ChatGPT. Upload `context.md`, `diff.patch`, files, or screenshots if the task needs them.
+Paste the copied `01_PASTE_TO_CHATGPT.md` prompt into ChatGPT. Upload files listed in `02_UPLOAD_THESE_FILES.md` only if the task needs them.
 
 ## 5. Use ChatGPT native tools
 

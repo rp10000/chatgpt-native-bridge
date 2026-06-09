@@ -34,6 +34,13 @@ test("importReply saves a reply and status marks the run ready", async () => {
     await fs.readFile(path.join(cwd, ".chatgpt-native", "inbox", ask.id, "reply.md"), "utf8"),
     "## Codex next actions\n- Keep the MVP small.\n"
   );
+  const codexReadThis = await fs.readFile(
+    path.join(cwd, ".chatgpt-native", "inbox", ask.id, "CODEX_READ_THIS.md"),
+    "utf8"
+  );
+  assert.match(codexReadThis, /Read `reply\.md`/);
+  assert.match(codexReadThis, /accepted suggestions/);
+  assert.match(codexReadThis, /Do not/);
 
   const after = await getStatus({ cwd });
   assert.deepEqual(after.pending, []);

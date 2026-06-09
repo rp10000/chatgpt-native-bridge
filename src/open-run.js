@@ -10,7 +10,7 @@ async function openRun(options) {
   const cwd = options.cwd || process.cwd();
   const id = await resolveRunId(cwd, options.id || "latest");
   const outboxDir = path.join(cwd, ".chatgpt-native", "outbox", id);
-  const askPath = path.join(outboxDir, "ask.md");
+  const askPath = await resolvePastePromptPath(outboxDir);
   const ask = await fs.readFile(askPath, "utf8");
 
   let copied = false;
@@ -74,6 +74,24 @@ function openPath(targetPath) {
   }
 
   spawnSync("xdg-open", [targetPath], { stdio: "ignore" });
+}
+
+async function resolvePastePromptPath(outboxDir) {
+  const candidates = [
+    path.join(outboxDir, "01_PASTE_TO_CHATGPT.md"),
+    path.join(outboxDir, "ask.md")
+  ];
+
+  for (const candidate of candidates) {
+    try {
+      await fs.stat(candidate);
+      return candidate;
+    } catch (error) {
+      if (error.code !== "ENOENT") throw error;
+    }
+  }
+
+  return candidates[0];
 }
 
 module.exports = {

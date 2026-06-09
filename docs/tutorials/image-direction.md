@@ -16,14 +16,14 @@ cgn ask \
 ## Files generated
 
 ```text
-.chatgpt-native/outbox/{id}/ask.md
+.chatgpt-native/outbox/{id}/01_PASTE_TO_CHATGPT.md
 .chatgpt-native/outbox/{id}/context.md
 .chatgpt-native/outbox/{id}/screenshots/
 ```
 
 ## In ChatGPT
 
-1. Paste `ask.md`.
+1. Paste `01_PASTE_TO_CHATGPT.md`.
 2. Upload the screenshot if available.
 3. Ask for 2-4 directions, prompts, placement guidance, and a recommendation.
 

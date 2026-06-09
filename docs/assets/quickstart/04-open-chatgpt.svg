@@ -7,7 +7,7 @@
   <text x="105" y="210" fill="#93c5fd" font-family="Consolas, monospace" font-size="18">Browser opened: yes</text>
   <rect x="520" y="70" width="260" height="210" rx="14" fill="#ecfeff" stroke="#0891b2" stroke-width="2"/>
   <text x="560" y="135" fill="#0f172a" font-family="Arial, sans-serif" font-size="26" font-weight="700">ChatGPT</text>
-  <text x="560" y="180" fill="#475569" font-family="Arial, sans-serif" font-size="18">Paste ask.md</text>
+  <text x="560" y="180" fill="#475569" font-family="Arial, sans-serif" font-size="18">Paste 01_PASTE</text>
   <text x="560" y="210" fill="#475569" font-family="Arial, sans-serif" font-size="18">Upload attachments</text>
   <text x="70" y="330" fill="#334155" font-family="Arial, sans-serif" font-size="18">Step 4: open ChatGPT and paste the copied prompt.</text>
 </svg>

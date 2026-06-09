@@ -22,7 +22,7 @@ cgn open latest --mode assist
 cgn open latest --mode auto
 ```
 
-`manual` prints paths only. `assist` opens ChatGPT and copies `ask.md`. `auto` also opens the outbox folder so you can see and select attachments. It does not paste, upload, click send, or scrape ChatGPT output.
+`manual` prints paths only. `assist` opens ChatGPT and copies `01_PASTE_TO_CHATGPT.md`. `auto` also opens the outbox folder so you can see and select attachments. It does not paste, upload, click send, or scrape ChatGPT output.
 
 ## Do I need ChatGPT Plus or Pro?
 

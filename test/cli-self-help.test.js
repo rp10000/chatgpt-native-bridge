@@ -84,8 +84,11 @@ test("handoff creates a handoff and opens it in dry-run mode", async () => {
 
   assert.match(io.output(), /Created handoff:/);
   assert.match(io.output(), /Mode: assist/);
-  assert.match(io.output(), /Paste prompt:/);
+  assert.match(io.output(), /Paste prompt file:/);
   assert.match(io.output(), /Upload\/select in ChatGPT:/);
+  assert.match(io.output(), /01_PASTE_TO_CHATGPT\.md/);
+  assert.match(io.output(), /02_UPLOAD_THESE_FILES\.md/);
+  assert.match(io.output(), /03_AFTER_CHATGPT_REPLY\.md/);
   assert.match(io.output(), /Context:/);
   assert.match(io.output(), /Ask copied: no/);
   assert.match(io.output(), /Browser opened: no/);
@@ -99,7 +102,7 @@ test("handoff manual mode prints paths without browser or clipboard actions", as
   await main(["handoff", "--task", "Review onboarding UX", "--mode", "manual"], io);
 
   assert.match(io.output(), /Mode: manual/);
-  assert.match(io.output(), /Paste prompt:/);
+  assert.match(io.output(), /Paste prompt file:/);
   assert.match(io.output(), /Ask copied: no/);
   assert.match(io.output(), /Browser opened: no/);
   assert.match(io.output(), /Outbox folder opened: no/);
@@ -122,6 +125,7 @@ test("open auto mode can be dry-run without opening browser or folder", async ()
   assert.match(io.output(), /Browser opened: no/);
   assert.match(io.output(), /Outbox folder opened: no/);
   assert.match(io.output(), /Upload\/select in ChatGPT:/);
+  assert.match(io.output(), /01_PASTE_TO_CHATGPT\.md/);
 });
 
 test("done imports the latest reply from a file", async () => {

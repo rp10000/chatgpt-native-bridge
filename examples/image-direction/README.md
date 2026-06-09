@@ -25,6 +25,10 @@ cgn open latest
 
 ```text
 .chatgpt-native/outbox/{id}/
+  START_HERE.md
+  01_PASTE_TO_CHATGPT.md
+  02_UPLOAD_THESE_FILES.md
+  03_AFTER_CHATGPT_REPLY.md
   ask.md
   context.md
   screenshots/
@@ -32,15 +36,15 @@ cgn open latest
 
 See:
 
-- [sample-ask.md](sample-ask.md)
+- [sample-ask.md](sample-ask.md) as an example paste prompt
 - [sample-context.md](sample-context.md)
 - [sample-reply.md](sample-reply.md)
 - [codex-next-actions.md](codex-next-actions.md)
 
 ## In ChatGPT
 
-1. Paste `ask.md`.
-2. Upload current screenshots if available.
+1. Paste `01_PASTE_TO_CHATGPT.md`.
+2. Upload files listed in `02_UPLOAD_THESE_FILES.md`, including current screenshots if available.
 3. Ask for 2-4 visual directions, image prompts, placement suggestions, and a final recommendation.
 
 ## Codex follow-up

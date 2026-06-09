@@ -100,7 +100,7 @@ $chatgpt-native-bridge
 
 ```text
 Codex 在本地准备上下文
--> 生成 ask.md / context.md / diff.patch / screenshots
+-> 生成 START_HERE.md / 01_PASTE_TO_CHATGPT.md / 02_UPLOAD_THESE_FILES.md / context.md / diff.patch / screenshots
 -> 打开 ChatGPT 网页端
 -> 你在 ChatGPT 里使用原生功能分析
 -> 把 ChatGPT 回复导回本地
@@ -245,6 +245,10 @@ cgn ask \
 
 ```text
 .chatgpt-native/outbox/{id}/
+  01_PASTE_TO_CHATGPT.md
+  START_HERE.md
+  02_UPLOAD_THESE_FILES.md
+  03_AFTER_CHATGPT_REPLY.md
   ask.md
   context.md
   diff.patch
@@ -263,7 +267,7 @@ cgn open latest
 
 ```text
 打开 ChatGPT
-把 ask.md 复制到剪贴板
+把 01_PASTE_TO_CHATGPT.md 复制到剪贴板
 告诉你 Paste prompt 路径
 列出 Upload/select 附件清单
 告诉你 outbox 文件夹位置
@@ -285,15 +289,15 @@ cgn handoff --task "..." --mode auto
 cgn open latest --mode auto
 ```
 
-`auto` 会打开 ChatGPT、复制 `ask.md`、打开 outbox 文件夹；它不会自动粘贴、自动上传或自动发送。
+`auto` 会打开 ChatGPT、复制 `01_PASTE_TO_CHATGPT.md`、打开 outbox 文件夹；它不会自动粘贴、自动上传或自动发送。
 
 ### 第 6 步：在 ChatGPT 里操作
 
 在 ChatGPT 里：
 
 ```text
-1. 粘贴 ask.md
-2. 上传 context.md / diff.patch / screenshots
+1. 粘贴 01_PASTE_TO_CHATGPT.md
+2. 按 02_UPLOAD_THESE_FILES.md 上传 context.md / diff.patch / screenshots / files
 3. 使用 ChatGPT 网页端原生功能分析
 4. 复制 ChatGPT 最终回复
 ```
@@ -311,6 +315,25 @@ cgn done
 ```
 
 继续本地执行。
+
+## 自解释 handoff 文件
+
+每次 handoff 都会在 `.chatgpt-native/outbox/{id}/` 里生成一组 Markdown 说明文件：
+
+| 文件 | 用途 |
+| --- | --- |
+| `START_HERE.md` | 完整本地流程说明。 |
+| `01_PASTE_TO_CHATGPT.md` | 真正要粘贴到 ChatGPT 的 prompt；`ask.md` 保留为兼容文件。 |
+| `02_UPLOAD_THESE_FILES.md` | 清楚列出 context、diff、test-output、screenshots、files 是否存在和是否建议上传。 |
+| `03_AFTER_CHATGPT_REPLY.md` | ChatGPT 回复之后怎么复制、运行 `cgn done`、让 Codex 继续。 |
+| `manifest.json` | 给工具和排障使用的结构化元数据。 |
+
+运行 `cgn done` 后，`.chatgpt-native/inbox/{id}/` 里会有：
+
+| 文件 | 用途 |
+| --- | --- |
+| `reply.md` | 导入的 ChatGPT 最终回复。 |
+| `CODEX_READ_THIS.md` | 给 Codex 的入口说明：读取 `reply.md`，区分采纳/拒绝/延期建议，继续本地实现并运行测试。 |
 
 ## 5 分钟真实例子：pricing 页面
 
@@ -341,8 +364,8 @@ cgn open latest
 你在 ChatGPT 里：
 
 ```text
-1. 粘贴 ask.md
-2. 上传 context.md
+1. 粘贴 01_PASTE_TO_CHATGPT.md
+2. 按 02_UPLOAD_THESE_FILES.md 上传 context.md
 3. 上传截图或相关文件
 4. 让 ChatGPT 给出 Codex next actions
 5. 复制最终回复

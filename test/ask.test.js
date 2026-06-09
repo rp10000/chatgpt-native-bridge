@@ -24,12 +24,31 @@ test("createAsk writes a Markdown handoff pack and skips unsafe files", async ()
 
   assert.equal(result.id, "2026-06-09-120000-review-the-onboarding-flow");
   const ask = await fs.readFile(path.join(result.outboxDir, "ask.md"), "utf8");
+  const pastePrompt = await fs.readFile(path.join(result.outboxDir, "01_PASTE_TO_CHATGPT.md"), "utf8");
+  const uploadList = await fs.readFile(path.join(result.outboxDir, "02_UPLOAD_THESE_FILES.md"), "utf8");
+  const afterReply = await fs.readFile(path.join(result.outboxDir, "03_AFTER_CHATGPT_REPLY.md"), "utf8");
+  const startHere = await fs.readFile(path.join(result.outboxDir, "START_HERE.md"), "utf8");
+  const manifest = JSON.parse(await fs.readFile(path.join(result.outboxDir, "manifest.json"), "utf8"));
   const context = await fs.readFile(path.join(result.outboxDir, "context.md"), "utf8");
 
   assert.match(ask, /# ChatGPT Native Bridge Handoff/);
   assert.match(ask, /Review the onboarding flow/);
   assert.match(ask, /## Codex next actions/);
   assert.doesNotMatch(ask, /\{\{task\}\}/);
+  assert.equal(pastePrompt, ask);
+  assert.match(pastePrompt, /The user will copy your final response back to Codex with `cgn done`/);
+  assert.match(uploadList, /`context\.md`: Available/);
+  assert.match(uploadList, /`diff\.patch`: Not generated/);
+  assert.match(uploadList, /`screenshots\/`: Not generated/);
+  assert.match(uploadList, /`files\/`: Available\. Count: 1\./);
+  assert.match(uploadList, /Do not upload secrets/);
+  assert.match(afterReply, /cgn done/);
+  assert.match(afterReply, /\.chatgpt-native\/inbox\/2026-06-09-120000-review-the-onboarding-flow\/reply\.md/);
+  assert.match(startHere, /01_PASTE_TO_CHATGPT\.md/);
+  assert.match(startHere, /02_UPLOAD_THESE_FILES\.md/);
+  assert.equal(manifest.files.pastePrompt, "01_PASTE_TO_CHATGPT.md");
+  assert.equal(manifest.attachments.files.count, 1);
+  assert.equal(manifest.attachments.screenshots.count, 0);
   assert.match(context, /src\/app\.js/);
   assert.equal(await exists(path.join(result.outboxDir, "files", "src", "app.js")), true);
   assert.equal(await exists(path.join(result.outboxDir, "files", ".env")), false);

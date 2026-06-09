@@ -33,7 +33,7 @@ cgn ask --task "..." --type plan,ux-review
 cgn open latest
 ```
 
-paste `ask.md` into ChatGPT.
+paste `01_PASTE_TO_CHATGPT.md` into ChatGPT.
 
 Upload only what the task needs:
 

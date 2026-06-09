@@ -29,7 +29,7 @@ Run:
 cgn open latest --dry-run
 ```
 
-Then open `https://chatgpt.com` manually and paste `.chatgpt-native/outbox/{id}/ask.md`.
+Then open `https://chatgpt.com` manually and paste `.chatgpt-native/outbox/{id}/01_PASTE_TO_CHATGPT.md`.
 
 To print paths only:
 
@@ -45,7 +45,7 @@ cgn open latest --mode auto
 
 ## Clipboard copy failed
 
-Open the outbox path printed by `cgn open`, then manually copy `ask.md`.
+Open the outbox path printed by `cgn open`, then manually copy `01_PASTE_TO_CHATGPT.md`.
 
 ## I cannot see what to upload
 

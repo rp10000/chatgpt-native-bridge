@@ -31,6 +31,9 @@ cgn init
 ```text
 .chatgpt-native/outbox/{id}/
   ask.md
+  01_PASTE_TO_CHATGPT.md
+  02_UPLOAD_THESE_FILES.md
+  03_AFTER_CHATGPT_REPLY.md
   context.md
   diff.patch
   test-output.md
@@ -41,8 +44,8 @@ cgn init
 通常这样做：
 
 ```text
-1. 粘贴 ask.md
-2. 上传 context.md
+1. 粘贴 01_PASTE_TO_CHATGPT.md
+2. 按 02_UPLOAD_THESE_FILES.md 上传 context.md
 3. 如果是代码复核，上传 diff.patch
 4. 如果是 UI/UX，上传 screenshots/
 5. 如果是文件分析，上传 files/ 里相关文件

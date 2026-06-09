@@ -159,7 +159,7 @@ cgn ask \
 cgn open latest
 ```
 
-This opens ChatGPT, copies `ask.md` to your clipboard, and prints the exact prompt path plus the upload/select list from the outbox. Upload `context.md`, `diff.patch`, selected files, and screenshots only when the task needs them.
+This opens ChatGPT, copies `01_PASTE_TO_CHATGPT.md` to your clipboard, and prints the exact prompt path plus the upload/select list from the outbox. Upload `context.md`, `diff.patch`, selected files, and screenshots only when the task needs them.
 
 The same modes work with both `cgn handoff` and `cgn open`:
 
@@ -167,9 +167,9 @@ The same modes work with both `cgn handoff` and `cgn open`:
 cgn handoff --task "Review pricing page" --mode assist
 cgn handoff --task "Review pricing page" --mode manual
 cgn handoff --task "Review pricing page" --mode auto
-cgn open latest --mode assist  # default: open ChatGPT and copy ask.md
+cgn open latest --mode assist  # default: open ChatGPT and copy 01_PASTE_TO_CHATGPT.md
 cgn open latest --mode manual  # print paths only
-cgn open latest --mode auto    # open ChatGPT, copy ask.md, and open the outbox folder
+cgn open latest --mode auto    # open ChatGPT, copy the prompt, and open the outbox folder
 ```
 
 `--mode auto` prepares the handoff only. It does not paste, upload, or submit inside ChatGPT.
@@ -187,6 +187,25 @@ Codex can now read:
 ```text
 .chatgpt-native/inbox/{id}/reply.md
 ```
+
+## Self-Explaining Handoff Files
+
+Every handoff writes a small Markdown guide into `.chatgpt-native/outbox/{id}/`:
+
+| File | Purpose |
+| --- | --- |
+| `START_HERE.md` | Full local instructions for the handoff loop. |
+| `01_PASTE_TO_CHATGPT.md` | The prompt to paste into ChatGPT. `ask.md` is kept as a compatibility copy. |
+| `02_UPLOAD_THESE_FILES.md` | Clear upload/select checklist with context, diff, tests, screenshots, and selected file status. |
+| `03_AFTER_CHATGPT_REPLY.md` | What to do after ChatGPT responds. |
+| `manifest.json` | Structured metadata for tools and debugging. |
+
+After `cgn done`, the inbox also contains:
+
+| File | Purpose |
+| --- | --- |
+| `reply.md` | ChatGPT's imported final answer. |
+| `CODEX_READ_THIS.md` | Instructions for Codex to review `reply.md`, accept/reject/defer suggestions, continue locally, and run tests. |
 
 ## Why not just copy and paste?
 

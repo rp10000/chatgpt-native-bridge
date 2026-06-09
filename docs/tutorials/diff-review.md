@@ -17,7 +17,7 @@ cgn ask \
 ## Files generated
 
 ```text
-.chatgpt-native/outbox/{id}/ask.md
+.chatgpt-native/outbox/{id}/01_PASTE_TO_CHATGPT.md
 .chatgpt-native/outbox/{id}/context.md
 .chatgpt-native/outbox/{id}/diff.patch
 .chatgpt-native/outbox/{id}/test-output.md
@@ -25,7 +25,7 @@ cgn ask \
 
 ## In ChatGPT
 
-1. Paste `ask.md`.
+1. Paste `01_PASTE_TO_CHATGPT.md`.
 2. Upload `context.md`, `diff.patch`, and `test-output.md`.
 3. Ask ChatGPT to separate must-fix from nice-to-have.
 

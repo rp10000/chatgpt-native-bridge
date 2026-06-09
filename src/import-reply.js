@@ -3,6 +3,7 @@ const path = require("node:path");
 
 const { readFromClipboard } = require("./clipboard");
 const { ensureDir } = require("./fs-utils");
+const { writeCodexReadThis } = require("./handoff-files");
 const { resolveRunId } = require("./id");
 
 async function importReply(options) {
@@ -26,8 +27,9 @@ async function importReply(options) {
   const replyPath = path.join(inboxDir, "reply.md");
   await ensureDir(inboxDir);
   await fs.writeFile(replyPath, text);
+  const codexReadThisPath = await writeCodexReadThis({ id, inboxDir, replyPath });
 
-  return { id, replyPath };
+  return { id, replyPath, codexReadThisPath };
 }
 
 module.exports = {
