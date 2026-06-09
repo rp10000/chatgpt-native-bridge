@@ -1,0 +1,12 @@
+node_modules/
+npm-debug.log*
+coverage/
+.nyc_output/
+
+.env
+.env.*
+*.pem
+*.key
+
+.chatgpt-native/
+.agents/skills/chatgpt-native-bridge/

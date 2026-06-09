@@ -1,0 +1,40 @@
+{
+  "name": "chatgpt-native-bridge",
+  "version": "0.1.0",
+  "description": "A local native ChatGPT handoff bridge for Codex.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rp10000/chatgpt-native-bridge.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rp10000/chatgpt-native-bridge/issues"
+  },
+  "homepage": "https://github.com/rp10000/chatgpt-native-bridge#readme",
+  "bin": {
+    "cgn": "./bin/cgn.js",
+    "chatgpt-native-bridge": "./bin/cgn.js"
+  },
+  "scripts": {
+    "test": "node --test",
+    "smoke": "node ./bin/cgn.js --help"
+  },
+  "files": [
+    "bin",
+    "src",
+    "templates",
+    "examples",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "codex",
+    "chatgpt",
+    "cli",
+    "native",
+    "handoff"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}
