@@ -29,7 +29,7 @@ cgn init
 `cgn ask` 会生成：
 
 ```text
-.chatgpt-native/outbox/<id>/
+.chatgpt-native/outbox/{id}/
   ask.md
   context.md
   diff.patch

@@ -24,7 +24,7 @@ cgn open latest
 ## Generated files
 
 ```text
-.chatgpt-native/outbox/<id>/
+.chatgpt-native/outbox/{id}/
   ask.md
   context.md
   screenshots/

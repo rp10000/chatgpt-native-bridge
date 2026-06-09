@@ -1,0 +1,11 @@
+interface:
+  display_name: "ChatGPT Native Bridge"
+  short_description: "Handoff planning, review, research, UX critique, image direction, and diff review from Codex to visible ChatGPT."
+  default_prompt: |
+    Use chatgpt-native-bridge for this task.
+    Decide whether this task needs ChatGPT-native planning, architecture critique,
+    UX review, naming/copy review, research, image direction, or diff review.
+    If useful, create a handoff, open ChatGPT, and tell the user what to paste or upload.
+
+policy:
+  allow_implicit_invocation: true

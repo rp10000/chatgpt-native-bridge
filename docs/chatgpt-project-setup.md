@@ -58,11 +58,11 @@ Ask ChatGPT to end with:
 Copy the final answer and run:
 
 ```bash
-cgn import latest --from-clipboard
+cgn done
 ```
 
 Codex can now read:
 
 ```text
-.chatgpt-native/inbox/<id>/reply.md
+.chatgpt-native/inbox/{id}/reply.md
 ```

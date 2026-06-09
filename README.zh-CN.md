@@ -12,6 +12,82 @@
 
 ![chatgpt-native-bridge 中文流程](docs/assets/flow.zh-CN.svg)
 
+## 最简单用法：把这段复制给 Codex
+
+第一次安装时，不要先背 npm 或 `cgn` 命令。把下面这段直接复制给 Codex：
+
+```text
+请在当前项目安装并初始化这个工具：
+
+https://github.com/rp10000/chatgpt-native-bridge
+
+你可以优先运行：
+
+npx github:rp10000/chatgpt-native-bridge init
+
+然后运行：
+
+cgn doctor
+
+确认 .agents/skills/chatgpt-native-bridge/SKILL.md 和 .chatgpt-native/project-instructions.md 已生成。
+
+最后告诉我：
+1. 是否安装成功
+2. 我是否需要重启 Codex
+3. 我应该把 .chatgpt-native/project-instructions.md 粘到 ChatGPT Project 的哪里
+```
+
+## 日常怎么触发？
+
+不要输入 `/chatgpt-native-bridge`。这不是官方 Skill 触发方式。
+
+在 Codex 中推荐三种方式：
+
+### 方式 A：`/skills`
+
+输入 `/skills`，选择 `chatgpt-native-bridge`。
+
+### 方式 B：`$` mention
+
+输入：
+
+```text
+$chatgpt-native-bridge
+```
+
+然后描述你的任务。
+
+### 方式 C：自然语言
+
+```text
+请使用 chatgpt-native-bridge 处理这个任务。
+```
+
+以后如果这个项目打包成 Codex Plugin，可能会支持 `@chatgpt-native-bridge` 这类插件入口；当前阶段请使用 `/skills`、`$chatgpt-native-bridge` 或自然语言。
+
+## 我需要记哪些命令？
+
+正常情况下，你不需要记住所有命令。
+
+新手只需要记住：
+
+- 第一次：让 Codex 运行 `npx github:rp10000/chatgpt-native-bridge init`
+- 日常：在 Codex 里使用 `$chatgpt-native-bridge` 或 `/skills`
+- ChatGPT 回复后：运行 `cgn done`，或让 Codex 提醒你运行
+
+其他命令主要是 Codex 或高级用户使用的底层能力。
+
+## 用户不需要背命令
+
+```text
+用户说任务
+-> Codex 判断是否需要 bridge
+-> Codex 运行 cgn handoff
+-> 用户在 ChatGPT 网页里粘贴、上传、分析
+-> 用户运行 cgn done
+-> Codex 读取 reply.md 并继续本地执行
+```
+
 ## 一句话解释
 
 `chatgpt-native-bridge` 是一个给 Codex 用的本地桥接工具。
@@ -81,7 +157,7 @@ ChatGPT 网页端负责：
 - 图片方向
 - diff/report 二次审查
 
-## 最简单用法：让 Codex 帮你跑 bridge
+## 手动模式：你自己运行命令
 
 ### 第 1 步：在你的项目里初始化
 
@@ -135,11 +211,10 @@ Codex Native Advisor
 这个任务如果需要规划、架构批判、UI/UX 复核、命名文案、研究、图片方向或 diff review，
 请使用 chatgpt-native-bridge。
 
-你来运行 cgn ask 生成 handoff。
-然后运行 cgn open latest。
+你来运行 cgn handoff 生成并打开 handoff。
 告诉我需要在 ChatGPT 里粘贴什么、上传什么。
-等我运行 cgn import latest --from-clipboard 导入回复后，
-你读取 .chatgpt-native/inbox/<id>/reply.md，
+等我运行 cgn done 导入回复后，
+你读取 .chatgpt-native/inbox/{id}/reply.md，
 只采纳合理建议，继续本地修改、测试和总结。
 ```
 
@@ -165,7 +240,7 @@ cgn ask \
 生成：
 
 ```text
-.chatgpt-native/outbox/<id>/
+.chatgpt-native/outbox/{id}/
   ask.md
   context.md
   diff.patch
@@ -202,13 +277,13 @@ cgn open latest
 ### 第 7 步：导回本地
 
 ```bash
-cgn import latest --from-clipboard
+cgn done
 ```
 
 然后 Codex 读取：
 
 ```text
-.chatgpt-native/inbox/<id>/reply.md
+.chatgpt-native/inbox/{id}/reply.md
 ```
 
 继续本地执行。
@@ -252,7 +327,7 @@ cgn open latest
 导回本地：
 
 ```bash
-cgn import latest --from-clipboard
+cgn done
 ```
 
 再让 Codex：
@@ -287,6 +362,9 @@ cgn import latest --from-clipboard
 ## 常用命令
 
 ```bash
+cgn setup
+cgn handoff --task "..." --type plan,ux-review --include-diff
+cgn done
 cgn init
 cgn ask --task "..." --type plan,ux-review --include-diff
 cgn open latest
@@ -296,6 +374,8 @@ cgn demo
 cgn doctor
 cgn guide codex --lang zh-CN
 ```
+
+新手优先记 `cgn setup`、`cgn handoff`、`cgn done`。旧命令继续保留给高级用户和 Codex 自动调用。
 
 ## 中文文档
 

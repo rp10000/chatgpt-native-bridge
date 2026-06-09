@@ -2,26 +2,23 @@ function demoText() {
   return `30-second native handoff demo
 
 1. Initialize the bridge inside a Codex project:
-   cgn init
+   cgn setup
 
-2. Create a handoff pack:
-   cgn ask --task "Review onboarding UX" --type plan,ux-review,naming-copy
+2. Create and open a handoff pack:
+   cgn handoff --task "Review onboarding UX" --type plan,ux-review,naming-copy
 
-3. Open ChatGPT and copy ask.md:
-   cgn open latest
-
-4. In ChatGPT:
+3. In ChatGPT:
    - paste ask.md
    - upload context.md and any files/screenshots from the outbox
    - use native ChatGPT tools when helpful
 
-5. Copy ChatGPT's final answer, then import it:
-   cgn import latest --from-clipboard
+4. Copy ChatGPT's final answer, then import it:
+   cgn done
 
-6. Ask Codex to read:
-   .chatgpt-native/inbox/<id>/reply.md
+5. Ask Codex to read:
+   .chatgpt-native/inbox/{id}/reply.md
 
-7. Codex continues local implementation and runs relevant checks.
+6. Codex continues local implementation and runs relevant checks.
 `;
 }
 

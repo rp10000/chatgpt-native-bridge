@@ -4,7 +4,7 @@
   <rect x="70" y="65" width="760" height="90" rx="12" fill="#0f172a"/>
   <text x="100" y="120" fill="#e2e8f0" font-family="Consolas, monospace" font-size="20">$ cgn ask --task "Review pricing page" --type ux-review,naming-copy</text>
   <rect x="150" y="205" width="600" height="80" rx="12" fill="#ffffff" stroke="#334155" stroke-width="2"/>
-  <text x="185" y="250" fill="#0f172a" font-family="Arial, sans-serif" font-size="22" font-weight="700">.chatgpt-native/outbox/&lt;id&gt;/</text>
+  <text x="185" y="250" fill="#0f172a" font-family="Arial, sans-serif" font-size="22" font-weight="700">.chatgpt-native/outbox/{run_id}/</text>
   <text x="185" y="273" fill="#475569" font-family="Arial, sans-serif" font-size="15">ask.md, context.md, diff.patch, files/, screenshots/</text>
   <text x="70" y="330" fill="#334155" font-family="Arial, sans-serif" font-size="18">Step 3: generate a consistent handoff pack.</text>
 </svg>

@@ -4,6 +4,68 @@
 
 答案是：三种模式都可以。
 
+## 推荐触发方式
+
+不要输入 `/chatgpt-native-bridge`。这不是官方 Skill 触发方式。
+
+推荐三种方式：
+
+### 方式 A：`/skills`
+
+在 Codex 中输入 `/skills`，选择 `chatgpt-native-bridge`。
+
+### 方式 B：`$` mention
+
+```text
+$chatgpt-native-bridge
+```
+
+然后描述你的任务。
+
+### 方式 C：自然语言
+
+```text
+请使用 chatgpt-native-bridge 处理这个任务。
+```
+
+当前项目不是 Codex Plugin，所以不要把 `@chatgpt-native-bridge` 当成当前入口；以后如果打包成插件，再考虑 `@` 入口。
+
+## 最简单安装方式
+
+把这段复制给 Codex：
+
+```text
+请在当前项目安装并初始化这个工具：
+
+https://github.com/rp10000/chatgpt-native-bridge
+
+你可以优先运行：
+
+npx github:rp10000/chatgpt-native-bridge init
+
+然后运行：
+
+cgn doctor
+
+确认 .agents/skills/chatgpt-native-bridge/SKILL.md 和 .chatgpt-native/project-instructions.md 已生成。
+
+最后告诉我：
+1. 是否安装成功
+2. 我是否需要重启 Codex
+3. 我应该把 .chatgpt-native/project-instructions.md 粘到 ChatGPT Project 的哪里
+```
+
+## 用户不需要背命令
+
+```text
+用户提示任务
+-> Codex 判断是否需要 bridge
+-> Codex 运行 cgn handoff
+-> 用户在 ChatGPT 网页端处理
+-> 用户运行 cgn done
+-> Codex 读取 reply.md 并继续本地执行
+```
+
 ## 模式 A：用户自己运行 `cgn`
 
 适合你不想让 Codex 操作终端的情况。
@@ -18,7 +80,7 @@ cgn open latest
 在 ChatGPT 里完成分析后：
 
 ```bash
-cgn import latest --from-clipboard
+cgn done
 ```
 
 然后对 Codex 说：
@@ -36,9 +98,9 @@ cgn import latest --from-clipboard
 
 ```text
 使用 chatgpt-native-bridge 做一次架构复核。
-你来运行 cgn ask 和 cgn open。
+你来运行 cgn handoff。
 告诉我需要在 ChatGPT 里粘贴什么、上传什么。
-等我运行 cgn import latest --from-clipboard 导入回复后，
+等我运行 cgn done 导入回复后，
 你读取 reply.md，继续执行。
 ```
 
@@ -46,11 +108,10 @@ Codex 会负责：
 
 ```text
 1. 判断任务适合哪些 --type
-2. 运行 cgn ask
-3. 运行 cgn open latest
-4. 告诉你 outbox 文件夹里哪些文件要上传
-5. 等你导入回复后读取 reply.md
-6. 继续本地修改和测试
+2. 运行 cgn handoff
+3. 告诉你 outbox 文件夹里哪些文件要上传
+4. 等你导入回复后读取 reply.md
+5. 继续本地修改和测试
 ```
 
 ## 模式 C：作为项目固定流程
@@ -68,12 +129,11 @@ Codex 会负责：
 - Codex diff 二次复核
 
 使用流程：
-1. 运行 cgn ask
-2. 运行 cgn open latest
-3. 等用户导入 ChatGPT 回复
-4. 读取 .chatgpt-native/inbox/<id>/reply.md
-5. 只采纳合理建议
-6. 本地修改并运行测试
+1. 运行 cgn handoff
+2. 等用户导入 ChatGPT 回复
+3. 读取 .chatgpt-native/inbox/{id}/reply.md
+4. 只采纳合理建议
+5. 本地修改并运行测试
 ```
 
 ## 可直接复制给 Codex 的提示词
@@ -82,11 +142,10 @@ Codex 会负责：
 这个任务如果需要规划、架构批判、UI/UX 复核、命名文案、研究、图片方向或 diff review，
 请使用 chatgpt-native-bridge。
 
-你来运行 cgn ask 生成 handoff。
-然后运行 cgn open latest。
+你来运行 cgn handoff 生成并打开 handoff。
 告诉我需要在 ChatGPT 里粘贴什么、上传什么。
-等我运行 cgn import latest --from-clipboard 导入回复后，
-你读取 .chatgpt-native/inbox/<id>/reply.md，
+等我运行 cgn done 导入回复后，
+你读取 .chatgpt-native/inbox/{id}/reply.md，
 只采纳合理建议，继续本地修改、测试和总结。
 ```
 

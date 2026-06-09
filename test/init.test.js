@@ -11,9 +11,13 @@ test("initProject creates the Codex skill and ChatGPT workspace files", async ()
 
   const result = await initProject({ cwd });
 
-  assert.equal(result.created.length, 8);
+  assert.equal(result.created.length, 9);
   assert.equal(
     await exists(path.join(cwd, ".agents", "skills", "chatgpt-native-bridge", "SKILL.md")),
+    true
+  );
+  assert.equal(
+    await exists(path.join(cwd, ".agents", "skills", "chatgpt-native-bridge", "agents", "openai.yaml")),
     true
   );
   assert.equal(await exists(path.join(cwd, ".chatgpt-native", "config.json")), true);
@@ -26,6 +30,13 @@ test("initProject creates the Codex skill and ChatGPT workspace files", async ()
   const config = await fs.readFile(path.join(cwd, ".chatgpt-native", "config.json"), "utf8");
   assert.doesNotMatch(config, /GPT-5\.5/);
   assert.match(config, /best available reasoning model/);
+
+  const openaiYaml = await fs.readFile(
+    path.join(cwd, ".agents", "skills", "chatgpt-native-bridge", "agents", "openai.yaml"),
+    "utf8"
+  );
+  assert.match(openaiYaml, /display_name: "ChatGPT Native Bridge"/);
+  assert.match(openaiYaml, /allow_implicit_invocation: true/);
 });
 
 async function exists(filePath) {

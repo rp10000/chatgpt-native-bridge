@@ -23,6 +23,44 @@ Codex is strong at local repo work: editing files, reading diffs, running tests,
 
 This bridge gives you a clean handoff between the two. It packages the right local context consistently, leaves the visible ChatGPT session under your control, then imports the answer so Codex can continue locally.
 
+## Codex-First Usage
+
+Most users should not memorize every `cgn` command. Start from Codex:
+
+```text
+Install and initialize this tool in the current project:
+
+https://github.com/rp10000/chatgpt-native-bridge
+
+Run:
+npx github:rp10000/chatgpt-native-bridge init
+
+Then run:
+cgn doctor
+
+Tell me whether setup worked and where I should paste
+.chatgpt-native/project-instructions.md in a ChatGPT Project.
+```
+
+For daily use, trigger the Skill in Codex with one of these:
+
+- run `/skills` and choose `chatgpt-native-bridge`
+- type `$chatgpt-native-bridge`
+- say `Use chatgpt-native-bridge for this task`
+
+Do not use `/chatgpt-native-bridge`; custom Skills are selected through `/skills`, `$` mention, or natural language. Future plugin packaging may support an `@chatgpt-native-bridge` plugin entry.
+
+## User Does Not Memorize Commands
+
+```text
+User describes task
+  -> Codex decides whether bridge helps
+  -> Codex runs cgn handoff
+  -> User works in visible ChatGPT web
+  -> User runs cgn done
+  -> Codex reads reply.md and continues locally
+```
+
 ## For Chinese Users
 
 如果你第一次接触 Codex Skill、ChatGPT Project、handoff、outbox/inbox，建议从中文入口开始：
@@ -35,11 +73,11 @@ This bridge gives you a clean handoff between the two. It packages the right loc
 
 ```text
 Codex local task
-  -> cgn ask
-  -> .chatgpt-native/outbox/<id>/
+  -> cgn handoff
+  -> .chatgpt-native/outbox/{id}/
   -> ChatGPT web app with native tools
-  -> cgn import
-  -> .chatgpt-native/inbox/<id>/reply.md
+  -> cgn done
+  -> .chatgpt-native/inbox/{id}/reply.md
   -> Codex continues local implementation
 ```
 
@@ -122,13 +160,13 @@ This opens ChatGPT and copies `ask.md` to your clipboard. Upload `context.md`, `
 After ChatGPT responds, copy the answer and run:
 
 ```bash
-cgn import latest --from-clipboard
+cgn done
 ```
 
 Codex can now read:
 
 ```text
-.chatgpt-native/inbox/<id>/reply.md
+.chatgpt-native/inbox/{id}/reply.md
 ```
 
 ## Why not just copy and paste?
@@ -166,14 +204,19 @@ Do not use this for:
 
 ```bash
 cgn init
+cgn setup
 cgn ask --task "Review pricing page" --type ux-review,naming-copy --include-diff
+cgn handoff --task "Review pricing page" --type ux-review --include-diff
 cgn open latest
 cgn import latest --from-clipboard
+cgn done
 cgn status
 cgn demo
 cgn doctor
 cgn guide codex
 ```
+
+New users can start with `cgn setup`, `cgn handoff`, and `cgn done`. The older commands remain available for advanced users and for Codex to run directly.
 
 `cgn demo` prints the end-to-end workflow. `cgn doctor` checks whether a project has the skill, Project instructions, outbox/inbox folders, and latest handoff/reply state. `cgn guide codex` prints a ready-to-copy prompt for Codex, and `cgn guide codex --lang zh-CN` prints the Chinese version.
 

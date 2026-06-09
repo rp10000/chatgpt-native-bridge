@@ -30,6 +30,18 @@ async function main(argv, io = defaultIo()) {
     return;
   }
 
+  if (command === "setup") {
+    const parsed = parseArgs(rest);
+    const result = await initProject({ cwd: io.cwd, force: Boolean(parsed.flags.force) });
+    printCreated(io, result);
+    io.stdout.write("\n");
+    const report = await getDoctorReport({ cwd: io.cwd });
+    io.stdout.write(formatDoctorReport(report));
+    io.stdout.write("\n");
+    io.stdout.write(codexGuideText(parsed.flags.lang || "en"));
+    return;
+  }
+
   if (command === "demo") {
     io.stdout.write(demoText());
     return;
@@ -71,6 +83,35 @@ async function main(argv, io = defaultIo()) {
     return;
   }
 
+  if (command === "handoff") {
+    const parsed = parseArgs(rest);
+    const ask = await createAsk({
+      cwd: io.cwd,
+      task: parsed.flags.task,
+      types: parsed.flags.type,
+      includeDiff: Boolean(parsed.flags["include-diff"]),
+      includeTests: Boolean(parsed.flags["include-tests"]),
+      includeFiles: parsed.flags["include-files"],
+      includeScreenshots: parsed.flags["include-screenshots"]
+    });
+    io.stdout.write(`Created handoff: ${ask.id}\n`);
+    io.stdout.write(`Outbox: ${ask.outboxDir}\n`);
+    io.stdout.write(`Ask: ${path.join(ask.outboxDir, "ask.md")}\n`);
+    for (const warning of ask.warnings) {
+      io.stderr.write(`warning: ${warning}\n`);
+    }
+    const opened = await openRun({
+      cwd: io.cwd,
+      id: ask.id,
+      openBrowser: !parsed.flags["no-browser"] && !parsed.flags["dry-run"],
+      copyPrompt: !parsed.flags["no-clipboard"] && !parsed.flags["dry-run"]
+    });
+    io.stdout.write(`Run: ${opened.id}\n`);
+    io.stdout.write(`Ask copied: ${opened.copied ? "yes" : "no"}\n`);
+    io.stdout.write(`Browser opened: ${opened.opened ? "yes" : "no"}\n`);
+    return;
+  }
+
   if (command === "open") {
     const parsed = parseArgs(rest);
     const id = parsed.positionals[0] || "latest";
@@ -96,6 +137,20 @@ async function main(argv, io = defaultIo()) {
       id,
       sourceFile,
       fromClipboard: Boolean(parsed.flags["from-clipboard"])
+    });
+    io.stdout.write(`Imported reply: ${result.id}\n`);
+    io.stdout.write(`Reply: ${result.replyPath}\n`);
+    return;
+  }
+
+  if (command === "done") {
+    const parsed = parseArgs(rest);
+    const sourceFile = parsed.positionals[0];
+    const result = await importReply({
+      cwd: io.cwd,
+      id: "latest",
+      sourceFile,
+      fromClipboard: Boolean(parsed.flags["from-clipboard"]) || !sourceFile
     });
     io.stdout.write(`Imported reply: ${result.id}\n`);
     io.stdout.write(`Reply: ${result.replyPath}\n`);
@@ -172,10 +227,13 @@ function helpText() {
 
 Usage:
   cgn init
+  cgn setup
   cgn ask --task "Review pricing page" --type ux-review,naming-copy --include-diff
-  cgn open <id|latest>
-  cgn import <id|latest> [reply.md]
-  cgn import <id|latest> --from-clipboard
+  cgn handoff --task "Review pricing page" --type ux-review --include-diff
+  cgn open {id|latest}
+  cgn import {id|latest} [reply.md]
+  cgn import {id|latest} --from-clipboard
+  cgn done
   cgn status
   cgn demo
   cgn doctor

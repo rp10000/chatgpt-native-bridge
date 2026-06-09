@@ -2,8 +2,8 @@
   <title id="title">Import reply</title>
   <rect width="900" height="360" fill="#f8fafc"/>
   <rect x="70" y="65" width="760" height="95" rx="12" fill="#0f172a"/>
-  <text x="100" y="123" fill="#e2e8f0" font-family="Consolas, monospace" font-size="23">$ cgn import latest --from-clipboard</text>
+  <text x="100" y="123" fill="#e2e8f0" font-family="Consolas, monospace" font-size="23">$ cgn done</text>
   <rect x="160" y="210" width="580" height="70" rx="12" fill="#ffffff" stroke="#334155" stroke-width="2"/>
-  <text x="195" y="253" fill="#0f172a" font-family="Arial, sans-serif" font-size="22" font-weight="700">.chatgpt-native/inbox/&lt;id&gt;/reply.md</text>
+  <text x="195" y="253" fill="#0f172a" font-family="Arial, sans-serif" font-size="22" font-weight="700">.chatgpt-native/inbox/{run_id}/reply.md</text>
   <text x="70" y="330" fill="#334155" font-family="Arial, sans-serif" font-size="18">Step 6: save ChatGPT's response where Codex can read it.</text>
 </svg>

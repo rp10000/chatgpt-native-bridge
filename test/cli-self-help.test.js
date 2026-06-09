@@ -15,11 +15,10 @@ test("demo prints the end-to-end native handoff workflow", async () => {
   await main(["demo"], io);
 
   assert.match(io.output(), /30-second native handoff demo/);
-  assert.match(io.output(), /cgn init/);
-  assert.match(io.output(), /cgn ask --task "Review onboarding UX"/);
-  assert.match(io.output(), /cgn open latest/);
-  assert.match(io.output(), /cgn import latest --from-clipboard/);
-  assert.match(io.output(), /\.chatgpt-native\/inbox\/<id>\/reply\.md/);
+  assert.match(io.output(), /cgn setup/);
+  assert.match(io.output(), /cgn handoff --task "Review onboarding UX"/);
+  assert.match(io.output(), /cgn done/);
+  assert.match(io.output(), /\.chatgpt-native\/inbox\/\{id\}\/reply\.md/);
 });
 
 test("help lists beginner guidance commands", async () => {
@@ -27,6 +26,9 @@ test("help lists beginner guidance commands", async () => {
 
   await main(["--help"], io);
 
+  assert.match(io.output(), /cgn setup/);
+  assert.match(io.output(), /cgn handoff/);
+  assert.match(io.output(), /cgn done/);
   assert.match(io.output(), /cgn demo/);
   assert.match(io.output(), /cgn doctor/);
   assert.match(io.output(), /cgn guide codex/);
@@ -39,10 +41,9 @@ test("guide codex prints a ready-to-copy Codex prompt", async () => {
 
   assert.match(io.output(), /Copy this into Codex:/);
   assert.match(io.output(), /Use chatgpt-native-bridge for this task/);
-  assert.match(io.output(), /cgn ask/);
-  assert.match(io.output(), /cgn open latest/);
-  assert.match(io.output(), /cgn import latest --from-clipboard/);
-  assert.match(io.output(), /\.chatgpt-native\/inbox\/<id>\/reply\.md/);
+  assert.match(io.output(), /cgn handoff/);
+  assert.match(io.output(), /cgn done/);
+  assert.match(io.output(), /\.chatgpt-native\/inbox\/\{id\}\/reply\.md/);
 });
 
 test("guide codex supports Chinese output", async () => {
@@ -52,9 +53,59 @@ test("guide codex supports Chinese output", async () => {
 
   assert.match(io.output(), /复制下面这段给 Codex/);
   assert.match(io.output(), /请使用 chatgpt-native-bridge/);
-  assert.match(io.output(), /你来运行 cgn ask 生成 handoff/);
-  assert.match(io.output(), /cgn import latest --from-clipboard/);
+  assert.match(io.output(), /你来运行 cgn handoff 生成并打开 handoff/);
+  assert.match(io.output(), /cgn done/);
   assert.match(io.output(), /只采纳合理建议/);
+});
+
+test("setup initializes the project, runs doctor, and prints the Codex guide", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-setup-"));
+  const io = createIo(cwd);
+
+  await main(["setup"], io);
+
+  assert.match(io.output(), /Created:/);
+  assert.match(io.output(), /chatgpt-native-bridge doctor/);
+  assert.match(io.output(), /Result: ready/);
+  assert.match(io.output(), /Copy this into Codex:/);
+  assert.equal(
+    await exists(path.join(cwd, ".agents", "skills", "chatgpt-native-bridge", "SKILL.md")),
+    true
+  );
+});
+
+test("handoff creates a handoff and opens it in dry-run mode", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-handoff-"));
+  const io = createIo(cwd);
+
+  await main(["handoff", "--task", "Review onboarding UX", "--type", "plan,ux-review", "--dry-run"], io);
+
+  assert.match(io.output(), /Created handoff:/);
+  assert.match(io.output(), /Ask copied: no/);
+  assert.match(io.output(), /Browser opened: no/);
+  assert.equal((await listOutboxIds(cwd)).length, 1);
+});
+
+test("done imports the latest reply from a file", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-done-"));
+  await initProject({ cwd });
+  const ask = await createAsk({
+    cwd,
+    task: "Review implementation",
+    types: ["diff-review"],
+    now: new Date("2026-06-09T12:03:00.000Z")
+  });
+  const replyFile = path.join(cwd, "reply.md");
+  await fs.writeFile(replyFile, "## Codex next actions\n- Continue locally.\n");
+  const io = createIo(cwd);
+
+  await main(["done", replyFile], io);
+
+  assert.match(io.output(), /Imported reply:/);
+  assert.equal(
+    await fs.readFile(path.join(cwd, ".chatgpt-native", "inbox", ask.id, "reply.md"), "utf8"),
+    "## Codex next actions\n- Continue locally.\n"
+  );
 });
 
 test("doctor reports initialized bridge setup and latest reply state", async () => {
@@ -101,4 +152,25 @@ function createIo(cwd) {
       return stderr;
     }
   };
+}
+
+async function exists(filePath) {
+  try {
+    await fs.stat(filePath);
+    return true;
+  } catch (error) {
+    if (error.code === "ENOENT") return false;
+    throw error;
+  }
+}
+
+async function listOutboxIds(cwd) {
+  const outbox = path.join(cwd, ".chatgpt-native", "outbox");
+  try {
+    const entries = await fs.readdir(outbox, { withFileTypes: true });
+    return entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name);
+  } catch (error) {
+    if (error.code === "ENOENT") return [];
+    throw error;
+  }
 }

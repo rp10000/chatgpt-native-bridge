@@ -35,10 +35,10 @@ The user controls the visible ChatGPT session.
    - test output
    - screenshots
    - specific questions
-3. Run `cgn open <id>` to open ChatGPT and copy the prompt.
+3. Run `cgn open {id}` to open ChatGPT and copy the prompt.
 4. Let the user use ChatGPT natively.
-5. Import the result with `cgn import <id>`.
-6. Read `.chatgpt-native/inbox/<id>/reply.md`.
+5. Import the result with `cgn import {id}` or `cgn done`.
+6. Read `.chatgpt-native/inbox/{id}/reply.md`.
 7. Continue local execution using Codex judgment.
 8. Run relevant tests.
 9. Summarize what was accepted, ignored, or deferred.

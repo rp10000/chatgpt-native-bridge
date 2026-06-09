@@ -23,7 +23,7 @@ cgn open latest
 ## Generated files
 
 ```text
-.chatgpt-native/outbox/<id>/
+.chatgpt-native/outbox/{id}/
   ask.md
   context.md
 ```
@@ -44,7 +44,7 @@ See:
 After ChatGPT replies:
 
 ```bash
-cgn import latest --from-clipboard
+cgn done
 ```
 
 Sample reply:

@@ -10,6 +10,7 @@ async function initProject(options = {}) {
   const skipped = [];
 
   const skillPath = path.join(cwd, ".agents", "skills", "chatgpt-native-bridge", "SKILL.md");
+  const skillMetadataPath = path.join(cwd, ".agents", "skills", "chatgpt-native-bridge", "agents", "openai.yaml");
   const configPath = path.join(cwd, ".chatgpt-native", "config.json");
   const projectInstructionsPath = path.join(cwd, ".chatgpt-native", "project-instructions.md");
   const directories = [
@@ -24,6 +25,11 @@ async function initProject(options = {}) {
     skillPath,
     await readTemplate("skill/SKILL.md"),
     ".agents/skills/chatgpt-native-bridge/SKILL.md"
+  );
+  await recordWrite(
+    skillMetadataPath,
+    await readTemplate("skill/agents/openai.yaml"),
+    ".agents/skills/chatgpt-native-bridge/agents/openai.yaml"
   );
   await recordWrite(
     configPath,

@@ -29,7 +29,7 @@ Run:
 cgn open latest --dry-run
 ```
 
-Then open `https://chatgpt.com` manually and paste `.chatgpt-native/outbox/<id>/ask.md`.
+Then open `https://chatgpt.com` manually and paste `.chatgpt-native/outbox/{id}/ask.md`.
 
 ## Clipboard copy failed
 
@@ -54,7 +54,7 @@ cgn ask --task "Review onboarding UX" --type plan,ux-review
 Copy the ChatGPT reply and run:
 
 ```bash
-cgn import latest --from-clipboard
+cgn done
 ```
 
 or save it to a file:

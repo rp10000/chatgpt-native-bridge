@@ -17,10 +17,10 @@ cgn ask \
 ## Files generated
 
 ```text
-.chatgpt-native/outbox/<id>/ask.md
-.chatgpt-native/outbox/<id>/context.md
-.chatgpt-native/outbox/<id>/files/
-.chatgpt-native/outbox/<id>/screenshots/
+.chatgpt-native/outbox/{id}/ask.md
+.chatgpt-native/outbox/{id}/context.md
+.chatgpt-native/outbox/{id}/files/
+.chatgpt-native/outbox/{id}/screenshots/
 ```
 
 ## In ChatGPT

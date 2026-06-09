@@ -58,13 +58,13 @@ Use the ChatGPT features that fit the task: file upload, image analysis, researc
 ![Import reply](assets/quickstart/06-import-reply.svg)
 
 ```bash
-cgn import latest --from-clipboard
+cgn done
 ```
 
 The answer is saved to:
 
 ```text
-.chatgpt-native/inbox/<id>/reply.md
+.chatgpt-native/inbox/{id}/reply.md
 ```
 
 ## 7. Codex continues locally
