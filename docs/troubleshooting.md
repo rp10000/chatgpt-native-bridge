@@ -21,6 +21,49 @@ npm link
 cgn --help
 ```
 
+## MCP endpoint is not running
+
+Start the local server:
+
+```bash
+cgn mcp serve --host 127.0.0.1 --port 47832
+```
+
+Then open:
+
+```text
+http://127.0.0.1:47832/health
+```
+
+It should return a small JSON health response.
+
+## MCP port is already in use
+
+Choose another port:
+
+```bash
+cgn mcp serve --host 127.0.0.1 --port 47833
+cgn mcp config --port 47833
+```
+
+Use the matching `/mcp` endpoint in ChatGPT.
+
+## ChatGPT cannot reach `127.0.0.1`
+
+Some ChatGPT MCP connection paths cannot call your local loopback address directly. Use the official MCP connection flow available to your account or workspace, such as a Secure MCP Tunnel.
+
+Do not solve this by scraping ChatGPT web sessions, extracting cookies, or using hidden endpoints.
+
+## I expected a shell tool
+
+The MCP server intentionally does not expose arbitrary shell execution. ChatGPT advises through bounded MCP tools, then Codex executes locally.
+
+Available MCP tools are listed by:
+
+```bash
+cgn mcp config
+```
+
 ## `cgn open` does not open the browser
 
 Run:
@@ -74,7 +117,7 @@ cgn status
 If there are no pending or ready items, create one:
 
 ```bash
-cgn ask --task "Review onboarding UX" --type plan,ux-review
+cgn handoff --task "Review onboarding UX" --type plan,ux-review
 ```
 
 ## ChatGPT reply not imported
@@ -110,7 +153,7 @@ cgn doctor
 Check the glob and path:
 
 ```bash
-cgn ask --task "Review UI" --type ux-review --include-screenshots "screenshots/*.png"
+cgn handoff --task "Review UI" --type ux-review --include-screenshots "screenshots/*.png"
 ```
 
 The CLI copies matching files into the outbox `screenshots/` folder.

@@ -4,10 +4,12 @@
 
 Use ChatGPT image analysis and product judgment to review a page before Codex makes UI changes.
 
+If MCP is available, let ChatGPT use the bridge tools directly. The command below is the Markdown fallback.
+
 ## Command
 
 ```bash
-cgn ask \
+cgn handoff \
   --task "Review the first-run onboarding screen" \
   --type ux-review,naming-copy \
   --include-screenshots "screenshots/*.png" \

@@ -24,7 +24,23 @@ Then open:
 
 Paste the file into the ChatGPT Project instructions.
 
-## 3. Upload the handoff material
+## 3. Connect the MCP bridge first
+
+Start the local server:
+
+```bash
+cgn mcp serve --host 127.0.0.1 --port 47832
+```
+
+Print connection hints:
+
+```bash
+cgn mcp config
+```
+
+Connect ChatGPT to the `/mcp` endpoint through the official MCP connection flow available to your account or workspace.
+
+## 4. Fallback: upload the handoff material
 
 After:
 
@@ -42,11 +58,11 @@ Upload only what the task needs:
 - files copied under `files/`
 - screenshots copied under `screenshots/`
 
-## 4. Use native tools
+## 5. Use native tools
 
 Let ChatGPT use native tools when helpful: file analysis, image analysis, research, Canvas, image generation, or long-context Project memory.
 
-## 5. Bring back the answer
+## 6. Bring back the answer
 
 Ask ChatGPT to end with:
 
@@ -54,7 +70,9 @@ Ask ChatGPT to end with:
 ## Codex next actions
 ```
 
-Copy the final answer and run:
+With MCP, use `submit_reply_to_codex`.
+
+Without MCP, copy the final answer and run:
 
 ```bash
 cgn done

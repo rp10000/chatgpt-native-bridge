@@ -31,5 +31,10 @@ jobs:
       - name: Smoke test
         run: npm run smoke
 
+      - name: MCP smoke test
+        run: |
+          node ./bin/cgn.js mcp config
+          node ./bin/cgn.js mcp doctor
+
       - name: Pack dry run
         run: npm pack --dry-run

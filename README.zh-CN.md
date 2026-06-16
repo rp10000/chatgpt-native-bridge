@@ -2,17 +2,18 @@
 
 [English](README.md) | 简体中文
 
-让 Codex 在本地写代码、跑测试、改文件；让 ChatGPT 网页端负责规划、研究、设计批判、文案、图片方向和二次复核。
+让 ChatGPT 网页端通过本地 MCP 读取受限项目上下文、生成 handoff、提交建议；让 Codex 继续在本地写代码、跑测试、改文件。
 
 不需要 OpenAI API key。
 不调用隐藏接口。
 不抓取 ChatGPT 网页。
 不强制 JSON。
+不提供任意 shell 执行。
 你仍然在 ChatGPT 网页里使用原生功能。
 
 ![chatgpt-native-bridge 使用效果图](docs/assets/marketing/hero.jpg)
 
-> Public beta：核心 Codex -> ChatGPT -> Codex handoff 流程已经可用，但仍期待真实试用反馈。
+> Public beta：v0.2.0 开始主路径是 MCP-first；原来的 Markdown handoff 继续作为备用路径。
 
 ![chatgpt-native-bridge 中文流程](docs/assets/flow.zh-CN.svg)
 
@@ -86,7 +87,15 @@ $chatgpt-native-bridge
 ```text
 用户说任务
 -> Codex 判断是否需要 bridge
--> Codex 运行 cgn handoff
+-> ChatGPT 通过本地 MCP 读取受限上下文
+-> ChatGPT 生成建议并写回本地 inbox
+-> Codex 读取 reply.md 并继续本地执行
+```
+
+如果当前账号或环境还不能使用 MCP，就走备用路径：
+
+```text
+Codex 运行 cgn handoff
 -> 用户在 ChatGPT 网页里粘贴、上传、分析
 -> 用户运行 cgn done
 -> Codex 读取 reply.md 并继续本地执行
@@ -99,18 +108,16 @@ $chatgpt-native-bridge
 它做的事情很简单：
 
 ```text
-Codex 在本地准备上下文
--> 生成 START_HERE.md / 01_PASTE_TO_CHATGPT.md / 02_UPLOAD_THESE_FILES.md / context.md / diff.patch / screenshots
--> 打开 ChatGPT 网页端
--> 你在 ChatGPT 里使用原生功能分析
--> 把 ChatGPT 回复导回本地
+本地启动 cgn mcp serve
+-> ChatGPT 通过 MCP 读取受限上下文、diff、handoff 文件
+-> ChatGPT 把最终建议写入 .chatgpt-native/inbox
 -> Codex 继续修改、测试、总结
 ```
 
 它不是 API wrapper。
 它不是浏览器机器人。
 它不偷抓 ChatGPT 输出。
-它只是把“Codex 本地执行”和“ChatGPT 网页端高阶判断”接起来。
+它只是把“Codex 本地执行”和“ChatGPT 网页端高阶判断”通过 MCP 接起来。
 
 ## 它解决什么问题？
 
@@ -160,6 +167,48 @@ ChatGPT 网页端负责：
 - 研究
 - 图片方向
 - diff/report 二次审查
+
+## MCP 主路径：让 ChatGPT 直接连接本地 bridge
+
+启动本地 MCP server：
+
+```bash
+cgn mcp serve --host 127.0.0.1 --port 47832
+```
+
+查看连接提示：
+
+```bash
+cgn mcp config
+```
+
+检查本地状态：
+
+```bash
+cgn mcp doctor
+```
+
+ChatGPT 侧连接：
+
+```text
+http://127.0.0.1:47832/mcp
+```
+
+如果 ChatGPT 不能直接访问本机 `127.0.0.1`，请使用官方 ChatGPT MCP / Apps SDK / Secure MCP Tunnel 方式连接，不要使用隐藏接口、浏览器抓取、cookie/localStorage 提取或反向工程网页请求。
+
+MCP 暴露的工具只有这些：
+
+| 工具 | 用途 |
+| --- | --- |
+| `bridge_status` | 查看本地 bridge、git、handoff、reply 状态。 |
+| `create_handoff` | 生成自解释 handoff 文件包。 |
+| `list_handoff_files` | 列出 handoff 文件和可用附件。 |
+| `read_handoff_file` | 读取 outbox 里的受限文本文件。 |
+| `read_repo_file` | 读取项目里的受限非敏感文本文件。 |
+| `read_git_diff` | 读取当前 git diff，并做 secret guard。 |
+| `submit_reply_to_codex` | 把 ChatGPT 最终建议写入本地 inbox。 |
+
+MCP 不提供 shell，不改源码，不 commit，不 push。Codex 仍然是本地执行者。
 
 ## 手动模式：你自己运行命令
 
@@ -308,7 +357,7 @@ cgn open latest
 cgn import latest --from-clipboard
 ```
 
-新手主路径是 `cgn handoff` 和 `cgn done`。`cgn ask`、`cgn open`、`cgn import` 继续保留给高级流程和 Codex 自动调用。
+MCP 用户优先使用 `cgn mcp serve` 和 `cgn mcp config`。MCP 不可用时，备用主路径是 `cgn handoff` 和 `cgn done`。`cgn ask`、`cgn open`、`cgn import` 继续保留给高级流程和 Codex 自动调用。
 
 ## 自解释 handoff 文件
 
@@ -399,6 +448,9 @@ cgn done
 ```bash
 # 新手主路径
 cgn setup
+cgn mcp serve --host 127.0.0.1 --port 47832
+cgn mcp config
+cgn mcp doctor
 cgn handoff --task "..." --type plan,ux-review --include-diff
 cgn done
 
@@ -415,10 +467,14 @@ cgn doctor
 cgn guide codex --lang zh-CN
 ```
 
-新手优先记 `cgn setup`、`cgn handoff`、`cgn done`。旧命令继续保留给高级用户和 Codex 自动调用。
+MCP 用户优先记 `cgn mcp serve`、`cgn mcp config`、`cgn mcp doctor`。
+
+不能使用 MCP 时，新手优先记 `cgn setup`、`cgn handoff`、`cgn done`。旧命令继续保留给高级用户和 Codex 自动调用。
 
 ## 中文文档
 
+- [MCP 设置](docs/MCP.md)
+- [MCP 安全边界](docs/MCP_SECURITY.md)
 - [快速开始](docs/zh-CN/快速开始.md)
 - [在 Codex 中使用](docs/zh-CN/在-Codex-中使用.md)
 - [ChatGPT 项目设置](docs/zh-CN/ChatGPT-项目设置.md)
@@ -430,6 +486,8 @@ cgn guide codex --lang zh-CN
 
 - GitHub 仓库已公开。
 - npm registry 可能还没有发布，发布前请用 `npx github:rp10000/chatgpt-native-bridge init` 或 `npm link`。
+- MCP 是 v0.2.0 主路径；Markdown handoff 仍是备用路径。
+- 不提供任意 shell 执行。
 - 不提供浏览器 RPA。
 - 不抓 ChatGPT 网页输出。
 - 不接隐藏接口。

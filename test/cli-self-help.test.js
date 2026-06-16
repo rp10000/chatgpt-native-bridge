@@ -9,13 +9,15 @@ const { main } = require("../src/cli");
 const { importReply } = require("../src/import-reply");
 const { initProject } = require("../src/init");
 
-test("demo prints the end-to-end native handoff workflow", async () => {
+test("demo prints the MCP-first bridge workflow", async () => {
   const io = createIo(await fs.mkdtemp(path.join(os.tmpdir(), "cgn-demo-")));
 
   await main(["demo"], io);
 
-  assert.match(io.output(), /30-second native handoff demo/);
+  assert.match(io.output(), /30-second MCP-first bridge demo/);
   assert.match(io.output(), /cgn setup/);
+  assert.match(io.output(), /cgn mcp serve/);
+  assert.match(io.output(), /cgn mcp config/);
   assert.match(io.output(), /cgn handoff --task "Review onboarding UX"/);
   assert.match(io.output(), /cgn done/);
   assert.match(io.output(), /\.chatgpt-native\/inbox\/\{id\}\/reply\.md/);
@@ -27,6 +29,8 @@ test("help lists beginner guidance commands", async () => {
   await main(["--help"], io);
 
   assert.match(io.output(), /cgn setup/);
+  assert.match(io.output(), /cgn mcp serve/);
+  assert.match(io.output(), /cgn mcp config/);
   assert.match(io.output(), /cgn handoff/);
   assert.match(io.output(), /cgn done/);
   assert.match(io.output(), /cgn demo/);
@@ -43,9 +47,12 @@ test("guide codex prints a ready-to-copy Codex prompt", async () => {
 
   assert.match(io.output(), /Copy this into Codex:/);
   assert.match(io.output(), /Use chatgpt-native-bridge for this task/);
+  assert.match(io.output(), /cgn mcp serve/);
+  assert.match(io.output(), /cgn mcp config/);
   assert.match(io.output(), /cgn handoff/);
   assert.match(io.output(), /cgn done/);
   assert.match(io.output(), /\.chatgpt-native\/inbox\/\{id\}\/reply\.md/);
+  assert.match(io.output(), /CODEX_READ_THIS\.md/);
 });
 
 test("guide codex supports Chinese output", async () => {
@@ -53,11 +60,11 @@ test("guide codex supports Chinese output", async () => {
 
   await main(["guide", "codex", "--lang", "zh-CN"], io);
 
-  assert.match(io.output(), /复制下面这段给 Codex/);
-  assert.match(io.output(), /请使用 chatgpt-native-bridge/);
-  assert.match(io.output(), /你来运行 cgn handoff 生成并打开 handoff/);
+  assert.match(io.output(), /chatgpt-native-bridge/);
+  assert.match(io.output(), /cgn mcp serve/);
+  assert.match(io.output(), /cgn mcp config/);
   assert.match(io.output(), /cgn done/);
-  assert.match(io.output(), /只采纳合理建议/);
+  assert.match(io.output(), /CODEX_READ_THIS\.md/);
 });
 
 test("setup initializes the project, runs doctor, and prints the Codex guide", async () => {

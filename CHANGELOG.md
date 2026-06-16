@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.2.0
+
+- Make MCP the primary bridge path with `cgn mcp serve`, `cgn mcp config`, and `cgn mcp doctor`.
+- Add a local MCP server using `@modelcontextprotocol/sdk`.
+- Expose the minimum MCP tool surface:
+  - `bridge_status`
+  - `create_handoff`
+  - `list_handoff_files`
+  - `read_handoff_file`
+  - `read_repo_file`
+  - `read_git_diff`
+  - `submit_reply_to_codex`
+- Keep Markdown handoff files as the fallback path.
+- Add bounded file reads, path traversal checks, `.git`/`node_modules` blocking, secret-content checks, and compact MCP audit logging.
+- Add MCP setup and MCP security docs.
+- Update README, Chinese README, ChatGPT Project instructions, and Skill template for the MCP-first workflow.
+
 ## v0.1.2
 
 - Add self-explaining handoff files in each outbox:

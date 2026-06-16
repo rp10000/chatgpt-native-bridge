@@ -11,10 +11,10 @@ Use chatgpt-native-bridge for this task.
 If the task needs planning, architecture critique, UX review, naming/copy,
 research, image direction, or diff review:
 
-1. Run cgn handoff with the right --type values.
-2. Tell me what to paste or upload into ChatGPT.
-3. Wait until I run cgn done.
-4. Read .chatgpt-native/inbox/{id}/reply.md.
+1. Prefer the MCP-first path. If ChatGPT can connect locally, run or ask me to run cgn mcp serve.
+2. Print cgn mcp config and tell me the endpoint/tools ChatGPT should use.
+3. If MCP is unavailable, run cgn handoff with the right --type values and tell me what to paste or upload into ChatGPT.
+4. After ChatGPT submits through MCP or I run cgn done, read .chatgpt-native/inbox/{id}/reply.md and CODEX_READ_THIS.md.
 5. Apply only useful recommendations locally.
 6. Run tests.
 `;
@@ -26,10 +26,11 @@ function chineseCodexGuide() {
 这个任务如果需要规划、架构批判、UI/UX 复核、命名文案、研究、图片方向或 diff review，
 请使用 chatgpt-native-bridge。
 
-你来运行 cgn handoff 生成并打开 handoff。
-告诉我需要在 ChatGPT 里粘贴什么、上传什么。
-等我运行 cgn done 导入回复后，
-你读取 .chatgpt-native/inbox/{id}/reply.md，
+优先走 MCP 主路径。如果 ChatGPT 可以连接本地，请运行或提示我运行 cgn mcp serve。
+然后运行 cgn mcp config，告诉我 ChatGPT 应该连接哪个 endpoint、可以使用哪些工具。
+如果 MCP 不可用，再运行 cgn handoff 生成并打开 handoff，告诉我需要在 ChatGPT 里粘贴什么、上传什么。
+等 ChatGPT 通过 MCP 提交回复，或我运行 cgn done 导入回复后，
+你读取 .chatgpt-native/inbox/{id}/reply.md 和 CODEX_READ_THIS.md，
 只采纳合理建议，继续本地修改、测试和总结。
 `;
 }

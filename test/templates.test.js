@@ -32,8 +32,8 @@ test("skill metadata template declares display metadata and implicit invocation"
   assert.equal(lines[1], '  display_name: "ChatGPT Native Bridge"');
   assert.match(lines[2], /^  short_description: ".+"/);
   assert.equal(lines[3], "  default_prompt: |");
-  assert.equal(lines[9], "policy:");
-  assert.equal(lines[10], "  allow_implicit_invocation: true");
+  assert.equal(lines[10], "policy:");
+  assert.equal(lines[11], "  allow_implicit_invocation: true");
   assert.ok(lines.length >= 10, "openai.yaml should keep nested YAML line breaks");
   assert.equal(metadata.startsWith("interface: display_name:"), false);
 });

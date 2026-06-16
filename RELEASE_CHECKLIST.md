@@ -1,5 +1,19 @@
 # Release Checklist
 
+## v0.2.0
+
+- [ ] `npm test`
+- [ ] `npm run smoke`
+- [ ] `node ./bin/cgn.js mcp config`
+- [ ] `node ./bin/cgn.js mcp doctor`
+- [ ] MCP HTTP server can initialize and list tools
+- [ ] `npm pack --dry-run`
+- [ ] GitHub Actions CI passing
+- [ ] README MCP-first workflow verified
+- [ ] README.zh-CN MCP-first workflow verified
+- [ ] GitHub Release `v0.2.0 - MCP-first local bridge` created
+- [ ] npm publish completed, if applicable
+
 ## v0.1.0
 
 - [ ] `npm test`

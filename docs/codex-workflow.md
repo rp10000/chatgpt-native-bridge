@@ -17,18 +17,20 @@ First decide whether the task needs ChatGPT-native planning, architecture critiq
 UX review, naming/copy review, research, image direction, or diff review.
 
 If yes:
-1. Run cgn handoff with the right --type values.
-2. Tell me exactly which `01_PASTE_TO_CHATGPT.md` prompt to paste and which files `02_UPLOAD_THESE_FILES.md` lists.
-3. After I import the reply with cgn done, read reply.md and CODEX_READ_THIS.md.
-4. Continue implementation locally.
-5. Run relevant tests.
+1. Prefer the MCP-first path. Run or ask me to run `cgn mcp serve`.
+2. Run `cgn mcp config` and tell me the endpoint/tools ChatGPT should use.
+3. If MCP is unavailable, run `cgn handoff` with the right --type values.
+4. After ChatGPT submits through MCP or I import the reply with `cgn done`, read `reply.md` and `CODEX_READ_THIS.md`.
+5. Continue implementation locally.
+6. Run relevant tests.
 ```
 
 ## Planning and requirements
 
 ```text
 Use chatgpt-native-bridge for planning and requirements before implementation.
-Create a handoff with --type plan,requirements, then wait for my imported reply.
+Prefer MCP. If MCP is unavailable, create a handoff with --type plan,requirements,
+then wait for my imported reply.
 ```
 
 ## Architecture review
@@ -66,7 +68,7 @@ the current product.
 ## Diff review after implementation
 
 ```text
-After implementation, create a diff-review handoff with --include-diff and
---include-tests. Import ChatGPT's reply, then fix only the must-fix items that
-are technically sound for this repo.
+After implementation, prefer MCP for diff review. If MCP is unavailable, create
+a diff-review handoff with --include-diff and --include-tests. Import ChatGPT's
+reply, then fix only the must-fix items that are technically sound for this repo.
 ```

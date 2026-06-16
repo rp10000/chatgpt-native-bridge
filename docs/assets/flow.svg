@@ -21,7 +21,7 @@
   <text class="sub" x="58" y="198">repo + tests</text>
   <line class="arrow" x1="190" y1="165" x2="250" y2="165" />
   <rect class="accent" x="250" y="115" width="140" height="100" rx="12" />
-  <text class="text" x="287" y="155">cgn ask</text>
+  <text class="text" x="287" y="155">MCP or handoff</text>
   <text class="sub" x="278" y="180">pack context</text>
   <line class="arrow" x1="390" y1="165" x2="450" y2="165" />
   <rect class="box" x="450" y="80" width="185" height="170" />

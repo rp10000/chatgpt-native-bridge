@@ -5,6 +5,7 @@ const { codexGuideText } = require("./guide");
 const { formatHandoffSummary, getHandoffSummary } = require("./handoff-summary");
 const { importReply } = require("./import-reply");
 const { initProject } = require("./init");
+const { runMcpCommand } = require("./mcp-cli");
 const { openRun } = require("./open-run");
 const { formatStatus, getStatus } = require("./status");
 
@@ -59,6 +60,18 @@ async function main(argv, io = defaultIo()) {
       throw new Error('Unknown guide. Run "cgn guide codex".');
     }
     io.stdout.write(codexGuideText(parsed.flags.lang || "en"));
+    return;
+  }
+
+  if (command === "mcp") {
+    const [subcommand, ...mcpRest] = rest;
+    await runMcpCommand({
+      subcommand,
+      args: parseArgs(mcpRest),
+      cwd: io.cwd,
+      stdout: io.stdout,
+      stderr: io.stderr
+    });
     return;
   }
 
@@ -179,7 +192,17 @@ async function main(argv, io = defaultIo()) {
 function parseArgs(args) {
   const flags = {};
   const positionals = [];
-  const valueFlags = new Set(["task", "type", "include-files", "include-screenshots", "lang", "mode"]);
+  const valueFlags = new Set([
+    "task",
+    "type",
+    "include-files",
+    "include-screenshots",
+    "lang",
+    "mode",
+    "host",
+    "port",
+    "root"
+  ]);
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -272,6 +295,8 @@ function helpText() {
 Usage:
   cgn init
   cgn setup
+  cgn mcp serve --host 127.0.0.1 --port 47832
+  cgn mcp config
   cgn ask --task "Review pricing page" --type ux-review,naming-copy --include-diff
   cgn handoff --task "Review pricing page" --type ux-review --include-diff
   cgn handoff --task "Review pricing page" --mode manual
@@ -288,7 +313,12 @@ Request types:
   ${VALID_TYPES.join(", ")}
 
 Safety:
-  No OpenAI API key, no hidden endpoints, no ChatGPT scraping.
+  No OpenAI API key, no hidden endpoints, no ChatGPT scraping, no arbitrary shell execution.
+
+MCP:
+  cgn mcp serve   Start the local MCP server at http://127.0.0.1:47832/mcp.
+  cgn mcp config  Print ChatGPT/Codex MCP connection hints.
+  cgn mcp doctor  Check the local bridge and list MCP tools.
 
 Modes:
   --mode assist  Open ChatGPT and copy 01_PASTE_TO_CHATGPT.md. This is the default.

@@ -1,0 +1,145 @@
+const path = require("node:path");
+
+const { formatDoctorReport, getDoctorReport } = require("./doctor");
+const { TOOL_NAMES } = require("./mcp-tools");
+const { startMcpHttpServer, startMcpStdio } = require("./mcp-server");
+
+const DEFAULT_MCP_HOST = "127.0.0.1";
+const DEFAULT_MCP_PORT = 47832;
+
+async function runMcpCommand({ subcommand, args, cwd, stdout, stderr }) {
+  if (!subcommand || subcommand === "help" || subcommand === "--help" || subcommand === "-h") {
+    stdout.write(mcpHelpText());
+    return;
+  }
+
+  const parsed = args;
+  const root = path.resolve(cwd, parsed.flags.root || ".");
+  const host = parsed.flags.host || DEFAULT_MCP_HOST;
+  const port = parsePort(parsed.flags.port || DEFAULT_MCP_PORT);
+
+  if (subcommand === "config") {
+    stdout.write(formatMcpConfig({ cwd: root, host, port }));
+    return;
+  }
+
+  if (subcommand === "doctor") {
+    const report = await getDoctorReport({ cwd: root });
+    stdout.write(formatMcpDoctor({ cwd: root, host, port, report }));
+    return;
+  }
+
+  if (subcommand === "serve") {
+    if (parsed.flags.stdio) {
+      await startMcpStdio({ cwd: root });
+      stderr.write("chatgpt-native-bridge MCP server running on stdio\n");
+      return;
+    }
+
+    const server = await startMcpHttpServer({ cwd: root, host, port });
+    stdout.write(`chatgpt-native-bridge MCP server running\n`);
+    stdout.write(`Endpoint: ${server.url}\n`);
+    stdout.write(`Health: ${server.healthUrl}\n`);
+    stdout.write("Press Ctrl+C to stop.\n");
+
+    const close = async () => {
+      await server.close();
+      process.exit(0);
+    };
+    process.once("SIGINT", close);
+    process.once("SIGTERM", close);
+    return;
+  }
+
+  throw new Error(`Unknown mcp command "${subcommand}". Run "cgn mcp --help".`);
+}
+
+function formatMcpConfig({ cwd, host = DEFAULT_MCP_HOST, port = DEFAULT_MCP_PORT }) {
+  const endpoint = `http://${host}:${port}/mcp`;
+  const stdioConfig = {
+    mcpServers: {
+      "chatgpt-native-bridge": {
+        command: "cgn",
+        args: ["mcp", "serve", "--stdio", "--root", cwd]
+      }
+    }
+  };
+
+  return `chatgpt-native-bridge MCP config
+
+HTTP endpoint:
+  ${endpoint}
+
+Start the local HTTP server:
+  cgn mcp serve --host ${host} --port ${port} --root "${cwd}"
+
+For local MCP clients that spawn stdio servers:
+${JSON.stringify(stdioConfig, null, 2)}
+
+Tools:
+${TOOL_NAMES.map((name) => `  - ${name}`).join("\n")}
+
+Security:
+  No API key. No hidden endpoints. No ChatGPT scraping. No arbitrary shell execution.
+  File reads are bounded and block .env, keys, cookies, sessions, .git, node_modules, and secret-like content.
+`;
+}
+
+function formatMcpDoctor({ cwd, host, port, report }) {
+  return `chatgpt-native-bridge MCP doctor
+
+Root:
+  ${cwd}
+
+Endpoint when running:
+  http://${host}:${port}/mcp
+
+Available tools:
+${TOOL_NAMES.map((name) => `  - ${name}`).join("\n")}
+
+Base project doctor:
+${indent(formatDoctorReport(report).trim(), "  ")}
+`;
+}
+
+function mcpHelpText() {
+  return `chatgpt-native-bridge MCP
+
+Usage:
+  cgn mcp serve --host 127.0.0.1 --port 47832
+  cgn mcp serve --stdio
+  cgn mcp config
+  cgn mcp doctor
+
+Options:
+  --root PATH   Project root to expose. Defaults to the current directory.
+  --host HOST   HTTP bind host. Defaults to 127.0.0.1.
+  --port PORT   HTTP bind port. Defaults to 47832.
+  --stdio       Serve over stdio instead of HTTP.
+`;
+}
+
+function parsePort(value) {
+  const port = Number(value);
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    throw new Error(`Invalid port: ${value}`);
+  }
+  return port;
+}
+
+function indent(text, prefix) {
+  return text
+    .split("\n")
+    .map((line) => `${prefix}${line}`)
+    .join("\n");
+}
+
+module.exports = {
+  DEFAULT_MCP_HOST,
+  DEFAULT_MCP_PORT,
+  formatMcpConfig,
+  formatMcpDoctor,
+  mcpHelpText,
+  parsePort,
+  runMcpCommand
+};

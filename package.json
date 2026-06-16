@@ -1,7 +1,7 @@
 {
   "name": "chatgpt-native-bridge",
-  "version": "0.1.2",
-  "description": "A local native ChatGPT handoff bridge for Codex.",
+  "version": "0.2.0",
+  "description": "A local MCP-first ChatGPT bridge for Codex.",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -32,11 +32,16 @@
   "keywords": [
     "codex",
     "chatgpt",
+    "mcp",
     "cli",
     "native",
     "handoff"
   ],
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^4.4.3"
   }
 }

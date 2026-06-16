@@ -1,6 +1,6 @@
 # Quickstart tutorial
 
-This tutorial shows the full native handoff loop. It uses simple diagrams instead of private account screenshots.
+This tutorial shows the MCP-first loop, then the Markdown fallback loop. It uses simple diagrams instead of private account screenshots.
 
 ## 1. Initialize the bridge
 
@@ -24,7 +24,37 @@ Create a ChatGPT Project named `Codex Native Advisor`, then paste:
 
 into the Project instructions.
 
-## 3. Create and open a handoff
+## 3. Start the MCP bridge
+
+```bash
+cgn mcp serve --host 127.0.0.1 --port 47832
+```
+
+In another terminal, print connection hints:
+
+```bash
+cgn mcp config
+```
+
+Connect ChatGPT to:
+
+```text
+http://127.0.0.1:47832/mcp
+```
+
+If ChatGPT cannot reach your local machine directly, use the official MCP connection flow available to your account, such as a Secure MCP Tunnel.
+
+## 4. Let ChatGPT inspect and reply through MCP
+
+Ask ChatGPT to use the bridge tools for planning, UX review, research, visual direction, or diff review. The expected final step is `submit_reply_to_codex`, which writes:
+
+```text
+.chatgpt-native/inbox/{id}/reply.md
+```
+
+Codex can then read `CODEX_READ_THIS.md` and continue locally.
+
+## 5. Fallback: create and open a handoff
 
 ![Create handoff](assets/quickstart/03-create-handoff.svg)
 
@@ -37,19 +67,19 @@ cgn handoff \
 
 The outbox contains self-explaining handoff files, context, and optional attachments.
 
-## 4. Work in ChatGPT
+## 6. Work in ChatGPT manually
 
 ![Open ChatGPT](assets/quickstart/04-open-chatgpt.svg)
 
 Paste the copied `01_PASTE_TO_CHATGPT.md` prompt into ChatGPT. Upload files listed in `02_UPLOAD_THESE_FILES.md` only if the task needs them. Open `START_HERE.md` if you want the full local checklist.
 
-## 5. Use ChatGPT native tools
+## 7. Use ChatGPT native tools
 
 ![Use native tools](assets/quickstart/05-chatgpt-native-tools.svg)
 
 Use the ChatGPT features that fit the task: file upload, image analysis, research, Canvas, or image generation.
 
-## 6. Import the reply
+## 8. Import the reply manually
 
 ![Import reply](assets/quickstart/06-import-reply.svg)
 
@@ -63,7 +93,7 @@ The answer is saved to:
 .chatgpt-native/inbox/{id}/reply.md
 ```
 
-## 7. Codex continues locally
+## 9. Codex continues locally
 
 ![Codex continues](assets/quickstart/07-codex-continues.svg)
 

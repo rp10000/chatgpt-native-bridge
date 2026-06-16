@@ -24,9 +24,25 @@ cgn init
 
 把文件内容复制到 ChatGPT Project instructions。
 
-## 3. 每次 handoff 时上传什么？
+## 3. 优先连接 MCP
 
-`cgn ask` 会生成：
+启动本地 MCP server：
+
+```bash
+cgn mcp serve --host 127.0.0.1 --port 47832
+```
+
+查看连接提示：
+
+```bash
+cgn mcp config
+```
+
+让 ChatGPT 通过官方 MCP 连接方式连接 `/mcp` endpoint。MCP 可用时，ChatGPT 可以通过工具读取受限上下文、diff、handoff 文件，并用 `submit_reply_to_codex` 写回本地。
+
+## 4. 备用 handoff：需要上传什么？
+
+MCP 不可用时，`cgn handoff` 会生成：
 
 ```text
 .chatgpt-native/outbox/{id}/
@@ -51,7 +67,7 @@ cgn init
 5. 如果是文件分析，上传 files/ 里相关文件
 ```
 
-## 4. ChatGPT 回复格式
+## 5. ChatGPT 回复格式
 
 建议让 ChatGPT 最后输出：
 

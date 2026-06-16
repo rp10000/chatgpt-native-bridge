@@ -60,17 +60,29 @@ cgn doctor
 ```text
 用户提示任务
 -> Codex 判断是否需要 bridge
--> Codex 运行 cgn handoff
--> 用户在 ChatGPT 网页端处理
--> 用户运行 cgn done
+-> ChatGPT 通过本地 MCP 读取受限上下文
+-> ChatGPT 把建议写回本地 inbox
 -> Codex 读取 reply.md 并继续本地执行
 ```
 
-## 模式 A：用户自己运行 `cgn`
+如果 MCP 不可用，再使用 `cgn handoff -> ChatGPT 网页端 -> cgn done` 的手动备用流程。
+
+## 模式 A：用户自己启动 MCP
 
 适合你不想让 Codex 操作终端的情况。
 
 你自己运行：
+
+```bash
+cgn mcp serve --host 127.0.0.1 --port 47832
+cgn mcp config
+```
+
+然后让 ChatGPT 连接 `cgn mcp config` 输出的 endpoint。ChatGPT 分析后应调用 `submit_reply_to_codex` 写回本地。
+
+## 模式 B：备用手动 handoff
+
+如果 MCP 不能用，你自己运行：
 
 ```bash
 cgn handoff --task "Review current diff" --type diff-review --include-diff
@@ -89,7 +101,7 @@ cgn done
 根据 ChatGPT 的建议继续修改。
 ```
 
-## 模式 B：让 Codex 帮你运行 bridge
+## 模式 C：让 Codex 帮你运行 bridge
 
 这是推荐模式。
 
@@ -97,19 +109,19 @@ cgn done
 
 ```text
 使用 chatgpt-native-bridge 做一次架构复核。
-你来运行 cgn handoff。
-告诉我需要在 ChatGPT 里粘贴什么、上传什么。
-等我运行 cgn done 导入回复后，
-你读取 reply.md，继续执行。
+优先走 MCP 主路径。你来运行或提示我运行 cgn mcp serve。
+然后运行 cgn mcp config，告诉我 ChatGPT 应该连接哪个 endpoint。
+如果 MCP 不可用，再运行 cgn handoff，告诉我需要在 ChatGPT 里粘贴什么、上传什么。
+等 ChatGPT 通过 MCP 提交回复，或我运行 cgn done 导入回复后，你读取 reply.md，继续执行。
 ```
 
 Codex 会负责：
 
 ```text
 1. 判断任务适合哪些 --type
-2. 运行 cgn handoff
-3. 告诉你 outbox 文件夹里哪些文件要上传
-4. 等你导入回复后读取 reply.md
+2. 优先运行或提示运行 cgn mcp serve/config
+3. MCP 不可用时运行 cgn handoff
+4. 等 ChatGPT 写回或你导入回复后读取 reply.md
 5. 继续本地修改和测试
 ```
 
@@ -121,7 +133,7 @@ cgn open latest
 cgn import latest --from-clipboard
 ```
 
-## 模式 C：作为项目固定流程
+## 模式 D：作为项目固定流程
 
 如果你想让项目长期使用这个 bridge，可以把下面内容放进项目 `AGENTS.md`：
 
@@ -136,11 +148,12 @@ cgn import latest --from-clipboard
 - Codex diff 二次复核
 
 使用流程：
-1. 运行 cgn handoff
-2. 等用户导入 ChatGPT 回复
-3. 读取 .chatgpt-native/inbox/{id}/reply.md
-4. 只采纳合理建议
-5. 本地修改并运行测试
+1. 优先使用 cgn mcp serve/config，让 ChatGPT 通过 MCP 读取受限上下文
+2. 如果 MCP 不可用，运行 cgn handoff
+3. 等 ChatGPT 通过 MCP 写回，或等用户导入 ChatGPT 回复
+4. 读取 .chatgpt-native/inbox/{id}/reply.md
+5. 只采纳合理建议
+6. 本地修改并运行测试
 ```
 
 ## 可直接复制给 Codex 的提示词
@@ -149,10 +162,11 @@ cgn import latest --from-clipboard
 这个任务如果需要规划、架构批判、UI/UX 复核、命名文案、研究、图片方向或 diff review，
 请使用 chatgpt-native-bridge。
 
-你来运行 cgn handoff 生成并打开 handoff。
-告诉我需要在 ChatGPT 里粘贴什么、上传什么。
-等我运行 cgn done 导入回复后，
-你读取 .chatgpt-native/inbox/{id}/reply.md，
+优先走 MCP 主路径。如果 ChatGPT 可以连接本地，请运行或提示我运行 cgn mcp serve。
+然后运行 cgn mcp config，告诉我 ChatGPT 应该连接哪个 endpoint、可以使用哪些工具。
+如果 MCP 不可用，再运行 cgn handoff 生成并打开 handoff，告诉我需要在 ChatGPT 里粘贴什么、上传什么。
+等 ChatGPT 通过 MCP 提交回复，或我运行 cgn done 导入回复后，
+你读取 .chatgpt-native/inbox/{id}/reply.md 和 CODEX_READ_THIS.md，
 只采纳合理建议，继续本地修改、测试和总结。
 ```
 

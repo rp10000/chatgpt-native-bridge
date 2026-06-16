@@ -4,10 +4,12 @@
 
 Use ChatGPT's visual reasoning or image generation to choose a direction before Codex updates a page.
 
+If MCP is available, let ChatGPT use the bridge tools directly. The command below is the Markdown fallback.
+
 ## Command
 
 ```bash
-cgn ask \
+cgn handoff \
   --task "Suggest visual direction for the product hero" \
   --type image-direction \
   --include-screenshots "screenshots/*.png"

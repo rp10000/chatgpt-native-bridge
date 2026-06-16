@@ -4,10 +4,12 @@
 
 Use ChatGPT as a second-pass reviewer after Codex has implemented local changes.
 
+If MCP is available, let ChatGPT use `read_git_diff` and related bridge tools directly. The command below is the Markdown fallback.
+
 ## Command
 
 ```bash
-cgn ask \
+cgn handoff \
   --task "Review Codex's current implementation before commit" \
   --type diff-review \
   --include-diff \

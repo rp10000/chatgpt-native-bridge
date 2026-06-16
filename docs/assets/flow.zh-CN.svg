@@ -25,7 +25,7 @@
   <text class="sub" x="220" y="200">整理上下文</text>
   <line class="arrow" x1="335" y1="170" x2="380" y2="170" />
   <rect class="accent" x="380" y="125" width="125" height="85" />
-  <text class="text" x="410" y="160">cgn ask</text>
+  <text class="text" x="410" y="160">MCP / handoff</text>
   <text class="sub" x="405" y="185">生成 handoff</text>
   <line class="arrow" x1="505" y1="170" x2="550" y2="170" />
   <rect class="box" x="550" y="80" width="180" height="180" />
