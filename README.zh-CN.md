@@ -11,7 +11,7 @@
 不提供任意 shell 执行。
 你仍然在 ChatGPT 网页里使用原生功能。
 
-![chatgpt-native-bridge 使用效果图](docs/assets/marketing/hero.jpg)
+![chatgpt-native-bridge 使用效果图](docs/assets/marketing/hero.svg)
 
 > Public beta：v0.2.0 开始主路径是 MCP-first；原来的 Markdown handoff 继续作为备用路径。
 

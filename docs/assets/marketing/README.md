@@ -1,8 +1,9 @@
 # Marketing Assets
 
-This directory stores raster assets used by the public README and release pages.
+This directory stores visual assets used by the public README and release pages.
 
-- `hero.jpg`: README hero image showing the Codex -> ChatGPT Web -> Codex handoff.
+- `hero.svg`: README hero image showing the MCP-first Codex -> ChatGPT -> Codex loop.
+- `hero.jpg`: older public beta hero image kept for release history.
 
 Optional future assets:
 

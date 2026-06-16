@@ -8,7 +8,7 @@ Use ChatGPT's native web app as an MCP-connected planning, review, research, and
 
 Codex executes locally. ChatGPT thinks, critiques, researches, reviews screenshots, and uses native ChatGPT tools through a local MCP bridge. No API key. No hidden endpoints. No scraping. No arbitrary shell execution.
 
-![chatgpt-native-bridge usage preview](docs/assets/marketing/hero.jpg)
+![chatgpt-native-bridge usage preview](docs/assets/marketing/hero.svg)
 
 > Public beta: the MCP-first Codex -> ChatGPT -> Codex workflow is usable, with Markdown handoff files retained as the fallback path.
 

@@ -1,54 +1,61 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1160" height="380" viewBox="0 0 1160 380" role="img" aria-labelledby="title desc">
-  <title id="title">chatgpt-native-bridge 中文流程</title>
-  <desc id="desc">用户给出任务，Codex 生成 handoff，ChatGPT 网页端分析，导入回复后 Codex 继续执行。</desc>
+  <title id="title">chatgpt-native-bridge MCP-first 中文流程</title>
+  <desc id="desc">Codex 安装 MCP 配置，ChatGPT 通过 MCP 工具读取本地上下文，再把回复提交给 Codex。</desc>
   <defs>
     <style>
       .bg { fill: #f8fafc; }
       .box { fill: #ffffff; stroke: #334155; stroke-width: 2; rx: 12; }
       .accent { fill: #ecfeff; stroke: #0891b2; stroke-width: 2; rx: 12; }
+      .soft { fill: #f1f5f9; stroke: #94a3b8; stroke-width: 2; rx: 12; }
       .text { fill: #0f172a; font-family: Arial, "Microsoft YaHei", sans-serif; font-size: 18px; font-weight: 700; }
       .sub { fill: #475569; font-family: Arial, "Microsoft YaHei", sans-serif; font-size: 13px; }
-      .arrow { stroke: #64748b; stroke-width: 3; marker-end: url(#arrow); }
+      .code { fill: #0f172a; font-family: Consolas, "Courier New", monospace; font-size: 13px; }
+      .arrow { stroke: #2563eb; stroke-width: 3; marker-end: url(#arrow); }
+      .fallback { stroke: #94a3b8; stroke-width: 3; stroke-dasharray: 8 8; marker-end: url(#arrow-soft); }
     </style>
     <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
-      <path d="M2,2 L10,6 L2,10 Z" fill="#64748b" />
+      <path d="M2,2 L10,6 L2,10 Z" fill="#2563eb" />
+    </marker>
+    <marker id="arrow-soft" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#94a3b8" />
     </marker>
   </defs>
+
   <rect class="bg" width="1160" height="380" />
-  <rect class="box" x="32" y="130" width="115" height="80" />
-  <text class="text" x="70" y="164">用户</text>
-  <text class="sub" x="55" y="190">决定任务</text>
-  <line class="arrow" x1="147" y1="170" x2="190" y2="170" />
-  <rect class="box" x="190" y="105" width="145" height="130" />
-  <text class="text" x="238" y="150">Codex</text>
-  <text class="sub" x="220" y="178">本地读代码</text>
-  <text class="sub" x="220" y="200">整理上下文</text>
-  <line class="arrow" x1="335" y1="170" x2="380" y2="170" />
-  <rect class="accent" x="380" y="125" width="125" height="85" />
-  <text class="text" x="410" y="160">MCP / handoff</text>
-  <text class="sub" x="405" y="185">生成 handoff</text>
-  <line class="arrow" x1="505" y1="170" x2="550" y2="170" />
-  <rect class="box" x="550" y="80" width="180" height="180" />
-  <text class="text" x="590" y="122">outbox</text>
-  <text class="sub" x="575" y="150">01_PASTE</text>
-  <text class="sub" x="585" y="172">context.md</text>
-  <text class="sub" x="585" y="194">diff.patch</text>
-  <text class="sub" x="585" y="216">screenshots/</text>
-  <line class="arrow" x1="730" y1="170" x2="780" y2="170" />
-  <rect class="box" x="780" y="70" width="210" height="200" />
-  <text class="text" x="820" y="118">ChatGPT 网页端</text>
-  <text class="sub" x="815" y="148">规划 / 批判</text>
-  <text class="sub" x="815" y="170">研究 / 搜索</text>
-  <text class="sub" x="815" y="192">截图分析</text>
-  <text class="sub" x="815" y="214">图片方向</text>
-  <text class="sub" x="815" y="236">用户可见控制</text>
-  <line class="arrow" x1="885" y1="270" x2="885" y2="310" />
-  <rect class="accent" x="790" y="310" width="190" height="44" />
-  <text class="text" x="833" y="337">cgn import</text>
-  <line class="arrow" x1="790" y1="332" x2="730" y2="332" />
-  <rect class="box" x="550" y="306" width="180" height="58" />
-  <text class="text" x="603" y="340">inbox</text>
-  <text class="sub" x="600" y="358">reply.md</text>
-  <line class="arrow" x1="550" y1="332" x2="335" y2="225" />
-  <text class="sub" x="350" y="300">Codex 读取回复，采纳合理建议，继续本地执行</text>
+
+  <rect class="box" x="36" y="96" width="150" height="110" />
+  <text class="text" x="82" y="135">Codex</text>
+  <text class="sub" x="67" y="162">本地项目</text>
+  <text class="sub" x="68" y="183">代码 + 测试</text>
+
+  <line class="arrow" x1="186" y1="151" x2="250" y2="151" />
+  <rect class="accent" x="250" y="86" width="210" height="130" />
+  <text class="text" x="294" y="126">setup --mcp</text>
+  <text class="code" x="278" y="155">npx github:rp10000/...</text>
+  <text class="sub" x="292" y="182">写入 Codex MCP 配置</text>
+
+  <line class="arrow" x1="460" y1="151" x2="525" y2="151" />
+  <rect class="box" x="525" y="70" width="220" height="165" />
+  <text class="text" x="575" y="111">MCP 工具</text>
+  <text class="sub" x="560" y="142">bridge_status</text>
+  <text class="sub" x="560" y="164">read_repo_file</text>
+  <text class="sub" x="560" y="186">read_git_diff</text>
+  <text class="sub" x="560" y="208">create_handoff</text>
+
+  <line class="arrow" x1="745" y1="151" x2="810" y2="151" />
+  <rect class="box" x="810" y="70" width="240" height="165" />
+  <text class="text" x="858" y="111">ChatGPT</text>
+  <text class="sub" x="845" y="142">规划 / 批判</text>
+  <text class="sub" x="845" y="164">研究 / 搜索</text>
+  <text class="sub" x="845" y="186">文件 / 图片分析</text>
+  <text class="sub" x="845" y="208">用户可见控制</text>
+
+  <line class="arrow" x1="930" y1="235" x2="930" y2="280" />
+  <rect class="accent" x="790" y="280" width="280" height="52" />
+  <text class="text" x="820" y="313">submit_reply_to_codex</text>
+  <line class="arrow" x1="790" y1="306" x2="186" y2="206" />
+  <text class="sub" x="355" y="302">Codex 读取 inbox/reply.md，继续本地执行</text>
+
+  <rect class="soft" x="120" y="328" width="920" height="38" />
+  <text class="sub" x="345" y="352">备用路径：cgn handoff -> 可见 ChatGPT -> cgn done</text>
 </svg>

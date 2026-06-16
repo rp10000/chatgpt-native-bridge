@@ -1,49 +1,61 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="360" viewBox="0 0 1100 360" role="img" aria-labelledby="title desc">
-  <title id="title">chatgpt-native-bridge workflow</title>
-  <desc id="desc">Codex creates a handoff, ChatGPT uses native tools, Codex imports the reply and continues locally.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="380" viewBox="0 0 1160 380" role="img" aria-labelledby="title desc">
+  <title id="title">chatgpt-native-bridge MCP-first workflow</title>
+  <desc id="desc">Codex installs MCP config, ChatGPT reads local context through MCP tools, then submits a reply for Codex.</desc>
   <defs>
     <style>
       .bg { fill: #f8fafc; }
       .box { fill: #ffffff; stroke: #334155; stroke-width: 2; rx: 12; }
-      .accent { fill: #ecfeff; stroke: #0891b2; }
+      .accent { fill: #ecfeff; stroke: #0891b2; stroke-width: 2; rx: 12; }
+      .soft { fill: #f1f5f9; stroke: #94a3b8; stroke-width: 2; rx: 12; }
       .text { fill: #0f172a; font-family: Arial, sans-serif; font-size: 18px; font-weight: 700; }
       .sub { fill: #475569; font-family: Arial, sans-serif; font-size: 13px; }
-      .arrow { stroke: #64748b; stroke-width: 3; marker-end: url(#arrow); }
+      .code { fill: #0f172a; font-family: Consolas, "Courier New", monospace; font-size: 13px; }
+      .arrow { stroke: #2563eb; stroke-width: 3; marker-end: url(#arrow); }
+      .fallback { stroke: #94a3b8; stroke-width: 3; stroke-dasharray: 8 8; marker-end: url(#arrow-soft); }
     </style>
     <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
-      <path d="M2,2 L10,6 L2,10 Z" fill="#64748b" />
+      <path d="M2,2 L10,6 L2,10 Z" fill="#2563eb" />
+    </marker>
+    <marker id="arrow-soft" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#94a3b8" />
     </marker>
   </defs>
-  <rect class="bg" x="0" y="0" width="1100" height="360" />
-  <rect class="box" x="40" y="115" width="150" height="100" />
-  <text class="text" x="75" y="155">Codex</text>
-  <text class="sub" x="62" y="180">local task</text>
-  <text class="sub" x="58" y="198">repo + tests</text>
-  <line class="arrow" x1="190" y1="165" x2="250" y2="165" />
-  <rect class="accent" x="250" y="115" width="140" height="100" rx="12" />
-  <text class="text" x="287" y="155">MCP or handoff</text>
-  <text class="sub" x="278" y="180">pack context</text>
-  <line class="arrow" x1="390" y1="165" x2="450" y2="165" />
-  <rect class="box" x="450" y="80" width="185" height="170" />
-  <text class="text" x="485" y="125">outbox</text>
-  <text class="sub" x="470" y="152">01_PASTE</text>
-  <text class="sub" x="480" y="174">context.md</text>
-  <text class="sub" x="480" y="196">diff.patch</text>
-  <text class="sub" x="480" y="218">screenshots/</text>
-  <line class="arrow" x1="635" y1="165" x2="695" y2="165" />
-  <rect class="box" x="695" y="65" width="215" height="200" />
-  <text class="text" x="740" y="115">ChatGPT web</text>
-  <text class="sub" x="730" y="145">planning + critique</text>
-  <text class="sub" x="730" y="168">research</text>
-  <text class="sub" x="730" y="191">file/image analysis</text>
-  <text class="sub" x="730" y="214">visual direction</text>
-  <text class="sub" x="730" y="237">visible user control</text>
-  <line class="arrow" x1="805" y1="265" x2="805" y2="305" />
-  <rect class="accent" x="705" y="305" width="200" height="44" rx="10" />
-  <text class="text" x="742" y="333">cgn import</text>
-  <line class="arrow" x1="705" y1="327" x2="635" y2="327" />
-  <rect class="box" x="450" y="292" width="185" height="52" />
-  <text class="text" x="495" y="325">inbox reply</text>
-  <line class="arrow" x1="450" y1="327" x2="190" y2="215" />
-  <text class="sub" x="235" y="293">Codex reads reply.md and continues locally</text>
+
+  <rect class="bg" width="1160" height="380" />
+
+  <rect class="box" x="36" y="96" width="150" height="110" />
+  <text class="text" x="82" y="135">Codex</text>
+  <text class="sub" x="65" y="162">local project</text>
+  <text class="sub" x="66" y="183">repo + tests</text>
+
+  <line class="arrow" x1="186" y1="151" x2="250" y2="151" />
+  <rect class="accent" x="250" y="86" width="210" height="130" />
+  <text class="text" x="294" y="126">setup --mcp</text>
+  <text class="code" x="278" y="155">npx github:rp10000/...</text>
+  <text class="sub" x="292" y="182">writes Codex MCP config</text>
+
+  <line class="arrow" x1="460" y1="151" x2="525" y2="151" />
+  <rect class="box" x="525" y="70" width="220" height="165" />
+  <text class="text" x="575" y="111">MCP tools</text>
+  <text class="sub" x="560" y="142">bridge_status</text>
+  <text class="sub" x="560" y="164">read_repo_file</text>
+  <text class="sub" x="560" y="186">read_git_diff</text>
+  <text class="sub" x="560" y="208">create_handoff</text>
+
+  <line class="arrow" x1="745" y1="151" x2="810" y2="151" />
+  <rect class="box" x="810" y="70" width="240" height="165" />
+  <text class="text" x="858" y="111">ChatGPT</text>
+  <text class="sub" x="845" y="142">planning + critique</text>
+  <text class="sub" x="845" y="164">research</text>
+  <text class="sub" x="845" y="186">file/image analysis</text>
+  <text class="sub" x="845" y="208">visible user control</text>
+
+  <line class="arrow" x1="930" y1="235" x2="930" y2="280" />
+  <rect class="accent" x="790" y="280" width="280" height="52" />
+  <text class="text" x="820" y="313">submit_reply_to_codex</text>
+  <line class="arrow" x1="790" y1="306" x2="186" y2="206" />
+  <text class="sub" x="360" y="302">Codex reads inbox/reply.md and continues locally</text>
+
+  <rect class="soft" x="120" y="328" width="920" height="38" />
+  <text class="sub" x="310" y="352">Fallback: cgn handoff -> visible ChatGPT -> cgn done</text>
 </svg>
