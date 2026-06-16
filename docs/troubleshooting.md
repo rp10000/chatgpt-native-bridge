@@ -62,6 +62,25 @@ Some ChatGPT MCP connection paths cannot call your local loopback address direct
 
 Do not solve this by scraping ChatGPT web sessions, extracting cookies, or using hidden endpoints.
 
+## ChatGPT says no bridge tools are available
+
+If ChatGPT says it cannot call `review_current_project`, `write_to_codex`, or `api_tool`, the app is selected but its tools were not exposed to that conversation.
+
+Check these first:
+
+```bash
+cgn mcp wait --timeout 30
+```
+
+If no tool call is observed:
+
+1. In ChatGPT app settings, open the `chatgpt-native-bridge` draft and refresh tools.
+2. If tools still do not appear, delete and recreate the draft app with the latest `https://.../mcp` Server URL.
+3. Set Authentication to `No authentication`.
+4. Start a new ChatGPT chat, choose Developer mode, select `chatgpt-native-bridge`, then ask it to use `write_to_codex`.
+
+Use version `0.2.10` or newer. Older versions did not declare no-auth tool metadata and blocked session `GET /mcp` SSE requests.
+
 ## I expected a shell tool
 
 The MCP server intentionally does not expose arbitrary shell execution. ChatGPT advises through bounded MCP tools, then Codex executes locally.

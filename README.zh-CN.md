@@ -94,6 +94,8 @@ cgn mcp wait
 
 ChatGPT 界面里出现勾选，只表示应用被选中；`cgn mcp wait` 才能确认是否真的有工具调用到达本地。
 
+如果 ChatGPT 说 `review_current_project` 或 `write_to_codex` 不可用，请在 ChatGPT 设置里刷新 app 工具；仍然不行就用最新 `https://.../mcp` URL 和 `No authentication` 重新创建草稿 app。请使用 `0.2.10` 或更新版本。
+
 本地 CLI 不能在不使用浏览器自动化或隐藏接口的情况下替你创建 ChatGPT 应用。最后一步仍然要在 ChatGPT 页面里手动点一次创建：
 
 ```text

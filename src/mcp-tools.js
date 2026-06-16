@@ -34,6 +34,7 @@ function createMcpToolRegistry(options = {}) {
       config: {
         title: "Review current project",
         description: "Call this automatically when the user asks chatgpt-native-bridge to review, inspect, plan, or continue work on the current local project. It returns project status, git status, current diff when safe, and the expected next write-back step for Codex.",
+        securitySchemes: noAuthSecuritySchemes(),
         inputSchema: {
           task: z.string().optional().describe("What the user wants reviewed or planned."),
           includeDiff: z.boolean().optional().describe("Include the current git diff when safe. Defaults to true."),
@@ -82,6 +83,7 @@ function createMcpToolRegistry(options = {}) {
       config: {
         title: "Bridge status",
         description: "Return the local project root, git state, latest handoff, and reply status. For normal project review, prefer review_current_project because it combines status and safe diff context.",
+        securitySchemes: noAuthSecuritySchemes(),
         annotations: readOnlyAnnotations(),
         _meta: toolMeta("Checking bridge status", "Bridge status ready")
       },
@@ -112,6 +114,7 @@ function createMcpToolRegistry(options = {}) {
       config: {
         title: "Create handoff",
         description: "Create a self-explaining handoff pack when a task needs a packaged context bundle. For simple MCP-connected review, prefer bridge_status/read_git_diff/read_repo_file first.",
+        securitySchemes: noAuthSecuritySchemes(),
         inputSchema: {
           task: z.string().min(1).describe("Task or question for ChatGPT."),
           types: z
@@ -167,6 +170,7 @@ function createMcpToolRegistry(options = {}) {
       config: {
         title: "List handoff files",
         description: "List files generated for a handoff run.",
+        securitySchemes: noAuthSecuritySchemes(),
         inputSchema: {
           id: z.string().optional().describe('Run id, or omit/use "latest".')
         },
@@ -205,6 +209,7 @@ function createMcpToolRegistry(options = {}) {
       config: {
         title: "Read handoff file",
         description: "Read a bounded text file from a handoff outbox. Use after list_handoff_files when reviewing a created handoff.",
+        securitySchemes: noAuthSecuritySchemes(),
         inputSchema: {
           id: z.string().optional().describe('Run id, or omit/use "latest".'),
           file: z.string().min(1).describe("Relative file path inside the handoff outbox."),
@@ -236,6 +241,7 @@ function createMcpToolRegistry(options = {}) {
       config: {
         title: "Read repo file",
         description: "Read a bounded non-sensitive text file from the local repository. Use only for relevant files needed to answer the user or prepare advice for Codex.",
+        securitySchemes: noAuthSecuritySchemes(),
         inputSchema: {
           path: z.string().min(1).describe("Relative path inside the current project."),
           maxBytes: z.number().int().positive().optional().describe("Maximum bytes to read.")
@@ -263,6 +269,7 @@ function createMcpToolRegistry(options = {}) {
       config: {
         title: "Read git diff",
         description: "Read the current git diff with secret-content guarding. Call this after bridge_status for code review, planning, or 'what changed' tasks.",
+        securitySchemes: noAuthSecuritySchemes(),
         inputSchema: {
           maxBytes: z.number().int().positive().optional().describe("Maximum bytes to return.")
         },
@@ -283,6 +290,7 @@ function createMcpToolRegistry(options = {}) {
       config: {
         title: "Submit reply to Codex",
         description: "Write ChatGPT's final Markdown advice into the local inbox for Codex. For normal project tasks, call this automatically before your final answer so Codex can continue locally.",
+        securitySchemes: noAuthSecuritySchemes(),
         inputSchema: {
           id: z.string().optional().describe('Run id, or omit/use "latest".'),
           markdown: z.string().min(1).describe("Final ChatGPT response for Codex.")
@@ -303,6 +311,7 @@ function createMcpToolRegistry(options = {}) {
       config: {
         title: "Write to Codex",
         description: "Alias for submit_reply_to_codex. Use this when ChatGPT wants to write final advice back to the local Codex inbox.",
+        securitySchemes: noAuthSecuritySchemes(),
         inputSchema: {
           id: z.string().optional().describe('Run id, or omit/use "latest".'),
           markdown: z.string().min(1).describe("Final ChatGPT response for Codex.")
@@ -477,8 +486,13 @@ function readOnlyAnnotations() {
   };
 }
 
+function noAuthSecuritySchemes() {
+  return [{ type: "noauth" }];
+}
+
 function toolMeta(invoking, invoked) {
   return {
+    securitySchemes: noAuthSecuritySchemes(),
     "openai/toolInvocation/invoking": invoking,
     "openai/toolInvocation/invoked": invoked
   };

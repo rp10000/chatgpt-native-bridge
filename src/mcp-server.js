@@ -70,13 +70,7 @@ async function startMcpHttpServer(options = {}) {
       return;
     }
 
-    if (req.method === "GET") {
-      res.writeHead(405, { allow: "POST, DELETE", "content-type": "text/plain" });
-      res.end("Method Not Allowed");
-      return;
-    }
-
-    if (!["POST", "DELETE"].includes(req.method)) {
+    if (!["GET", "POST", "DELETE"].includes(req.method)) {
       res.writeHead(405, { "content-type": "application/json" });
       res.end(
         JSON.stringify({
@@ -98,6 +92,18 @@ async function startMcpHttpServer(options = {}) {
           sessions.delete(String(sessionId));
           await existing.server.close();
         }
+        return;
+      }
+
+      if (req.method === "GET") {
+        res.writeHead(400, { "content-type": "application/json" });
+        res.end(
+          JSON.stringify({
+            jsonrpc: "2.0",
+            error: { code: -32000, message: "Bad Request: valid MCP session id required for SSE stream" },
+            id: null
+          })
+        );
         return;
       }
 
@@ -133,6 +139,9 @@ async function startMcpHttpServer(options = {}) {
         enableJsonResponse: true,
         onsessioninitialized: (newSessionId) => {
           sessions.set(newSessionId, { transport, server: mcpServer });
+        },
+        onsessionclosed: (closedSessionId) => {
+          sessions.delete(String(closedSessionId));
         }
       });
       await mcpServer.connect(transport);
@@ -187,7 +196,7 @@ function setCorsHeaders(res) {
   res.setHeader("access-control-allow-methods", "GET,POST,DELETE,OPTIONS");
   res.setHeader(
     "access-control-allow-headers",
-    "content-type,mcp-session-id,authorization,last-event-id"
+    "accept,content-type,mcp-session-id,mcp-protocol-version,authorization,last-event-id"
   );
   res.setHeader("access-control-expose-headers", "mcp-session-id");
 }

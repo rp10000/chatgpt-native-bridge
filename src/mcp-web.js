@@ -43,6 +43,9 @@ Then copy the printed HTTPS /mcp URL into ChatGPT:
 After selecting the app in ChatGPT:
   cgn mcp wait
 
+If ChatGPT says review_current_project or write_to_codex is unavailable:
+  Refresh tools in ChatGPT app settings, or recreate the draft app with the latest https://.../mcp URL and No authentication.
+
 Local MCP URL:
   ${localBase}/mcp
 
@@ -80,6 +83,9 @@ ChatGPT fields:
 
 After selecting the app in ChatGPT:
   cgn mcp wait
+
+If ChatGPT says review_current_project or write_to_codex is unavailable:
+  Refresh tools in ChatGPT app settings, or recreate the draft app with the latest https://.../mcp URL and No authentication.
 `;
 }
 
@@ -206,6 +212,8 @@ async function runCloudflareTunnel({
       stdout.write("  Final step: click Create in ChatGPT\n\n");
       stdout.write("After selecting the app in ChatGPT:\n");
       stdout.write("  cgn mcp wait\n\n");
+      stdout.write("If ChatGPT says review_current_project or write_to_codex is unavailable:\n");
+      stdout.write("  Refresh tools in ChatGPT app settings, or recreate the draft app with this latest Server URL and No authentication.\n\n");
     }
     stdout.write(text);
   };

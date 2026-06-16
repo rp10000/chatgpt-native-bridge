@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.2.10
+
+- Declare `securitySchemes: [{ type: "noauth" }]` on every MCP tool, including the ChatGPT `_meta` compatibility mirror.
+- Allow session `GET /mcp` requests so ChatGPT streaming HTTP/SSE clients are not blocked after initialization.
+- Allow the `mcp-protocol-version` CORS header required by MCP clients.
+- Add regression tests for ChatGPT app discovery metadata, CORS preflight, and session SSE.
+
 ## v0.2.9
 
 - Add `write_to_codex` as an alias for `submit_reply_to_codex`.

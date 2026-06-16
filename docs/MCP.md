@@ -74,6 +74,8 @@ cgn mcp wait
 
 The ChatGPT UI can show the app as selected before any tool call happens. `cgn mcp wait` watches the local audit log and confirms whether a real MCP call arrived.
 
+If ChatGPT says `review_current_project` or `write_to_codex` is unavailable, refresh the app tools in ChatGPT settings or recreate the draft app with the latest `https://.../mcp` URL and `No authentication`. Use `0.2.10` or newer.
+
 In ChatGPT, use:
 
 ```text

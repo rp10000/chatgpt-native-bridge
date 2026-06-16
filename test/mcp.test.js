@@ -34,11 +34,22 @@ test("MCP tool descriptions guide the automatic ChatGPT loop", () => {
   const writeToCodex = tools.find((tool) => tool.name === "write_to_codex");
 
   assert.match(reviewProject.config.description, /Call this automatically/);
+  assert.deepEqual(reviewProject.config.securitySchemes, [{ type: "noauth" }]);
+  assert.deepEqual(reviewProject.config._meta.securitySchemes, [{ type: "noauth" }]);
   assert.match(reviewProject.config._meta["openai/toolInvocation/invoking"], /Reviewing/);
   assert.match(bridgeStatus.config.description, /prefer review_current_project/);
   assert.match(readDiff.config.description, /Call this after bridge_status/);
   assert.match(submitReply.config.description, /call this automatically before your final answer/);
   assert.match(writeToCodex.config.description, /Alias for submit_reply_to_codex/);
+});
+
+test("all MCP tools declare noauth for ChatGPT app discovery", () => {
+  const tools = createMcpToolRegistry({ cwd: process.cwd() });
+
+  for (const tool of tools) {
+    assert.deepEqual(tool.config.securitySchemes, [{ type: "noauth" }], tool.name);
+    assert.deepEqual(tool.config._meta.securitySchemes, [{ type: "noauth" }], tool.name);
+  }
 });
 
 test("review_current_project returns bounded project status and next action", async () => {
@@ -167,6 +178,89 @@ test("HTTP MCP server can initialize and list bridge tools", async () => {
     );
   } finally {
     await transport.close();
+    await server.close();
+  }
+});
+
+test("HTTP MCP server allows ChatGPT preflight protocol headers", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-mcp-cors-"));
+  await initProject({ cwd });
+  const server = await startMcpHttpServer({ cwd, port: 0 });
+
+  try {
+    const response = await fetch(server.url, {
+      method: "OPTIONS",
+      headers: {
+        origin: "https://chatgpt.com",
+        "access-control-request-method": "POST",
+        "access-control-request-headers": "content-type,mcp-session-id,mcp-protocol-version"
+      }
+    });
+
+    assert.equal(response.status, 204);
+    assert.match(response.headers.get("access-control-allow-headers") || "", /mcp-protocol-version/);
+  } finally {
+    await server.close();
+  }
+});
+
+test("HTTP MCP server supports session GET SSE stream", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-mcp-sse-"));
+  await initProject({ cwd });
+  const server = await startMcpHttpServer({ cwd, port: 0 });
+
+  try {
+    const initResponse = await fetch(server.url, {
+      method: "POST",
+      headers: {
+        accept: "application/json, text/event-stream",
+        "content-type": "application/json",
+        "mcp-protocol-version": "2025-11-25"
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "initialize",
+        params: {
+          protocolVersion: "2025-11-25",
+          capabilities: {},
+          clientInfo: { name: "cgn-test", version: "0.0.0" }
+        }
+      })
+    });
+    assert.equal(initResponse.status, 200);
+    const sessionId = initResponse.headers.get("mcp-session-id");
+    assert.ok(sessionId);
+
+    const initializedResponse = await fetch(server.url, {
+      method: "POST",
+      headers: {
+        accept: "application/json, text/event-stream",
+        "content-type": "application/json",
+        "mcp-session-id": sessionId,
+        "mcp-protocol-version": "2025-11-25"
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        method: "notifications/initialized",
+        params: {}
+      })
+    });
+    assert.ok([200, 202].includes(initializedResponse.status));
+
+    const sseResponse = await fetch(server.url, {
+      method: "GET",
+      headers: {
+        accept: "text/event-stream",
+        "mcp-session-id": sessionId,
+        "mcp-protocol-version": "2025-11-25"
+      }
+    });
+
+    assert.equal(sseResponse.status, 200);
+    assert.match(sseResponse.headers.get("content-type") || "", /text\/event-stream/);
+    await sseResponse.body.cancel();
+  } finally {
     await server.close();
   }
 });
