@@ -1,5 +1,7 @@
 const http = require("node:http");
 const { randomUUID } = require("node:crypto");
+const fs = require("node:fs/promises");
+const path = require("node:path");
 
 const { McpServer } = require("@modelcontextprotocol/sdk/server/mcp.js");
 const { StdioServerTransport } = require("@modelcontextprotocol/sdk/server/stdio.js");
@@ -70,6 +72,20 @@ async function startMcpHttpServer(options = {}) {
       return;
     }
 
+    const requestAudit = {
+      eventType: "request",
+      httpMethod: req.method,
+      path: url.pathname,
+      sessionId: summarizeSessionId(req.headers["mcp-session-id"]),
+      accept: summarizeHeader(req.headers.accept),
+      userAgent: summarizeHeader(req.headers["user-agent"]),
+      rpcMethod: null,
+      rpcId: null
+    };
+    res.once("finish", () => {
+      appendRequestAudit(cwd, { ...requestAudit, statusCode: res.statusCode });
+    });
+
     if (!["GET", "POST", "DELETE"].includes(req.method)) {
       res.writeHead(405, { "content-type": "application/json" });
       res.end(
@@ -84,10 +100,15 @@ async function startMcpHttpServer(options = {}) {
 
     try {
       const sessionId = req.headers["mcp-session-id"];
+      const body = req.method === "POST" ? await readJsonBody(req) : null;
+      if (body) {
+        requestAudit.rpcMethod = summarizeRpcMethod(body);
+        requestAudit.rpcId = summarizeRpcId(body);
+      }
       const existing = sessionId ? sessions.get(String(sessionId)) : null;
 
       if (existing) {
-        await existing.transport.handleRequest(req, res);
+        await existing.transport.handleRequest(req, res, body);
         if (req.method === "DELETE") {
           sessions.delete(String(sessionId));
           await existing.server.close();
@@ -119,7 +140,6 @@ async function startMcpHttpServer(options = {}) {
         return;
       }
 
-      const body = await readJsonBody(req);
       if (!isInitializeRequest(body)) {
         res.writeHead(400, { "content-type": "application/json" });
         res.end(
@@ -189,6 +209,37 @@ async function readJsonBody(req) {
   const text = Buffer.concat(chunks).toString("utf8");
   if (!text.trim()) throw new Error("Missing JSON body.");
   return JSON.parse(text);
+}
+
+async function appendRequestAudit(cwd, event) {
+  try {
+    const requestAuditPath = path.join(cwd, ".chatgpt-native", "runs", "mcp-requests.jsonl");
+    await fs.mkdir(path.dirname(requestAuditPath), { recursive: true });
+    await fs.appendFile(requestAuditPath, `${JSON.stringify({ ts: new Date().toISOString(), ...event })}\n`);
+  } catch {
+    // Request audit logging should never break the MCP server.
+  }
+}
+
+function summarizeRpcMethod(body) {
+  if (Array.isArray(body)) return body.map((item) => item && item.method).filter(Boolean).join(",");
+  return body && body.method ? String(body.method) : null;
+}
+
+function summarizeRpcId(body) {
+  if (Array.isArray(body)) return null;
+  if (!body || typeof body.id === "undefined") return null;
+  return String(body.id).slice(0, 80);
+}
+
+function summarizeHeader(value) {
+  if (!value) return null;
+  return String(value).slice(0, 160);
+}
+
+function summarizeSessionId(value) {
+  if (!value) return null;
+  return String(value).slice(0, 80);
 }
 
 function setCorsHeaders(res) {

@@ -8,6 +8,7 @@ const { Client } = require("@modelcontextprotocol/sdk/client/index.js");
 const { StreamableHTTPClientTransport } = require("@modelcontextprotocol/sdk/client/streamableHttp.js");
 
 const { initProject } = require("../src/init");
+const { getMcpTrace } = require("../src/mcp-trace");
 const { TOOL_NAMES, createMcpToolRegistry, runMcpTool } = require("../src/mcp-tools");
 const { startMcpHttpServer } = require("../src/mcp-server");
 
@@ -36,6 +37,7 @@ test("MCP tool descriptions guide the automatic ChatGPT loop", () => {
   assert.match(reviewProject.config.description, /Call this automatically/);
   assert.deepEqual(reviewProject.config.securitySchemes, [{ type: "noauth" }]);
   assert.deepEqual(reviewProject.config._meta.securitySchemes, [{ type: "noauth" }]);
+  assert.ok(reviewProject.config.outputSchema);
   assert.match(reviewProject.config._meta["openai/toolInvocation/invoking"], /Reviewing/);
   assert.match(bridgeStatus.config.description, /prefer review_current_project/);
   assert.match(readDiff.config.description, /Call this after bridge_status/);
@@ -49,6 +51,7 @@ test("all MCP tools declare noauth for ChatGPT app discovery", () => {
   for (const tool of tools) {
     assert.deepEqual(tool.config.securitySchemes, [{ type: "noauth" }], tool.name);
     assert.deepEqual(tool.config._meta.securitySchemes, [{ type: "noauth" }], tool.name);
+    assert.ok(tool.config.outputSchema, tool.name);
   }
 });
 
@@ -176,6 +179,26 @@ test("HTTP MCP server can initialize and list bridge tools", async () => {
       tools.tools.map((tool) => tool.name),
       TOOL_NAMES
     );
+    assert.ok(tools.tools.every((tool) => tool.outputSchema));
+  } finally {
+    await transport.close();
+    await server.close();
+  }
+});
+
+test("HTTP MCP server writes request trace events", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-mcp-trace-"));
+  await initProject({ cwd });
+  const server = await startMcpHttpServer({ cwd, port: 0 });
+  const client = new Client({ name: "cgn-test", version: "0.0.0" });
+  const transport = new StreamableHTTPClientTransport(new URL(server.url));
+
+  try {
+    await client.connect(transport);
+    await client.listTools();
+    const trace = await waitForTraceMethod(cwd, "tools/list");
+    assert.ok(trace.requests.some((event) => event.rpcMethod === "initialize"));
+    assert.ok(trace.requests.some((event) => event.rpcMethod === "tools/list"));
   } finally {
     await transport.close();
     await server.close();
@@ -273,4 +296,16 @@ async function exists(filePath) {
     if (error.code === "ENOENT") return false;
     throw error;
   }
+}
+
+async function waitForTraceMethod(cwd, rpcMethod) {
+  const deadline = Date.now() + 2000;
+  let trace = await getMcpTrace({ cwd, limit: 20 });
+
+  while (!trace.requests.some((event) => event.rpcMethod === rpcMethod) && Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 25));
+    trace = await getMcpTrace({ cwd, limit: 20 });
+  }
+
+  return trace;
 }

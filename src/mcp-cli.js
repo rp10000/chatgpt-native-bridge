@@ -9,6 +9,7 @@ const {
 const { formatDoctorReport, getDoctorReport } = require("./doctor");
 const { TOOL_NAMES } = require("./mcp-tools");
 const { startMcpHttpServer, startMcpStdio } = require("./mcp-server");
+const { formatMcpTrace, getMcpTrace } = require("./mcp-trace");
 const { formatMcpWebGuide, runCloudflareTunnel, runWebConnect } = require("./mcp-web");
 const { DEFAULT_WAIT_SECONDS, formatMcpWaitResult, waitForMcpCall } = require("./mcp-wait");
 
@@ -53,6 +54,15 @@ async function runMcpCommand({ subcommand, args, cwd, stdout, stderr }) {
       timeoutSeconds: parsed.flags.timeout || DEFAULT_WAIT_SECONDS
     });
     stdout.write(formatMcpWaitResult(result));
+    return;
+  }
+
+  if (subcommand === "trace") {
+    const trace = await getMcpTrace({
+      cwd: root,
+      limit: parsed.flags.limit || 10
+    });
+    stdout.write(formatMcpTrace(trace));
     return;
   }
 
@@ -170,6 +180,7 @@ Usage:
   cgn mcp install
   cgn mcp connect --yes --open
   cgn mcp wait
+  cgn mcp trace
   cgn mcp web
   cgn mcp tunnel
   cgn mcp serve --host 127.0.0.1 --port 47832
@@ -186,6 +197,7 @@ Options:
   --port PORT         HTTP bind port. Defaults to 47832.
   --stdio             Serve over stdio instead of HTTP.
   --timeout SECONDS   How long cgn mcp wait should watch for a real ChatGPT MCP tool call. Defaults to 120.
+  --limit N           Number of recent trace events to show. Defaults to 10.
 `;
 }
 

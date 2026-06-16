@@ -311,6 +311,7 @@ Usage:
   cgn mcp install
   cgn mcp connect --yes --open
   cgn mcp wait
+  cgn mcp trace
   cgn mcp web
   cgn mcp tunnel
   cgn mcp serve --host 127.0.0.1 --port 47832
@@ -338,6 +339,7 @@ MCP:
   cgn mcp install  Install the Codex MCP config block for this project.
   cgn mcp connect  Start server, HTTPS tunnel, and optionally open ChatGPT.
   cgn mcp wait     Watch for a real ChatGPT MCP tool call in the audit log.
+  cgn mcp trace    Show recent MCP requests and tool calls.
   cgn mcp web      Print the shortest ChatGPT web connector setup.
   cgn mcp tunnel   Start a Cloudflare Tunnel and print the HTTPS /mcp URL.
   cgn mcp serve   Start the local MCP server at http://127.0.0.1:47832/mcp.

@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.2.11
+
+- Add loose `outputSchema` declarations for every MCP tool so ChatGPT app discovery gets complete descriptors when tools return `structuredContent`.
+- Log MCP HTTP requests to `.chatgpt-native/runs/mcp-requests.jsonl` without storing file contents or reply bodies.
+- Add `cgn mcp trace` to show recent MCP requests and tool calls, making it clear whether ChatGPT reached `/mcp`, listed tools, or actually called a tool.
+- Update docs and CLI help for the selected-app-but-no-tools troubleshooting path.
+
 ## v0.2.10
 
 - Declare `securitySchemes: [{ type: "noauth" }]` on every MCP tool, including the ChatGPT `_meta` compatibility mirror.

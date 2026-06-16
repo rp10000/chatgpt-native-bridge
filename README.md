@@ -390,6 +390,7 @@ cgn setup --mcp
 cgn mcp install
 cgn mcp connect --yes --open
 cgn mcp wait
+cgn mcp trace
 cgn mcp web
 cgn mcp tunnel
 cgn mcp doctor
@@ -420,7 +421,9 @@ The MCP server exposes only bounded local context tools and does not expose shel
 
 If `cgn mcp wait` says no tool call was observed, ChatGPT did not actually use the connector in that chat yet. Re-select `chatgpt-native-bridge` in ChatGPT and ask it to call `review_current_project`.
 
-If ChatGPT says `review_current_project` or `write_to_codex` is unavailable, refresh the app tools in ChatGPT settings or recreate the draft app with the latest `https://.../mcp` URL and `No authentication`. Use `0.2.10` or newer.
+If ChatGPT says `review_current_project` or `write_to_codex` is unavailable, refresh the app tools in ChatGPT settings or recreate the draft app with the latest `https://.../mcp` URL and `No authentication`. Use `0.2.11` or newer.
+
+Run `cgn mcp trace` to see whether ChatGPT reached `/mcp`, listed tools, or actually called a tool.
 
 ## Request types
 

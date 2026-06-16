@@ -70,11 +70,14 @@ After selecting the app in ChatGPT, verify that ChatGPT really used it:
 
 ```bash
 cgn mcp wait
+cgn mcp trace
 ```
 
 The ChatGPT UI can show the app as selected before any tool call happens. `cgn mcp wait` watches the local audit log and confirms whether a real MCP call arrived.
 
-If ChatGPT says `review_current_project` or `write_to_codex` is unavailable, refresh the app tools in ChatGPT settings or recreate the draft app with the latest `https://.../mcp` URL and `No authentication`. Use `0.2.10` or newer.
+If ChatGPT says `review_current_project` or `write_to_codex` is unavailable, refresh the app tools in ChatGPT settings or recreate the draft app with the latest `https://.../mcp` URL and `No authentication`. Use `0.2.11` or newer.
+
+Run `cgn mcp trace` to see whether ChatGPT reached `/mcp`, listed tools, or actually called a tool.
 
 In ChatGPT, use:
 

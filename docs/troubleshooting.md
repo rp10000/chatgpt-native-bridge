@@ -70,6 +70,7 @@ Check these first:
 
 ```bash
 cgn mcp wait --timeout 30
+cgn mcp trace
 ```
 
 If no tool call is observed:
@@ -79,7 +80,7 @@ If no tool call is observed:
 3. Set Authentication to `No authentication`.
 4. Start a new ChatGPT chat, choose Developer mode, select `chatgpt-native-bridge`, then ask it to use `write_to_codex`.
 
-Use version `0.2.10` or newer. Older versions did not declare no-auth tool metadata and blocked session `GET /mcp` SSE requests.
+Use version `0.2.11` or newer. Older versions did not include complete ChatGPT tool descriptors, request tracing, and session `GET /mcp` SSE support.
 
 ## I expected a shell tool
 

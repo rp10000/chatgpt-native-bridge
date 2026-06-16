@@ -90,11 +90,14 @@ cgn mcp connect --yes --open
 
 ```bash
 cgn mcp wait
+cgn mcp trace
 ```
 
 ChatGPT 界面里出现勾选，只表示应用被选中；`cgn mcp wait` 才能确认是否真的有工具调用到达本地。
 
-如果 ChatGPT 说 `review_current_project` 或 `write_to_codex` 不可用，请在 ChatGPT 设置里刷新 app 工具；仍然不行就用最新 `https://.../mcp` URL 和 `No authentication` 重新创建草稿 app。请使用 `0.2.10` 或更新版本。
+如果 ChatGPT 说 `review_current_project` 或 `write_to_codex` 不可用，请在 ChatGPT 设置里刷新 app 工具；仍然不行就用最新 `https://.../mcp` URL 和 `No authentication` 重新创建草稿 app。请使用 `0.2.11` 或更新版本。
+
+运行 `cgn mcp trace` 可以看到 ChatGPT 是否真的访问了 `/mcp`、是否列出工具、是否调用了工具。
 
 本地 CLI 不能在不使用浏览器自动化或隐藏接口的情况下替你创建 ChatGPT 应用。最后一步仍然要在 ChatGPT 页面里手动点一次创建：
 
@@ -530,6 +533,7 @@ cgn setup --mcp
 cgn mcp install
 cgn mcp connect --yes --open
 cgn mcp wait
+cgn mcp trace
 cgn mcp web
 cgn mcp tunnel
 cgn mcp doctor

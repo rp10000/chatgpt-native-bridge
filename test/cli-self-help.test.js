@@ -35,6 +35,7 @@ test("help lists beginner guidance commands", async () => {
   assert.match(io.output(), /cgn setup --mcp/);
   assert.match(io.output(), /cgn mcp install/);
   assert.match(io.output(), /cgn mcp connect --yes --open/);
+  assert.match(io.output(), /cgn mcp trace/);
   assert.match(io.output(), /cgn mcp web/);
   assert.match(io.output(), /cgn mcp tunnel/);
   assert.match(io.output(), /cgn mcp serve/);
@@ -146,6 +147,17 @@ test("mcp wait explains when ChatGPT selected the app but did not call it", asyn
   assert.match(io.output(), /No MCP tool call observed/);
   assert.match(io.output(), /selected in the UI/);
   assert.match(io.output(), /review_current_project/);
+});
+
+test("mcp trace explains request and tool-call logs", async () => {
+  const io = createIo(await fs.mkdtemp(path.join(os.tmpdir(), "cgn-mcp-trace-")));
+
+  await main(["mcp", "trace"], io);
+
+  assert.match(io.output(), /MCP trace/);
+  assert.match(io.output(), /Latest MCP requests/);
+  assert.match(io.output(), /Latest tool calls/);
+  assert.match(io.output(), /No MCP requests/);
 });
 
 test("mcp tunnel supports dry-run without starting a long-lived process", async () => {
