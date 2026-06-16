@@ -6,13 +6,15 @@ const path = require("node:path");
 const { McpServer } = require("@modelcontextprotocol/sdk/server/mcp.js");
 const { StdioServerTransport } = require("@modelcontextprotocol/sdk/server/stdio.js");
 const { StreamableHTTPServerTransport } = require("@modelcontextprotocol/sdk/server/streamableHttp.js");
-const { isInitializeRequest } = require("@modelcontextprotocol/sdk/types.js");
+const { isInitializeRequest, ListToolsRequestSchema } = require("@modelcontextprotocol/sdk/types.js");
+const z = require("zod/v4");
 
 const { createMcpToolRegistry } = require("./mcp-tools");
 
 function createBridgeMcpServer(options = {}) {
   const cwd = options.cwd || process.cwd();
   const pkg = require("../package.json");
+  const tools = createMcpToolRegistry({ cwd });
   const server = new McpServer(
     {
       name: "chatgpt-native-bridge",
@@ -24,9 +26,10 @@ function createBridgeMcpServer(options = {}) {
     }
   );
 
-  for (const tool of createMcpToolRegistry({ cwd })) {
+  for (const tool of tools) {
     server.registerTool(tool.name, tool.config, async (args) => toMcpResult(await tool.handler(args || {})));
   }
+  installChatGptToolListHandler(server, tools);
 
   return server;
 }
@@ -250,6 +253,61 @@ function setCorsHeaders(res) {
     "accept,content-type,mcp-session-id,mcp-protocol-version,authorization,last-event-id"
   );
   res.setHeader("access-control-expose-headers", "mcp-session-id");
+}
+
+function installChatGptToolListHandler(server, tools) {
+  server.server.setRequestHandler(ListToolsRequestSchema, () => ({
+    tools: tools.map((tool) => toChatGptToolDescriptor(tool))
+  }));
+}
+
+function toChatGptToolDescriptor(tool) {
+  const securitySchemes = tool.config.securitySchemes || tool.config._meta?.securitySchemes || [{ type: "noauth" }];
+  const descriptor = {
+    name: tool.name,
+    title: tool.config.title,
+    description: tool.config.description,
+    inputSchema: toJsonObjectSchema(tool.config.inputSchema, "input"),
+    outputSchema: toJsonObjectSchema(tool.config.outputSchema, "output"),
+    annotations: tool.config.annotations,
+    securitySchemes,
+    _meta: {
+      ...(tool.config._meta || {}),
+      securitySchemes,
+      ui: {
+        ...(tool.config._meta?.ui || {}),
+        visibility: tool.config._meta?.ui?.visibility || ["model"]
+      },
+      "openai/visibility": tool.config._meta?.["openai/visibility"] || "public"
+    }
+  };
+
+  if (!descriptor.outputSchema) delete descriptor.outputSchema;
+  return descriptor;
+}
+
+function toJsonObjectSchema(schema, io) {
+  const objectSchema = normalizeZodObject(schema);
+  if (!objectSchema) {
+    return {
+      type: "object",
+      properties: {}
+    };
+  }
+
+  const jsonSchema = z.toJSONSchema(objectSchema, { io });
+  delete jsonSchema.$schema;
+  return jsonSchema;
+}
+
+function normalizeZodObject(schema) {
+  if (!schema) return null;
+  if (isZodSchema(schema)) return schema;
+  return z.object(schema);
+}
+
+function isZodSchema(value) {
+  return Boolean(value && typeof value === "object" && "_zod" in value);
 }
 
 function toMcpResult(value) {

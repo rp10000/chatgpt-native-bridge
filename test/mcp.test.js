@@ -186,6 +186,25 @@ test("HTTP MCP server can initialize and list bridge tools", async () => {
   }
 });
 
+test("HTTP MCP raw tools list includes ChatGPT app descriptor metadata", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-mcp-http-raw-"));
+  await initProject({ cwd });
+  const server = await startMcpHttpServer({ cwd, port: 0 });
+
+  try {
+    const listed = await rawListMcpTools(server.url);
+    assert.ok(listed.tools.every((tool) => tool.securitySchemes));
+    assert.ok(listed.tools.every((tool) => tool._meta?.securitySchemes));
+    assert.ok(listed.tools.every((tool) => tool._meta?.ui?.visibility?.includes("model")));
+
+    const reviewProject = listed.tools.find((tool) => tool.name === "review_current_project");
+    assert.deepEqual(reviewProject.securitySchemes, [{ type: "noauth" }]);
+    assert.deepEqual(reviewProject._meta.securitySchemes, [{ type: "noauth" }]);
+  } finally {
+    await server.close();
+  }
+});
+
 test("HTTP MCP server writes request trace events", async () => {
   const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-mcp-trace-"));
   await initProject({ cwd });
@@ -308,4 +327,47 @@ async function waitForTraceMethod(cwd, rpcMethod) {
   }
 
   return trace;
+}
+
+async function rawListMcpTools(url) {
+  const initResponse = await fetch(url, {
+    method: "POST",
+    headers: {
+      accept: "application/json, text/event-stream",
+      "content-type": "application/json",
+      "mcp-protocol-version": "2025-11-25"
+    },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "initialize",
+      params: {
+        protocolVersion: "2025-11-25",
+        capabilities: {},
+        clientInfo: { name: "cgn-raw-test", version: "0.0.0" }
+      }
+    })
+  });
+  assert.equal(initResponse.status, 200);
+  const sessionId = initResponse.headers.get("mcp-session-id");
+  assert.ok(sessionId);
+  await initResponse.text();
+
+  const listResponse = await fetch(url, {
+    method: "POST",
+    headers: {
+      accept: "application/json, text/event-stream",
+      "content-type": "application/json",
+      "mcp-session-id": sessionId,
+      "mcp-protocol-version": "2025-11-25"
+    },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: 2,
+      method: "tools/list",
+      params: {}
+    })
+  });
+  assert.equal(listResponse.status, 200);
+  return (await listResponse.json()).result;
 }
