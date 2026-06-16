@@ -146,6 +146,7 @@ test("mcp wait explains when ChatGPT selected the app but did not call it", asyn
 
   assert.match(io.output(), /No MCP tool call observed/);
   assert.match(io.output(), /selected in the UI/);
+  assert.match(io.output(), /Full automatic write-back/);
   assert.match(io.output(), /review_current_project/);
 });
 
@@ -158,6 +159,7 @@ test("mcp trace explains request and tool-call logs", async () => {
   assert.match(io.output(), /Latest MCP requests/);
   assert.match(io.output(), /Latest tool calls/);
   assert.match(io.output(), /No MCP requests/);
+  assert.match(io.output(), /automatic write-back/);
 });
 
 test("mcp tunnel supports dry-run without starting a long-lived process", async () => {

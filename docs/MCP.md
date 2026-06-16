@@ -75,7 +75,22 @@ cgn mcp trace
 
 The ChatGPT UI can show the app as selected before any tool call happens. `cgn mcp wait` watches the local audit log and confirms whether a real MCP call arrived.
 
-If ChatGPT says `review_current_project` or `write_to_codex` is unavailable, refresh the app tools in ChatGPT settings or recreate the draft app with the latest `https://.../mcp` URL and `No authentication`. Use `0.2.12` or newer.
+## Account support
+
+Full automatic MCP write-back uses `write_to_codex`, a write action.
+
+OpenAI currently documents full MCP, including write/modify actions, as rolling out for ChatGPT Business, Enterprise, and Edu. Pro accounts may connect MCP apps with read/fetch permissions, but `write_to_codex` may not be exposed in chat.
+
+If ChatGPT scans the app but says bridge tools are unavailable on Pro, use the Markdown fallback:
+
+```bash
+cgn handoff --task "Review this project" --type diff-review
+cgn done
+```
+
+or test from a workspace with full MCP support.
+
+If ChatGPT says `review_current_project` or `write_to_codex` is unavailable, refresh the app tools in ChatGPT settings or recreate the draft app with the latest `https://.../mcp` URL and `No authentication`. Use `0.2.13` or newer.
 
 Run `cgn mcp trace` to see whether ChatGPT reached `/mcp`, listed tools, or actually called a tool.
 

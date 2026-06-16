@@ -80,7 +80,20 @@ If no tool call is observed:
 3. Set Authentication to `No authentication`.
 4. Start a new ChatGPT chat, choose Developer mode, select `chatgpt-native-bridge`, then ask it to use `write_to_codex`.
 
-Use version `0.2.12` or newer. Older versions did not include complete ChatGPT app tool descriptors, top-level `securitySchemes`, request tracing, and session `GET /mcp` SSE support.
+Use version `0.2.13` or newer. Older versions did not include complete ChatGPT app tool descriptors, top-level `securitySchemes`, request tracing, session `GET /mcp` SSE support, and clear Pro/read-fetch diagnostics.
+
+If the request log shows `openai-mcp` `initialize` and `tools/list`, but the tool-call log has no new `tools/call`, the server is reachable and ChatGPT scanned the app. The remaining issue is on the ChatGPT side: the app was not exposed to that chat, the chat mode does not support custom apps, or the account only exposes read/fetch MCP actions.
+
+Full automatic write-back requires `write_to_codex`, which is a write action. OpenAI currently documents full MCP, including write/modify actions, as rolling out for ChatGPT Business, Enterprise, and Edu. Pro accounts may connect MCP apps with read/fetch permissions, but `write_to_codex` may not be exposed in chat.
+
+On Pro, use the Markdown fallback:
+
+```bash
+cgn handoff --task "Review this project" --type diff-review
+cgn done
+```
+
+or test from a workspace with full MCP support.
 
 ## I expected a shell tool
 

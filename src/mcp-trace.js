@@ -38,6 +38,7 @@ ${formatEvents(trace.toolCalls, formatToolEvent)}
 Meaning:
   - No MCP requests: ChatGPT is not reaching this Server URL.
   - Requests but no tool calls: ChatGPT reached the MCP server but did not expose/call tools in that chat.
+    On Pro accounts, ChatGPT may scan the app but expose only read/fetch MCP actions; automatic write-back needs full MCP support.
   - Tool calls present: ChatGPT used the bridge; let it finish, then tell Codex to read the latest reply.
 `;
 }

@@ -88,6 +88,11 @@ This means ChatGPT may be selected in the UI, but it has not actually used the c
 Audit log:
   ${result.auditPath}
 
+Important:
+  Full automatic write-back requires ChatGPT full MCP support.
+  If ChatGPT says write_to_codex is unavailable, your plan or chat mode may expose only read/fetch actions.
+  Use a Business/Enterprise/Edu workspace with full MCP support, or use the Markdown fallback: cgn handoff, then cgn done.
+
 In ChatGPT, select chatgpt-native-bridge and send:
   Use chatgpt-native-bridge to review this project.
   First call review_current_project, read relevant files only if needed,

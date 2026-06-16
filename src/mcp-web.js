@@ -43,6 +43,11 @@ Then copy the printed HTTPS /mcp URL into ChatGPT:
 After selecting the app in ChatGPT:
   cgn mcp wait
 
+Account support:
+  Full automatic write-back needs ChatGPT full MCP support.
+  Pro accounts may scan the MCP app but expose only read/fetch actions.
+  If write_to_codex is unavailable, use Business/Enterprise/Edu full MCP support or the Markdown fallback.
+
 If ChatGPT says review_current_project or write_to_codex is unavailable:
   Refresh tools in ChatGPT app settings, or recreate the draft app with the latest https://.../mcp URL and No authentication.
 
@@ -83,6 +88,11 @@ ChatGPT fields:
 
 After selecting the app in ChatGPT:
   cgn mcp wait
+
+Account support:
+  Full automatic write-back needs ChatGPT full MCP support.
+  Pro accounts may scan the MCP app but expose only read/fetch actions.
+  If write_to_codex is unavailable, use Business/Enterprise/Edu full MCP support or the Markdown fallback.
 
 If ChatGPT says review_current_project or write_to_codex is unavailable:
   Refresh tools in ChatGPT app settings, or recreate the draft app with the latest https://.../mcp URL and No authentication.
@@ -212,6 +222,10 @@ async function runCloudflareTunnel({
       stdout.write("  Final step: click Create in ChatGPT\n\n");
       stdout.write("After selecting the app in ChatGPT:\n");
       stdout.write("  cgn mcp wait\n\n");
+      stdout.write("Account support:\n");
+      stdout.write("  Full automatic write-back needs ChatGPT full MCP support.\n");
+      stdout.write("  Pro accounts may scan the MCP app but expose only read/fetch actions.\n");
+      stdout.write("  If write_to_codex is unavailable, use Business/Enterprise/Edu full MCP support or the Markdown fallback.\n\n");
       stdout.write("If ChatGPT says review_current_project or write_to_codex is unavailable:\n");
       stdout.write("  Refresh tools in ChatGPT app settings, or recreate the draft app with this latest Server URL and No authentication.\n\n");
     }

@@ -95,7 +95,14 @@ cgn mcp trace
 
 ChatGPT 界面里出现勾选，只表示应用被选中；`cgn mcp wait` 才能确认是否真的有工具调用到达本地。
 
-如果 ChatGPT 说 `review_current_project` 或 `write_to_codex` 不可用，请在 ChatGPT 设置里刷新 app 工具；仍然不行就用最新 `https://.../mcp` URL 和 `No authentication` 重新创建草稿 app。请使用 `0.2.12` 或更新版本。
+账号支持边界：
+
+- 自动写回依赖 `write_to_codex`，这是写入动作。
+- OpenAI 当前文档把包含写入/修改动作的完整 MCP 标为面向 ChatGPT Business、Enterprise、Edu 逐步开放。
+- Pro 账号可能可以创建和扫描 MCP app，但聊天里可能只暴露 read/fetch 权限，不暴露 `write_to_codex`。
+- 如果 Pro 上 ChatGPT 说 bridge 工具不可用，请使用 Markdown 备用路径：`cgn handoff`，然后 `cgn done`；或者在支持完整 MCP 的 workspace 里测试。
+
+如果 ChatGPT 说 `review_current_project` 或 `write_to_codex` 不可用，请在 ChatGPT 设置里刷新 app 工具；仍然不行就用最新 `https://.../mcp` URL 和 `No authentication` 重新创建草稿 app。请使用 `0.2.13` 或更新版本。
 
 运行 `cgn mcp trace` 可以看到 ChatGPT 是否真的访问了 `/mcp`、是否列出工具、是否调用了工具。
 

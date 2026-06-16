@@ -29,6 +29,7 @@ test("formatMcpWebGuide explains the ChatGPT web connector path", () => {
   assert.match(guide, /Settings -> Apps & Connectors -> Create/);
   assert.match(guide, /Name: chatgpt-native-bridge/);
   assert.match(guide, /Authentication: No authentication/);
+  assert.match(guide, /Pro accounts may scan/);
   assert.match(guide, /http:\/\/127\.0\.0\.1:47832\/mcp/);
 });
 
@@ -43,6 +44,7 @@ test("formatConnectDryRun explains the one-command path", () => {
   assert.match(guide, /project-local download/);
   assert.match(guide, /Copy and print the HTTPS \/mcp URL/);
   assert.match(guide, /https:\/\/chatgpt\.com\/#settings\/Connectors/);
+  assert.match(guide, /Full automatic write-back/);
   assert.match(guide, /Final step: click Create in ChatGPT/);
 });
 
@@ -82,6 +84,7 @@ test("runCloudflareTunnel copies the Server URL and opens ChatGPT when requested
   assert.equal(opened, CHATGPT_CONNECTORS_URL);
   assert.match(output, /Copied Server URL to clipboard/);
   assert.match(output, /Name: chatgpt-native-bridge/);
+  assert.match(output, /Pro accounts may scan/);
   assert.match(output, /Final step: click Create in ChatGPT/);
 });
 
