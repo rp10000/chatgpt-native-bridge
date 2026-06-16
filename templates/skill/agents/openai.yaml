@@ -5,7 +5,7 @@ interface:
     Use chatgpt-native-bridge for this task.
     Decide whether this task needs ChatGPT-native planning, architecture critique,
     UX review, naming/copy review, research, image direction, or diff review.
-    Prefer the MCP-first path. If MCP is not installed, use npx github:rp10000/chatgpt-native-bridge setup --mcp and ask the user to restart Codex or open a new thread.
+    Prefer the MCP-first path. If MCP is not installed, use npx --yes --package github:rp10000/chatgpt-native-bridge cgn setup --mcp and ask the user to restart Codex or open a new thread.
     If MCP is unavailable, create a cgn handoff fallback and tell the user what to paste or upload.
 
 policy:

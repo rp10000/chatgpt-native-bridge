@@ -9,7 +9,7 @@ Install Node.js and npm, then retry. The package requires Node 18 or newer.
 This repo is public, but npm registry publication may happen later. Use the GitHub form:
 
 ```bash
-npx github:rp10000/chatgpt-native-bridge setup --mcp
+npx --yes --package github:rp10000/chatgpt-native-bridge cgn setup --mcp
 ```
 
 or clone locally:
@@ -26,7 +26,7 @@ cgn --help
 Install the Codex MCP config:
 
 ```bash
-npx github:rp10000/chatgpt-native-bridge setup --mcp
+npx --yes --package github:rp10000/chatgpt-native-bridge cgn setup --mcp
 ```
 
 Restart Codex, or open a new Codex thread, so the config reloads.
@@ -153,7 +153,7 @@ Use chatgpt-native-bridge for this task.
 Also verify the Skill exists:
 
 ```bash
-npx github:rp10000/chatgpt-native-bridge doctor
+npx --yes --package github:rp10000/chatgpt-native-bridge cgn doctor
 ```
 
 ## Screenshots not included

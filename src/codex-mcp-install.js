@@ -19,7 +19,7 @@ function buildCodexMcpBlock(options = {}) {
   const root = path.resolve(options.root || process.cwd());
   const command = options.command || "npx";
   const packageSpec = options.packageSpec || DEFAULT_PACKAGE_SPEC;
-  const args = ["--yes", packageSpec, "mcp", "serve", "--stdio", "--root", root];
+  const args = buildNpxPackageArgs(packageSpec, ["mcp", "serve", "--stdio", "--root", root]);
 
   return [
     `[mcp_servers."${SERVER_NAME}"]`,
@@ -85,11 +85,25 @@ Project root:
   ${result.root}
 
 Command:
-  ${result.command} --yes ${result.packageSpec} mcp serve --stdio --root "${result.root}"
+  ${formatCommandLine(result.command, buildNpxPackageArgs(result.packageSpec, ["mcp", "serve", "--stdio", "--root", result.root]))}
 
 Next:
   Restart Codex, or open a new Codex thread, so it reloads MCP config.
 `;
+}
+
+function buildNpxPackageArgs(packageSpec, commandArgs) {
+  return ["--yes", "--package", packageSpec, "cgn", ...commandArgs];
+}
+
+function formatCommandLine(command, args) {
+  return [command, ...args].map(shellArg).join(" ");
+}
+
+function shellArg(value) {
+  const text = String(value);
+  if (!/[\s"]/u.test(text)) return text;
+  return `"${text.replace(/"/g, '\\"')}"`;
 }
 
 function removeBridgeBlock(text) {
@@ -155,6 +169,8 @@ module.exports = {
   DEFAULT_PACKAGE_SPEC,
   SERVER_NAME,
   buildCodexMcpBlock,
+  buildNpxPackageArgs,
+  formatCommandLine,
   formatCodexMcpInstall,
   installCodexMcp,
   mergeCodexMcpBlock,

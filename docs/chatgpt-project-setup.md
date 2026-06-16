@@ -13,7 +13,7 @@ Codex Native Advisor
 Run:
 
 ```bash
-npx github:rp10000/chatgpt-native-bridge setup --mcp
+npx --yes --package github:rp10000/chatgpt-native-bridge cgn setup --mcp
 ```
 
 Then open:

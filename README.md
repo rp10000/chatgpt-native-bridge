@@ -39,10 +39,10 @@ Install and initialize this tool in the current project:
 https://github.com/rp10000/chatgpt-native-bridge
 
 Run:
-npx github:rp10000/chatgpt-native-bridge setup --mcp
+npx --yes --package github:rp10000/chatgpt-native-bridge cgn setup --mcp
 
 Then run:
-npx github:rp10000/chatgpt-native-bridge doctor
+npx --yes --package github:rp10000/chatgpt-native-bridge cgn doctor
 
 Tell me whether setup worked, whether I should restart Codex,
 and where I should paste .chatgpt-native/project-instructions.md in a ChatGPT Project.
@@ -182,7 +182,7 @@ Codex local task
 From this GitHub repo before npm publication:
 
 ```bash
-npx github:rp10000/chatgpt-native-bridge setup --mcp
+npx --yes --package github:rp10000/chatgpt-native-bridge cgn setup --mcp
 ```
 
 After npm publication:
@@ -212,8 +212,8 @@ This creates:
 If `cgn` is not installed globally, run any command through the GitHub package form:
 
 ```bash
-npx github:rp10000/chatgpt-native-bridge doctor
-npx github:rp10000/chatgpt-native-bridge handoff --task "Review pricing page" --type ux-review
+npx --yes --package github:rp10000/chatgpt-native-bridge cgn doctor
+npx --yes --package github:rp10000/chatgpt-native-bridge cgn handoff --task "Review pricing page" --type ux-review
 ```
 
 ### 2. Create a ChatGPT Project

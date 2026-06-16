@@ -1,6 +1,11 @@
 const path = require("node:path");
 
-const { DEFAULT_PACKAGE_SPEC, formatCodexMcpInstall, installCodexMcp } = require("./codex-mcp-install");
+const {
+  DEFAULT_PACKAGE_SPEC,
+  buildNpxPackageArgs,
+  formatCodexMcpInstall,
+  installCodexMcp
+} = require("./codex-mcp-install");
 const { formatDoctorReport, getDoctorReport } = require("./doctor");
 const { TOOL_NAMES } = require("./mcp-tools");
 const { startMcpHttpServer, startMcpStdio } = require("./mcp-server");
@@ -113,7 +118,7 @@ function formatMcpConfig({ cwd, host = DEFAULT_MCP_HOST, port = DEFAULT_MCP_PORT
     mcpServers: {
       "chatgpt-native-bridge": {
         command: "npx",
-        args: ["--yes", DEFAULT_PACKAGE_SPEC, "mcp", "serve", "--stdio", "--root", cwd]
+        args: buildNpxPackageArgs(DEFAULT_PACKAGE_SPEC, ["mcp", "serve", "--stdio", "--root", cwd])
       }
     }
   };
@@ -121,7 +126,7 @@ function formatMcpConfig({ cwd, host = DEFAULT_MCP_HOST, port = DEFAULT_MCP_PORT
   return `chatgpt-native-bridge MCP config
 
 Codex install:
-  npx github:rp10000/chatgpt-native-bridge setup --mcp
+  npx --yes --package github:rp10000/chatgpt-native-bridge cgn setup --mcp
 
 HTTP endpoint:
   ${endpoint}

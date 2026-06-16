@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.8
+
+- Use the more reliable GitHub npx form: `npx --yes --package github:rp10000/chatgpt-native-bridge cgn ...`.
+- Update generated Codex MCP config to launch through `npx --yes --package ... cgn mcp serve --stdio`.
+- Keep local/global users on the shorter `cgn ...` commands after installation.
+
 ## v0.2.7
 
 - Add `review_current_project` as the default one-call MCP entry for ChatGPT project review, planning, and continuation.
@@ -47,7 +53,7 @@
 
 - Add one-command Codex MCP installation with `cgn setup --mcp`.
 - Add `cgn mcp install` to write the `chatgpt-native-bridge` MCP server block into Codex config.
-- Use `npx --yes github:rp10000/chatgpt-native-bridge mcp serve --stdio` in generated MCP config so users do not need a global `cgn` install.
+- Use `npx --yes --package github:rp10000/chatgpt-native-bridge cgn mcp serve --stdio` in generated MCP config so users do not need a global `cgn` install.
 - Update README, quickstart, Skill template, guide prompts, and troubleshooting docs for the MCP install-first workflow.
 - Keep manual `cgn mcp serve` and Markdown handoff as fallback paths.
 
