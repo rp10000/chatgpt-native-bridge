@@ -311,7 +311,7 @@ function getPublicBaseUrl(req) {
 
 function buildActionOpenApi(baseUrl) {
   return {
-    openapi: "3.1.0",
+    openapi: "3.0.3",
     info: {
       title: "chatgpt-native-bridge Actions",
       version: require("../package.json").version,
@@ -406,7 +406,7 @@ function jsonResponses() {
       description: "OK",
       content: {
         "application/json": {
-          schema: { type: "object", additionalProperties: true }
+          schema: { type: "object" }
         }
       }
     }
@@ -481,6 +481,7 @@ function toMcpResult(value) {
 }
 
 module.exports = {
+  buildActionOpenApi,
   createBridgeMcpServer,
   startMcpHttpServer,
   startMcpStdio,

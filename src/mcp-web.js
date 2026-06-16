@@ -6,6 +6,7 @@ const { Readable } = require("node:stream");
 const { pipeline } = require("node:stream/promises");
 
 const { copyToClipboard } = require("./clipboard");
+const { buildActionOpenApi } = require("./mcp-server");
 
 const DEFAULT_TUNNEL_HOST = "127.0.0.1";
 const DEFAULT_TUNNEL_PORT = 47832;
@@ -168,6 +169,7 @@ async function runWebConnect({
     return await runCloudflareTunnel({
       host,
       port,
+      cwd,
       stdout,
       stderr,
       command: cloudflared,
@@ -184,6 +186,7 @@ async function runWebConnect({
 async function runCloudflareTunnel({
   host = DEFAULT_TUNNEL_HOST,
   port = DEFAULT_TUNNEL_PORT,
+  cwd = process.cwd(),
   stdout = process.stdout,
   stderr = process.stderr,
   dryRun = false,
@@ -207,6 +210,7 @@ async function runCloudflareTunnel({
 
   let printedUrl = false;
   let openedChatgpt = false;
+  const pendingWrites = [];
 
   const onData = (chunk) => {
     const text = String(chunk);
@@ -238,7 +242,14 @@ async function runCloudflareTunnel({
       stdout.write("  If MCP does not expose write_to_codex, create a Custom GPT Action with an action-capable model.\n");
       stdout.write("  GPT Actions are not available in Pro mode.\n");
       stdout.write(`  Import OpenAPI schema URL: ${tunnelUrl}/action/openapi.json\n`);
+      stdout.write("  If Import from URL says Something went wrong, paste the schema JSON manually from:\n");
+      stdout.write(`    ${getActionOpenApiPath(cwd)}\n`);
       stdout.write("  Action endpoint write-back: /action/write-to-codex\n\n");
+      pendingWrites.push(
+        writeActionOpenApiFile({ cwd, tunnelUrl }).catch((error) => {
+          stderr.write(`Could not write GPT Actions schema file: ${error.message}\n`);
+        })
+      );
       stdout.write("After selecting the app in ChatGPT:\n");
       stdout.write("  cgn mcp wait\n\n");
       stdout.write("Account support:\n");
@@ -266,7 +277,8 @@ async function runCloudflareTunnel({
       }
       reject(error);
     });
-    child.on("close", (code) => {
+    child.on("close", async (code) => {
+      await Promise.all(pendingWrites);
       resolve({ started: true, code, printedUrl });
     });
   });
@@ -290,6 +302,17 @@ async function ensureLocalMcpServer({ host, port, cwd, stdout, stderr, spawnImpl
 
   await waitForHealth(healthUrl, 20000);
   return { child, alreadyRunning: false };
+}
+
+async function writeActionOpenApiFile({ cwd, tunnelUrl }) {
+  const filePath = getActionOpenApiPath(cwd);
+  await fs.mkdir(path.dirname(filePath), { recursive: true });
+  await fs.writeFile(filePath, `${JSON.stringify(buildActionOpenApi(tunnelUrl), null, 2)}\n`, "utf8");
+  return filePath;
+}
+
+function getActionOpenApiPath(cwd) {
+  return path.join(path.resolve(cwd), ".chatgpt-native", "actions", "openapi.json");
 }
 
 async function waitForHealth(url, timeoutMs) {

@@ -89,6 +89,7 @@ async function runMcpCommand({ subcommand, args, cwd, stdout, stderr }) {
     await runCloudflareTunnel({
       host,
       port,
+      cwd: root,
       stdout,
       stderr,
       dryRun: Boolean(parsed.flags["dry-run"]),

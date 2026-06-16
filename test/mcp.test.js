@@ -214,6 +214,7 @@ test("HTTP action OpenAPI exposes GPT Actions write-back fallback", async () => 
     const response = await fetch(`${server.healthUrl.replace("/health", "")}/action/openapi.json`);
     assert.equal(response.status, 200);
     const schema = await response.json();
+    assert.equal(schema.openapi, "3.0.3");
     assert.equal(schema.info.title, "chatgpt-native-bridge Actions");
     assert.equal(schema.paths["/action/review-current-project"].post.operationId, "review_current_project");
     assert.equal(schema.paths["/action/write-to-codex"].post.operationId, "write_to_codex");

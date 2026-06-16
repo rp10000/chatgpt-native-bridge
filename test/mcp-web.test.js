@@ -72,8 +72,10 @@ test("runCloudflareTunnel copies the Server URL and opens ChatGPT when requested
   let output = "";
   let copied = "";
   let opened = "";
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-action-schema-"));
 
   const result = await runCloudflareTunnel({
+    cwd,
     stdout: { write: (text) => { output += text; } },
     stderr: { write: (text) => { output += text; } },
     copyToClipboardImpl: (text) => { copied = text; },
@@ -89,9 +91,13 @@ test("runCloudflareTunnel copies the Server URL and opens ChatGPT when requested
   assert.match(output, /Copied Server URL to clipboard/);
   assert.match(output, /Name: chatgpt-native-bridge/);
   assert.match(output, /https:\/\/abc-def\.trycloudflare\.com\/action\/openapi\.json/);
+  assert.match(output, /paste the schema JSON manually/);
   assert.match(output, /not available in Pro mode/);
   assert.match(output, /Pro accounts may scan/);
   assert.match(output, /Final step: click Create in ChatGPT/);
+  const schema = JSON.parse(await fs.readFile(path.join(cwd, ".chatgpt-native", "actions", "openapi.json"), "utf8"));
+  assert.equal(schema.openapi, "3.0.3");
+  assert.equal(schema.servers[0].url, "https://abc-def.trycloudflare.com");
 });
 
 test("downloadCloudflared writes a project-local executable", async () => {

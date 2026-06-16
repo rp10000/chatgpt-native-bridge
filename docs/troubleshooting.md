@@ -102,6 +102,9 @@ When cgn mcp connect prints:
 Import this OpenAPI URL into a Custom GPT Action:
   https://example.trycloudflare.com/action/openapi.json
 
+If ChatGPT shows "Something went wrong", paste the schema JSON manually from:
+  .chatgpt-native/actions/openapi.json
+
 Then tell the Custom GPT:
   First call review_current_project.
   Read relevant files only if needed.

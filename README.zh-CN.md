@@ -110,6 +110,8 @@ cgn mcp connect 打印隧道 URL 后，把同一个 host 改成：
 
 创建一个 Custom GPT -> Configure -> Actions -> Import from URL。
 粘贴上面的 OpenAPI URL。
+如果 ChatGPT 显示 `Something went wrong`，就不要继续点 URL 导入，直接把这个文件里的 schema JSON 粘贴进去：
+  .chatgpt-native/actions/openapi.json
 
 然后对这个 GPT 说：
   先调用 review_current_project。

@@ -95,6 +95,8 @@ When cgn mcp connect prints the tunnel URL, use the same host with:
 
 Create a Custom GPT -> Configure -> Actions -> Import from URL.
 Paste the OpenAPI URL above.
+If ChatGPT shows "Something went wrong", paste the schema JSON manually from:
+  .chatgpt-native/actions/openapi.json
 
 Tell that GPT:
   First call review_current_project.
