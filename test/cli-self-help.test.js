@@ -18,8 +18,9 @@ test("demo prints the MCP-first bridge workflow", async () => {
   assert.match(io.output(), /cgn setup/);
   assert.match(io.output(), /cgn setup --mcp/);
   assert.match(io.output(), /cgn mcp install/);
+  assert.match(io.output(), /cgn mcp web/);
+  assert.match(io.output(), /cgn mcp tunnel/);
   assert.match(io.output(), /cgn mcp serve/);
-  assert.match(io.output(), /cgn mcp config/);
   assert.match(io.output(), /cgn handoff --task "Review onboarding UX"/);
   assert.match(io.output(), /cgn done/);
   assert.match(io.output(), /\.chatgpt-native\/inbox\/\{id\}\/reply\.md/);
@@ -33,6 +34,8 @@ test("help lists beginner guidance commands", async () => {
   assert.match(io.output(), /cgn setup/);
   assert.match(io.output(), /cgn setup --mcp/);
   assert.match(io.output(), /cgn mcp install/);
+  assert.match(io.output(), /cgn mcp web/);
+  assert.match(io.output(), /cgn mcp tunnel/);
   assert.match(io.output(), /cgn mcp serve/);
   assert.match(io.output(), /cgn mcp config/);
   assert.match(io.output(), /cgn handoff/);
@@ -104,6 +107,27 @@ test("setup --mcp initializes the project and installs Codex MCP config", async 
   assert.match(config, /"github:rp10000\/chatgpt-native-bridge"/);
   assert.match(config, /"--root"/);
   assert.match(config, new RegExp(escapeRegExp(JSON.stringify(cwd))));
+});
+
+test("mcp web prints a beginner ChatGPT connector guide", async () => {
+  const io = createIo(await fs.mkdtemp(path.join(os.tmpdir(), "cgn-mcp-web-")));
+
+  await main(["mcp", "web"], io);
+
+  assert.match(io.output(), /ChatGPT web connector setup/);
+  assert.match(io.output(), /cgn mcp serve --host 127\.0\.0\.1 --port 47832/);
+  assert.match(io.output(), /cgn mcp tunnel/);
+  assert.match(io.output(), /Settings -> Connectors -> Create -> Server URL/);
+  assert.match(io.output(), /Authentication: No authentication/);
+});
+
+test("mcp tunnel supports dry-run without starting a long-lived process", async () => {
+  const io = createIo(await fs.mkdtemp(path.join(os.tmpdir(), "cgn-mcp-tunnel-")));
+
+  await main(["mcp", "tunnel", "--dry-run"], io);
+
+  assert.match(io.output(), /cloudflared tunnel --url http:\/\/127\.0\.0\.1:47832/);
+  assert.match(io.output(), /https:\/\/example\.trycloudflare\.com\/mcp/);
 });
 
 test("handoff creates a handoff and opens it in dry-run mode", async () => {

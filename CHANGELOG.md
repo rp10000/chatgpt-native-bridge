@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.2.2
+
+- Add `cgn mcp web`, a beginner guide for connecting ChatGPT web when localhost URLs are rejected.
+- Add `cgn mcp tunnel` and `cgn mcp cloudflare` to start a Cloudflare Tunnel and print the HTTPS `/mcp` URL for ChatGPT.
+- Update README and Chinese README with the shorter ChatGPT web connection path.
+- Add tests for the web connector guide, tunnel dry-run output, and Cloudflare tunnel URL extraction.
+
 ## v0.2.1
 
 - Add one-command Codex MCP installation with `cgn setup --mcp`.

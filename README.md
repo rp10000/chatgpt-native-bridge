@@ -56,6 +56,31 @@ For daily use, trigger the Skill in Codex with one of these:
 
 Do not use `/chatgpt-native-bridge`; custom Skills are selected through `/skills`, `$` mention, or natural language. Future plugin packaging may support an `@chatgpt-native-bridge` plugin entry.
 
+## ChatGPT Web Connection
+
+ChatGPT web does not accept `localhost` MCP URLs directly. Use the guide:
+
+```bash
+cgn mcp web
+```
+
+Fast path:
+
+```bash
+# Terminal 1
+cgn mcp serve --host 127.0.0.1 --port 47832
+
+# Terminal 2
+cgn mcp tunnel
+```
+
+Paste the printed HTTPS `/mcp` URL into ChatGPT:
+
+```text
+Settings -> Connectors -> Create -> Server URL
+Authentication: No authentication
+```
+
 ## User Does Not Memorize Commands
 
 ```text
@@ -318,6 +343,8 @@ Do not use this for:
 # Beginner path
 cgn setup --mcp
 cgn mcp install
+cgn mcp web
+cgn mcp tunnel
 cgn mcp doctor
 cgn handoff --task "Review pricing page" --type ux-review --include-diff
 cgn done

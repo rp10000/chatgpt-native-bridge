@@ -70,6 +70,31 @@ $chatgpt-native-bridge
 
 以后如果这个项目打包成 Codex Plugin，可能会支持 `@chatgpt-native-bridge` 这类插件入口；当前阶段请使用 `/skills`、`$chatgpt-native-bridge` 或自然语言。
 
+## ChatGPT 网页怎么连接？
+
+ChatGPT 网页不能直接填写 `localhost` MCP 地址。直接运行：
+
+```bash
+cgn mcp web
+```
+
+最快路径：
+
+```bash
+# 终端 1
+cgn mcp serve --host 127.0.0.1 --port 47832
+
+# 终端 2
+cgn mcp tunnel
+```
+
+把命令打印出来的 HTTPS `/mcp` 地址填到 ChatGPT：
+
+```text
+Settings -> Connectors -> Create -> Server URL
+Authentication: No authentication
+```
+
 ## 我需要记哪些命令？
 
 正常情况下，你不需要记住所有命令。
@@ -456,6 +481,8 @@ cgn done
 # 新手主路径
 cgn setup --mcp
 cgn mcp install
+cgn mcp web
+cgn mcp tunnel
 cgn mcp doctor
 cgn handoff --task "..." --type plan,ux-review --include-diff
 cgn done
@@ -477,7 +504,7 @@ cgn doctor
 cgn guide codex --lang zh-CN
 ```
 
-MCP 用户优先记 `cgn setup --mcp`、`cgn mcp install`、`cgn mcp doctor`。
+MCP 用户优先记 `cgn setup --mcp`、`cgn mcp web`、`cgn mcp tunnel`。
 
 不能使用 MCP 时，新手优先记 `cgn setup`、`cgn handoff`、`cgn done`。旧命令继续保留给高级用户和 Codex 自动调用。
 

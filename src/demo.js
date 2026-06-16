@@ -9,17 +9,18 @@ function demoText() {
 
 3. Restart Codex, or open a new Codex thread, so it reloads MCP config.
 
-4. Print connection hints when needed:
-   cgn mcp config
+4. If you want ChatGPT web to connect, print the web setup guide:
+   cgn mcp web
 
-5. Use the ChatGPT MCP connector:
+5. For ChatGPT web, keep a local server running and create an HTTPS tunnel:
+   cgn mcp serve --host 127.0.0.1 --port 47832
+   cgn mcp tunnel
+
+6. Use the ChatGPT MCP connector:
    - inspect bounded repo context with the bridge tools
    - submit final advice with submit_reply_to_codex
 
-6. Manual local server fallback:
-   cgn mcp serve --host 127.0.0.1 --port 47832
-
-7. If MCP is unavailable, use the Markdown fallback:
+7. If web MCP is unavailable, use the Markdown fallback:
    cgn handoff --task "Review onboarding UX" --type plan,ux-review,naming-copy
 
 8. In fallback mode:
