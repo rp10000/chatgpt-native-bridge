@@ -34,13 +34,21 @@ npx github:rp10000/chatgpt-native-bridge setup --mcp
 cgn mcp install
 ```
 
-查看连接提示：
+ChatGPT 网页连接：
 
 ```bash
-cgn mcp config
+cgn mcp connect --yes --open
 ```
 
-让 ChatGPT 通过官方 MCP 连接方式连接 `/mcp` endpoint。MCP 可用时，ChatGPT 可以通过工具读取受限上下文、diff、handoff 文件，并用 `submit_reply_to_codex` 写回本地。
+按命令打印的字段创建 ChatGPT connector。创建好以后，不要让用户记工具名。直接在 ChatGPT 里说：
+
+```text
+请使用 chatgpt-native-bridge 复核这个项目。
+自动检查当前项目状态和 diff，需要上下文就读取相关文件，
+最后把你的建议写回本地 Codex。
+```
+
+MCP 可用时，ChatGPT 应该自动读取受限上下文、diff、相关文件，并在结束前写回本地 Codex。
 
 手动 HTTP server 备用路径：
 

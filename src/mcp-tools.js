@@ -31,7 +31,7 @@ function createMcpToolRegistry(options = {}) {
       name: "bridge_status",
       config: {
         title: "Bridge status",
-        description: "Read local bridge, git, handoff, and reply status.",
+        description: "Call this first for normal project tasks. It confirms the local project root, git state, latest handoff, and reply status.",
         annotations: readOnlyAnnotations()
       },
       handler: withAudit(cwd, "bridge_status", async () => {
@@ -50,7 +50,9 @@ function createMcpToolRegistry(options = {}) {
           latestHandoff,
           pending: status.pending.map((item) => item.id),
           ready: status.ready.map((item) => item.id),
-          safety: safetySummary()
+          safety: safetySummary(),
+          nextAction:
+            "For normal project advice, call read_git_diff next, then read relevant files only as needed, then call submit_reply_to_codex with final Markdown advice before answering the user."
         };
       })
     },
@@ -58,7 +60,7 @@ function createMcpToolRegistry(options = {}) {
       name: "create_handoff",
       config: {
         title: "Create handoff",
-        description: "Create a self-explaining handoff pack for ChatGPT to inspect.",
+        description: "Create a self-explaining handoff pack when a task needs a packaged context bundle. For simple MCP-connected review, prefer bridge_status/read_git_diff/read_repo_file first.",
         inputSchema: {
           task: z.string().min(1).describe("Task or question for ChatGPT."),
           types: z
@@ -136,7 +138,7 @@ function createMcpToolRegistry(options = {}) {
       name: "read_handoff_file",
       config: {
         title: "Read handoff file",
-        description: "Read a bounded text file from a handoff outbox.",
+        description: "Read a bounded text file from a handoff outbox. Use after list_handoff_files when reviewing a created handoff.",
         inputSchema: {
           id: z.string().optional().describe('Run id, or omit/use "latest".'),
           file: z.string().min(1).describe("Relative file path inside the handoff outbox."),
@@ -166,7 +168,7 @@ function createMcpToolRegistry(options = {}) {
       name: "read_repo_file",
       config: {
         title: "Read repo file",
-        description: "Read a bounded non-sensitive text file from the local repository.",
+        description: "Read a bounded non-sensitive text file from the local repository. Use only for relevant files needed to answer the user or prepare advice for Codex.",
         inputSchema: {
           path: z.string().min(1).describe("Relative path inside the current project."),
           maxBytes: z.number().int().positive().optional().describe("Maximum bytes to read.")
@@ -192,7 +194,7 @@ function createMcpToolRegistry(options = {}) {
       name: "read_git_diff",
       config: {
         title: "Read git diff",
-        description: "Read the current git diff with secret-content guarding.",
+        description: "Read the current git diff with secret-content guarding. Call this after bridge_status for code review, planning, or 'what changed' tasks.",
         inputSchema: {
           maxBytes: z.number().int().positive().optional().describe("Maximum bytes to return.")
         },
@@ -201,7 +203,13 @@ function createMcpToolRegistry(options = {}) {
       handler: withAudit(cwd, "read_git_diff", async (args) => {
         const diff = await getGitDiff(cwd);
         if (!diff.available) {
-          return { available: false, reason: diff.reason, text: "" };
+          return {
+            available: false,
+            reason: diff.reason,
+            text: "",
+            nextAction:
+              "If no diff is available, answer from bridge_status and relevant files when needed, then call submit_reply_to_codex with final Markdown advice."
+          };
         }
 
         const inspection = inspectCandidate({ relativePath: "git-diff.patch", content: diff.text });
@@ -216,7 +224,9 @@ function createMcpToolRegistry(options = {}) {
           available: true,
           bytes: buffer.length,
           truncated,
-          text
+          text,
+          nextAction:
+            "If the diff is enough, call submit_reply_to_codex with final Markdown advice. If context is missing, call read_repo_file for only the relevant files, then submit_reply_to_codex."
         };
       })
     },
@@ -224,7 +234,7 @@ function createMcpToolRegistry(options = {}) {
       name: "submit_reply_to_codex",
       config: {
         title: "Submit reply to Codex",
-        description: "Write ChatGPT's final Markdown advice into the local inbox for Codex.",
+        description: "Write ChatGPT's final Markdown advice into the local inbox for Codex. For normal project tasks, call this automatically before your final answer so Codex can continue locally.",
         inputSchema: {
           id: z.string().optional().describe('Run id, or omit/use "latest".'),
           markdown: z.string().min(1).describe("Final ChatGPT response for Codex.")

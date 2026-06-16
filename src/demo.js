@@ -20,9 +20,8 @@ function demoText() {
    - Server URL: the copied https://.../mcp URL
    - Authentication: No authentication
 
-7. Use the ChatGPT MCP connector:
-   - inspect bounded repo context with the bridge tools
-   - submit final advice with submit_reply_to_codex
+7. In ChatGPT, ask naturally:
+   Use chatgpt-native-bridge to review this project and send your final advice back to Codex.
 
 8. If web MCP is unavailable, use the Markdown fallback:
    cgn handoff --task "Review onboarding UX" --type plan,ux-review,naming-copy

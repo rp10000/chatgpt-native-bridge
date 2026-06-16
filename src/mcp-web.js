@@ -11,7 +11,7 @@ const DEFAULT_TUNNEL_HOST = "127.0.0.1";
 const DEFAULT_TUNNEL_PORT = 47832;
 const CHATGPT_CONNECTORS_URL = "https://chatgpt.com/#settings/Connectors";
 const CONNECTOR_NAME = "chatgpt-native-bridge";
-const CONNECTOR_DESCRIPTION = "Local Codex bridge. Use it to inspect bounded project context, read diffs, create handoff files, and submit ChatGPT advice back to Codex.";
+const CONNECTOR_DESCRIPTION = "Local Codex bridge. Automatically inspect bounded project context and diffs when useful, then submit final ChatGPT advice back to Codex.";
 const CLOUDFLARED_WINDOWS_DOWNLOAD_URL = "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe";
 
 function formatMcpWebGuide({ host = DEFAULT_TUNNEL_HOST, port = DEFAULT_TUNNEL_PORT } = {}) {

@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.6
+
+- Make the recommended ChatGPT flow automatic: users ask naturally, ChatGPT should inspect the project through MCP and write final advice back to Codex.
+- Strengthen ChatGPT Project instructions so `bridge_status`, `read_git_diff`, relevant file reads, and `submit_reply_to_codex` happen by default for project tasks.
+- Strengthen MCP tool descriptions and `nextAction` hints so ChatGPT knows the expected tool order without the user naming tools.
+- Update README, Chinese README, quickstart, MCP docs, Codex workflow docs, and Skill template to stop teaching normal users to memorize MCP tool names.
+- Update the ChatGPT connector description to say it automatically inspects bounded context and submits final advice back to Codex.
+
 ## v0.2.5
 
 - Add a project-local `cloudflared` download fallback for `cgn mcp connect --yes --open` on Windows.

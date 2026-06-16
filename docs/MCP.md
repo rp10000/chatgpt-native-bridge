@@ -80,7 +80,7 @@ If there is no Create button:
 
 Fields:
   Name: chatgpt-native-bridge
-  Description: Local Codex bridge. Use it to inspect bounded project context, read diffs, create handoff files, and submit ChatGPT advice back to Codex.
+  Description: Local Codex bridge. Automatically inspect bounded project context and diffs when useful, then submit final ChatGPT advice back to Codex.
   Connection: Server URL
   Server URL: paste the copied https://.../mcp URL
   Authentication: No authentication
@@ -96,6 +96,20 @@ cgn mcp tunnel
 ```
 
 Paste the printed `https://.../mcp` URL into ChatGPT as the Server URL.
+
+After the connector is created, users should not name individual tools. In ChatGPT, use:
+
+```text
+Use chatgpt-native-bridge to review this project.
+Check the current project state and diff, read relevant files if needed,
+then send your final advice back to Codex.
+```
+
+ChatGPT should call the bridge tools automatically and use `submit_reply_to_codex` before it finishes. Then return to Codex and say:
+
+```text
+Read the latest ChatGPT reply and continue.
+```
 
 Official OpenAI references:
 

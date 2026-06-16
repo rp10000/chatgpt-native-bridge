@@ -86,11 +86,25 @@ If there is no Create button:
 
 New app fields:
   Name: chatgpt-native-bridge
-  Description: Local Codex bridge. Use it to inspect bounded project context, read diffs, create handoff files, and submit ChatGPT advice back to Codex.
+  Description: Local Codex bridge. Automatically inspect bounded project context and diffs when useful, then submit final ChatGPT advice back to Codex.
   Connection: Server URL
   Server URL: paste the copied https://.../mcp URL
   Authentication: No authentication
   Final step: click Create
+```
+
+After the connector is created, do not ask the user to remember tool names. In ChatGPT, use natural language:
+
+```text
+Use chatgpt-native-bridge to review this project.
+Check the current project state and diff, read relevant files if needed,
+then send your final advice back to Codex.
+```
+
+ChatGPT should automatically inspect the project through MCP and call `submit_reply_to_codex` before it finishes. Then return to Codex and say:
+
+```text
+Read the latest ChatGPT reply and continue.
 ```
 
 ## User Does Not Memorize Commands
@@ -126,8 +140,8 @@ Codex runs cgn handoff
 Codex local task
   -> cgn setup --mcp writes Codex MCP config
   -> Codex or ChatGPT MCP client starts the local stdio server
-  -> ChatGPT reads bounded repo context and handoff files
-  -> ChatGPT calls submit_reply_to_codex
+  -> ChatGPT automatically reads bounded repo context when useful
+  -> ChatGPT writes final advice back to Codex
   -> .chatgpt-native/inbox/{id}/reply.md
   -> Codex continues local implementation
 ```

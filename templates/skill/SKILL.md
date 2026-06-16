@@ -26,12 +26,16 @@ The user controls the visible ChatGPT session.
 
 ## Workflow
 
-1. Prefer the MCP-first path:
-   - If `.chatgpt-native/inbox/{id}/CODEX_READ_THIS.md` exists, read it and `reply.md`, then continue local execution.
+1. Start automatically:
+   - Run `cgn status` or inspect `.chatgpt-native/inbox`.
+   - If `.chatgpt-native/inbox/{id}/CODEX_READ_THIS.md` exists, read it and `reply.md`, then continue local execution without asking the user for tool names.
+2. Prefer the MCP-first path:
+   - Tell the user to ask ChatGPT naturally, such as: "Use chatgpt-native-bridge to review this project and send your final advice back to Codex."
+   - ChatGPT should call MCP tools and `submit_reply_to_codex` automatically.
    - If the MCP server is not available in Codex, ask the user to run `npx github:rp10000/chatgpt-native-bridge setup --mcp`, then restart Codex or open a new thread.
    - If the project was already initialized but MCP is missing, run `cgn mcp install`.
-2. When MCP is unavailable, create a visible fallback handoff with `cgn handoff`.
-3. Include only relevant context:
+3. When MCP is unavailable, create a visible fallback handoff with `cgn handoff`.
+4. Include only relevant context:
    - task
    - repo summary
    - relevant files
@@ -39,23 +43,23 @@ The user controls the visible ChatGPT session.
    - test output
    - screenshots
    - specific questions
-4. For fallback handoffs, `cgn handoff` opens ChatGPT and copies `01_PASTE_TO_CHATGPT.md`.
+5. For fallback handoffs, `cgn handoff` opens ChatGPT and copies `01_PASTE_TO_CHATGPT.md`.
    - Use `--mode assist` for the default open-and-copy flow.
    - Use `--mode manual` when the user wants paths only.
    - Use `--mode auto` to also open the outbox folder. This does not paste, upload, submit, or scrape ChatGPT.
-5. Always tell the user exactly what to do:
-   - MCP path: let ChatGPT call the bridge tools and submit a reply.
+6. Keep user instructions simple:
+   - MCP path: ask ChatGPT naturally and let it submit the reply back to Codex.
    - Fallback path: paste `.chatgpt-native/outbox/{run_id}/01_PASTE_TO_CHATGPT.md` into ChatGPT.
    - Fallback path: upload/select files listed in `.chatgpt-native/outbox/{run_id}/02_UPLOAD_THESE_FILES.md`.
    - Fallback path: open `.chatgpt-native/outbox/{run_id}/START_HERE.md` if the user needs the full local checklist.
    - Fallback path: after ChatGPT replies, copy the final answer and run `cgn done`.
    - Fallback path: then Codex should read `.chatgpt-native/inbox/{run_id}/reply.md`.
-6. Let the user use ChatGPT natively.
-7. Import the result with MCP `submit_reply_to_codex`, `cgn import {id}`, or `cgn done`.
-8. Read `.chatgpt-native/inbox/{id}/reply.md` and `.chatgpt-native/inbox/{id}/CODEX_READ_THIS.md`.
-9. Continue local execution using Codex judgment.
-10. Run relevant tests.
-11. Summarize what was accepted, ignored, or deferred.
+7. Let the user use ChatGPT natively.
+8. Import the result with MCP `submit_reply_to_codex`, `cgn import {id}`, or `cgn done`.
+9. Read `.chatgpt-native/inbox/{id}/reply.md` and `.chatgpt-native/inbox/{id}/CODEX_READ_THIS.md`.
+10. Continue local execution using Codex judgment.
+11. Run relevant tests.
+12. Summarize what was accepted, ignored, or deferred.
 
 ## Minimal safety
 

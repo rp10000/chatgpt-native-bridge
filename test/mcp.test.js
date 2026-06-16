@@ -8,7 +8,7 @@ const { Client } = require("@modelcontextprotocol/sdk/client/index.js");
 const { StreamableHTTPClientTransport } = require("@modelcontextprotocol/sdk/client/streamableHttp.js");
 
 const { initProject } = require("../src/init");
-const { TOOL_NAMES, runMcpTool } = require("../src/mcp-tools");
+const { TOOL_NAMES, createMcpToolRegistry, runMcpTool } = require("../src/mcp-tools");
 const { startMcpHttpServer } = require("../src/mcp-server");
 
 test("MCP tool list is the stable minimum bridge surface", () => {
@@ -21,6 +21,17 @@ test("MCP tool list is the stable minimum bridge surface", () => {
     "read_git_diff",
     "submit_reply_to_codex"
   ]);
+});
+
+test("MCP tool descriptions guide the automatic ChatGPT loop", () => {
+  const tools = createMcpToolRegistry({ cwd: process.cwd() });
+  const bridgeStatus = tools.find((tool) => tool.name === "bridge_status");
+  const readDiff = tools.find((tool) => tool.name === "read_git_diff");
+  const submitReply = tools.find((tool) => tool.name === "submit_reply_to_codex");
+
+  assert.match(bridgeStatus.config.description, /Call this first/);
+  assert.match(readDiff.config.description, /Call this after bridge_status/);
+  assert.match(submitReply.config.description, /call this automatically before your final answer/);
 });
 
 test("read_repo_file blocks traversal and sensitive local files", async () => {

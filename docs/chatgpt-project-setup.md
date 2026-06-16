@@ -24,7 +24,7 @@ Then open:
 
 Paste the file into the ChatGPT Project instructions.
 
-## 3. Connect the MCP bridge first
+## 3. Connect the MCP bridge
 
 The setup command installs the Codex MCP config. Restart Codex, or open a new Codex thread, so the MCP config reloads.
 
@@ -34,13 +34,19 @@ If the project was already initialized but the MCP server is missing from Codex,
 cgn mcp install
 ```
 
-Print connection hints:
+For ChatGPT web, run:
 
 ```bash
-cgn mcp config
+cgn mcp connect --yes --open
 ```
 
-Connect ChatGPT to the `/mcp` endpoint through the official MCP connection flow available to your account or workspace.
+Create the ChatGPT connector with the printed fields. After that, use natural language in ChatGPT:
+
+```text
+Use chatgpt-native-bridge to review this project.
+Check the current project state and diff, read relevant files if needed,
+then send your final advice back to Codex.
+```
 
 Manual HTTP server fallback:
 
@@ -78,7 +84,7 @@ Ask ChatGPT to end with:
 ## Codex next actions
 ```
 
-With MCP, use `submit_reply_to_codex`.
+With MCP, ChatGPT should write the final advice back automatically.
 
 Without MCP, copy the final answer and run:
 

@@ -100,11 +100,25 @@ cgn mcp connect --yes --open
 
 新应用字段：
   名称: chatgpt-native-bridge
-  描述: Local Codex bridge. Use it to inspect bounded project context, read diffs, create handoff files, and submit ChatGPT advice back to Codex.
+  描述: Local Codex bridge. Automatically inspect bounded project context and diffs when useful, then submit final ChatGPT advice back to Codex.
   连接: Server URL
   Server URL: 粘贴已经复制好的 https://.../mcp
   身份验证: No authentication
   最后一步: 点击 Create
+```
+
+创建连接器以后，用户不需要记工具名。直接在 ChatGPT 里用自然语言：
+
+```text
+请使用 chatgpt-native-bridge 复核这个项目。
+自动检查当前项目状态和 diff，需要上下文就读取相关文件，
+最后把你的建议写回本地 Codex。
+```
+
+ChatGPT 应该自动通过 MCP 检查项目，并在结束前写回本地。然后回到 Codex 说：
+
+```text
+读取最新 ChatGPT 回复，然后继续。
 ```
 
 ## 我需要记哪些命令？

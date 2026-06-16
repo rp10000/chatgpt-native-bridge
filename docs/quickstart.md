@@ -26,21 +26,15 @@ Create a ChatGPT Project named `Codex Native Advisor`, then paste:
 
 into the Project instructions.
 
-## 3. Use the MCP bridge
+## 3. Connect ChatGPT web
 
-Print connection hints if you need to inspect the manual connection details:
+Run:
 
 ```bash
-cgn mcp config
+cgn mcp connect --yes --open
 ```
 
-Connect ChatGPT to:
-
-```text
-http://127.0.0.1:47832/mcp
-```
-
-If ChatGPT cannot reach your local machine directly, use the official MCP connection flow available to your account, such as a Secure MCP Tunnel.
+Create the ChatGPT connector with the printed fields.
 
 Manual HTTP server fallback:
 
@@ -50,7 +44,15 @@ cgn mcp serve --host 127.0.0.1 --port 47832
 
 ## 4. Let ChatGPT inspect and reply through MCP
 
-Ask ChatGPT to use the bridge tools for planning, UX review, research, visual direction, or diff review. The expected final step is `submit_reply_to_codex`, which writes:
+Ask ChatGPT naturally:
+
+```text
+Use chatgpt-native-bridge to review this project.
+Check the current project state and diff, read relevant files if needed,
+then send your final advice back to Codex.
+```
+
+ChatGPT should inspect the project and write its final advice back to:
 
 ```text
 .chatgpt-native/inbox/{id}/reply.md

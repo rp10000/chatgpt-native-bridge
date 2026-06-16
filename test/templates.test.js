@@ -38,6 +38,19 @@ test("skill metadata template declares display metadata and implicit invocation"
   assert.equal(metadata.startsWith("interface: display_name:"), false);
 });
 
+test("ChatGPT project instructions define the automatic MCP loop", async () => {
+  const instructions = await fs.readFile(
+    path.join(__dirname, "..", "templates", "chatgpt", "project-instructions.md"),
+    "utf8"
+  );
+
+  assert.match(instructions, /Use the local MCP bridge automatically/);
+  assert.match(instructions, /The user should not need to name MCP tools/);
+  assert.match(instructions, /Call `bridge_status` first/);
+  assert.match(instructions, /Before your final answer, call `submit_reply_to_codex`/);
+  assert.match(instructions, /Submit the final advice back to Codex yourself/);
+});
+
 test("primary user-facing docs keep readable line breaks", async () => {
   const files = [
     ["README.md", 120],
