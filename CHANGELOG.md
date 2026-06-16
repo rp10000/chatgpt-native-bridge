@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.1
+
+- Add one-command Codex MCP installation with `cgn setup --mcp`.
+- Add `cgn mcp install` to write the `chatgpt-native-bridge` MCP server block into Codex config.
+- Use `npx --yes github:rp10000/chatgpt-native-bridge mcp serve --stdio` in generated MCP config so users do not need a global `cgn` install.
+- Update README, quickstart, Skill template, guide prompts, and troubleshooting docs for the MCP install-first workflow.
+- Keep manual `cgn mcp serve` and Markdown handoff as fallback paths.
+
 ## v0.2.0
 
 - Make MCP the primary bridge path with `cgn mcp serve`, `cgn mcp config`, and `cgn mcp doctor`.

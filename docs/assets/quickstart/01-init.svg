@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="900" height="360" viewBox="0 0 900 360" role="img" aria-labelledby="title">
-  <title id="title">Run cgn init</title>
+  <title id="title">Run cgn setup --mcp</title>
   <rect width="900" height="360" fill="#f8fafc"/>
   <rect x="70" y="70" width="760" height="220" rx="14" fill="#0f172a"/>
-  <text x="110" y="120" fill="#e2e8f0" font-family="Consolas, monospace" font-size="24">$ cgn init</text>
+  <text x="110" y="120" fill="#e2e8f0" font-family="Consolas, monospace" font-size="18">$ npx github:rp10000/chatgpt-native-bridge setup --mcp</text>
   <text x="110" y="165" fill="#93c5fd" font-family="Consolas, monospace" font-size="18">Created .agents/skills/chatgpt-native-bridge/SKILL.md</text>
   <text x="110" y="200" fill="#93c5fd" font-family="Consolas, monospace" font-size="18">Created .chatgpt-native/project-instructions.md</text>
   <text x="110" y="235" fill="#93c5fd" font-family="Consolas, monospace" font-size="18">Created outbox/, inbox/, assets/, runs/</text>
-  <text x="70" y="325" fill="#334155" font-family="Arial, sans-serif" font-size="18">Step 1: initialize the bridge inside the Codex project.</text>
+  <text x="70" y="325" fill="#334155" font-family="Arial, sans-serif" font-size="18">Step 1: initialize the bridge and install the Codex MCP config.</text>
 </svg>

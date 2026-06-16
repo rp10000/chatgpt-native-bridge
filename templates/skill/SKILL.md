@@ -28,8 +28,8 @@ The user controls the visible ChatGPT session.
 
 1. Prefer the MCP-first path:
    - If `.chatgpt-native/inbox/{id}/CODEX_READ_THIS.md` exists, read it and `reply.md`, then continue local execution.
-   - If ChatGPT should inspect the project directly, ask the user to run `cgn mcp serve` or run it when appropriate for the local session.
-   - Use `cgn mcp config` to show the user the endpoint and available tools.
+   - If the MCP server is not available in Codex, ask the user to run `npx github:rp10000/chatgpt-native-bridge setup --mcp`, then restart Codex or open a new thread.
+   - If the project was already initialized but MCP is missing, run `cgn mcp install`.
 2. When MCP is unavailable, create a visible fallback handoff with `cgn handoff`.
 3. Include only relevant context:
    - task
@@ -44,7 +44,7 @@ The user controls the visible ChatGPT session.
    - Use `--mode manual` when the user wants paths only.
    - Use `--mode auto` to also open the outbox folder. This does not paste, upload, submit, or scrape ChatGPT.
 5. Always tell the user exactly what to do:
-   - MCP path: connect ChatGPT to the endpoint printed by `cgn mcp config`, then let ChatGPT call the bridge tools and submit a reply.
+   - MCP path: let ChatGPT call the bridge tools and submit a reply.
    - Fallback path: paste `.chatgpt-native/outbox/{run_id}/01_PASTE_TO_CHATGPT.md` into ChatGPT.
    - Fallback path: upload/select files listed in `.chatgpt-native/outbox/{run_id}/02_UPLOAD_THESE_FILES.md`.
    - Fallback path: open `.chatgpt-native/outbox/{run_id}/START_HERE.md` if the user needs the full local checklist.

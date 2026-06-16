@@ -13,7 +13,7 @@ Codex Native Advisor
 在本地项目里运行：
 
 ```bash
-cgn init
+npx github:rp10000/chatgpt-native-bridge setup --mcp
 ```
 
 然后打开：
@@ -26,10 +26,12 @@ cgn init
 
 ## 3. 优先连接 MCP
 
-启动本地 MCP server：
+这个命令会安装 Codex MCP 配置。然后重启 Codex，或打开一个新的 Codex 线程。
+
+如果项目已经初始化，但 Codex 里还没有 MCP，运行：
 
 ```bash
-cgn mcp serve --host 127.0.0.1 --port 47832
+cgn mcp install
 ```
 
 查看连接提示：
@@ -39,6 +41,12 @@ cgn mcp config
 ```
 
 让 ChatGPT 通过官方 MCP 连接方式连接 `/mcp` endpoint。MCP 可用时，ChatGPT 可以通过工具读取受限上下文、diff、handoff 文件，并用 `submit_reply_to_codex` 写回本地。
+
+手动 HTTP server 备用路径：
+
+```bash
+cgn mcp serve --host 127.0.0.1 --port 47832
+```
 
 ## 4. 备用 handoff：需要上传什么？
 

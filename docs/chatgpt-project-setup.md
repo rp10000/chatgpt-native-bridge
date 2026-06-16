@@ -13,7 +13,7 @@ Codex Native Advisor
 Run:
 
 ```bash
-cgn init
+npx github:rp10000/chatgpt-native-bridge setup --mcp
 ```
 
 Then open:
@@ -26,10 +26,12 @@ Paste the file into the ChatGPT Project instructions.
 
 ## 3. Connect the MCP bridge first
 
-Start the local server:
+The setup command installs the Codex MCP config. Restart Codex, or open a new Codex thread, so the MCP config reloads.
+
+If the project was already initialized but the MCP server is missing from Codex, run:
 
 ```bash
-cgn mcp serve --host 127.0.0.1 --port 47832
+cgn mcp install
 ```
 
 Print connection hints:
@@ -39,6 +41,12 @@ cgn mcp config
 ```
 
 Connect ChatGPT to the `/mcp` endpoint through the official MCP connection flow available to your account or workspace.
+
+Manual HTTP server fallback:
+
+```bash
+cgn mcp serve --host 127.0.0.1 --port 47832
+```
 
 ## 4. Fallback: upload the handoff material
 

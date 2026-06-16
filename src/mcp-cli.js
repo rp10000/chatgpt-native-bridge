@@ -1,5 +1,6 @@
 const path = require("node:path");
 
+const { DEFAULT_PACKAGE_SPEC, formatCodexMcpInstall, installCodexMcp } = require("./codex-mcp-install");
 const { formatDoctorReport, getDoctorReport } = require("./doctor");
 const { TOOL_NAMES } = require("./mcp-tools");
 const { startMcpHttpServer, startMcpStdio } = require("./mcp-server");
@@ -20,6 +21,16 @@ async function runMcpCommand({ subcommand, args, cwd, stdout, stderr }) {
 
   if (subcommand === "config") {
     stdout.write(formatMcpConfig({ cwd: root, host, port }));
+    return;
+  }
+
+  if (subcommand === "install") {
+    const result = await installCodexMcp({
+      cwd: root,
+      codexHome: parsed.flags["codex-home"],
+      dryRun: Boolean(parsed.flags["dry-run"])
+    });
+    stdout.write(formatCodexMcpInstall(result));
     return;
   }
 
@@ -59,13 +70,16 @@ function formatMcpConfig({ cwd, host = DEFAULT_MCP_HOST, port = DEFAULT_MCP_PORT
   const stdioConfig = {
     mcpServers: {
       "chatgpt-native-bridge": {
-        command: "cgn",
-        args: ["mcp", "serve", "--stdio", "--root", cwd]
+        command: "npx",
+        args: ["--yes", DEFAULT_PACKAGE_SPEC, "mcp", "serve", "--stdio", "--root", cwd]
       }
     }
   };
 
   return `chatgpt-native-bridge MCP config
+
+Codex install:
+  npx github:rp10000/chatgpt-native-bridge setup --mcp
 
 HTTP endpoint:
   ${endpoint}
@@ -106,16 +120,19 @@ function mcpHelpText() {
   return `chatgpt-native-bridge MCP
 
 Usage:
+  cgn mcp install
   cgn mcp serve --host 127.0.0.1 --port 47832
   cgn mcp serve --stdio
   cgn mcp config
   cgn mcp doctor
 
 Options:
-  --root PATH   Project root to expose. Defaults to the current directory.
-  --host HOST   HTTP bind host. Defaults to 127.0.0.1.
-  --port PORT   HTTP bind port. Defaults to 47832.
-  --stdio       Serve over stdio instead of HTTP.
+  --root PATH         Project root to expose. Defaults to the current directory.
+  --codex-home PATH   Codex home to update for install. Defaults to CODEX_HOME or ~/.codex.
+  --dry-run           Show install output without writing config.
+  --host HOST         HTTP bind host. Defaults to 127.0.0.1.
+  --port PORT         HTTP bind port. Defaults to 47832.
+  --stdio             Serve over stdio instead of HTTP.
 `;
 }
 

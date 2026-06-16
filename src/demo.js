@@ -2,34 +2,38 @@ function demoText() {
   return `30-second MCP-first bridge demo
 
 1. Initialize the bridge inside a Codex project:
-   cgn setup
+   cgn setup --mcp
 
-2. Start the local MCP bridge:
-   cgn mcp serve --host 127.0.0.1 --port 47832
+2. If the project was already initialized, install only the MCP config:
+   cgn mcp install
 
-3. Print connection hints:
+3. Restart Codex, or open a new Codex thread, so it reloads MCP config.
+
+4. Print connection hints when needed:
    cgn mcp config
 
-4. In ChatGPT:
-   - connect to the MCP endpoint
+5. Use the ChatGPT MCP connector:
    - inspect bounded repo context with the bridge tools
    - submit final advice with submit_reply_to_codex
 
-5. If MCP is unavailable, use the Markdown fallback:
+6. Manual local server fallback:
+   cgn mcp serve --host 127.0.0.1 --port 47832
+
+7. If MCP is unavailable, use the Markdown fallback:
    cgn handoff --task "Review onboarding UX" --type plan,ux-review,naming-copy
 
-6. In fallback mode:
+8. In fallback mode:
    - paste 01_PASTE_TO_CHATGPT.md
    - upload context.md and any files/screenshots from the outbox
    - use native ChatGPT tools when helpful
 
-7. Copy ChatGPT's final answer, then import it:
+9. Copy ChatGPT's final answer, then import it:
    cgn done
 
-8. Ask Codex to read:
+10. Ask Codex to read:
    .chatgpt-native/inbox/{id}/reply.md
 
-9. Codex continues local implementation and runs relevant checks.
+11. Codex continues local implementation and runs relevant checks.
 `;
 }
 

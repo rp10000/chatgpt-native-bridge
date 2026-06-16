@@ -39,13 +39,13 @@ Install and initialize this tool in the current project:
 https://github.com/rp10000/chatgpt-native-bridge
 
 Run:
-npx github:rp10000/chatgpt-native-bridge init
+npx github:rp10000/chatgpt-native-bridge setup --mcp
 
 Then run:
-cgn doctor
+npx github:rp10000/chatgpt-native-bridge doctor
 
-Tell me whether setup worked and where I should paste
-.chatgpt-native/project-instructions.md in a ChatGPT Project.
+Tell me whether setup worked, whether I should restart Codex,
+and where I should paste .chatgpt-native/project-instructions.md in a ChatGPT Project.
 ```
 
 For daily use, trigger the Skill in Codex with one of these:
@@ -87,8 +87,8 @@ Codex runs cgn handoff
 
 ```text
 Codex local task
-  -> cgn mcp serve
-  -> ChatGPT web app connects to local MCP
+  -> cgn setup --mcp writes Codex MCP config
+  -> Codex or ChatGPT MCP client starts the local stdio server
   -> ChatGPT reads bounded repo context and handoff files
   -> ChatGPT calls submit_reply_to_codex
   -> .chatgpt-native/inbox/{id}/reply.md
@@ -114,13 +114,13 @@ Codex local task
 From this GitHub repo before npm publication:
 
 ```bash
-npx github:rp10000/chatgpt-native-bridge init
+npx github:rp10000/chatgpt-native-bridge setup --mcp
 ```
 
 After npm publication:
 
 ```bash
-npx chatgpt-native-bridge init
+npx chatgpt-native-bridge setup --mcp
 ```
 
 For local development:
@@ -129,7 +129,7 @@ For local development:
 git clone https://github.com/rp10000/chatgpt-native-bridge.git
 cd chatgpt-native-bridge
 npm link
-cgn init
+cgn setup --mcp
 ```
 
 This creates:
@@ -139,6 +139,13 @@ This creates:
 .chatgpt-native/project-instructions.md
 .chatgpt-native/outbox/
 .chatgpt-native/inbox/
+```
+
+If `cgn` is not installed globally, run any command through the GitHub package form:
+
+```bash
+npx github:rp10000/chatgpt-native-bridge doctor
+npx github:rp10000/chatgpt-native-bridge handoff --task "Review pricing page" --type ux-review
 ```
 
 ### 2. Create a ChatGPT Project
@@ -165,10 +172,10 @@ Use chatgpt-native-bridge when this task needs planning, UX review, research, vi
 
 ### 4. MCP-first local bridge
 
-Start the local MCP server:
+For Codex, `setup --mcp` installs this MCP server into `~/.codex/config.toml`:
 
 ```bash
-cgn mcp serve --host 127.0.0.1 --port 47832
+cgn mcp install
 ```
 
 Print connection hints:
@@ -181,6 +188,12 @@ Connect ChatGPT to:
 
 ```text
 http://127.0.0.1:47832/mcp
+```
+
+Manual HTTP server fallback:
+
+```bash
+cgn mcp serve --host 127.0.0.1 --port 47832
 ```
 
 Use ChatGPT Developer Mode or an official Secure MCP Tunnel when ChatGPT cannot directly reach your local machine. See [MCP setup](docs/MCP.md).
@@ -247,7 +260,7 @@ cgn open latest
 cgn import latest --from-clipboard
 ```
 
-MCP users should prefer `cgn mcp serve` and `cgn mcp config`. `cgn handoff` is the recommended fallback path when MCP is unavailable. `cgn ask`, `cgn open`, and `cgn import` remain available for advanced workflows and Codex automation.
+MCP users should prefer `cgn setup --mcp` or `cgn mcp install`. `cgn handoff` is the recommended fallback path when MCP is unavailable. `cgn ask`, `cgn open`, and `cgn import` remain available for advanced workflows and Codex automation.
 
 ## Self-Explaining Handoff Files
 
@@ -303,15 +316,18 @@ Do not use this for:
 
 ```bash
 # Beginner path
-cgn init
-cgn setup
-cgn mcp serve --host 127.0.0.1 --port 47832
-cgn mcp config
+cgn setup --mcp
+cgn mcp install
 cgn mcp doctor
 cgn handoff --task "Review pricing page" --type ux-review --include-diff
 cgn done
 
+# Manual HTTP fallback
+cgn mcp serve --host 127.0.0.1 --port 47832
+cgn mcp config
+
 # Advanced split flow
+cgn init
 cgn ask --task "Review pricing page" --type ux-review,naming-copy --include-diff
 cgn open latest --mode assist
 cgn open latest --mode manual
@@ -323,7 +339,7 @@ cgn doctor
 cgn guide codex
 ```
 
-MCP users can start with `cgn mcp serve`, `cgn mcp config`, and `cgn mcp doctor`. When MCP is unavailable, use `cgn setup`, `cgn handoff`, and `cgn done`. The older commands remain available for advanced users and for Codex to run directly.
+MCP users can start with `cgn setup --mcp`, `cgn mcp install`, and `cgn mcp doctor`. When MCP is unavailable, use `cgn setup`, `cgn handoff`, and `cgn done`. The older commands remain available for advanced users and for Codex to run directly.
 
 `cgn demo` prints the end-to-end workflow. `cgn doctor` checks whether a project has the skill, Project instructions, outbox/inbox folders, and latest handoff/reply state. `cgn guide codex` prints a ready-to-copy prompt for Codex, and `cgn guide codex --lang zh-CN` prints the Chinese version.
 The MCP server exposes only bounded local context tools and does not expose shell execution.

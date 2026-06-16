@@ -2,15 +2,17 @@
 
 This tutorial shows the MCP-first loop, then the Markdown fallback loop. It uses simple diagrams instead of private account screenshots.
 
-## 1. Initialize the bridge
+## 1. Initialize and install the Codex MCP bridge
 
-![Run cgn init](assets/quickstart/01-init.svg)
+![Run cgn setup --mcp](assets/quickstart/01-init.svg)
 
 ```bash
-cgn init
+npx github:rp10000/chatgpt-native-bridge setup --mcp
 ```
 
-This creates the Codex Skill and `.chatgpt-native` workspace.
+This creates the Codex Skill, the `.chatgpt-native` workspace, and the Codex MCP config block. Restart Codex, or open a new Codex thread, after this step.
+
+If `cgn` is not installed globally, run later commands as `npx github:rp10000/chatgpt-native-bridge <command>`.
 
 ## 2. Create a ChatGPT Project
 
@@ -24,13 +26,9 @@ Create a ChatGPT Project named `Codex Native Advisor`, then paste:
 
 into the Project instructions.
 
-## 3. Start the MCP bridge
+## 3. Use the MCP bridge
 
-```bash
-cgn mcp serve --host 127.0.0.1 --port 47832
-```
-
-In another terminal, print connection hints:
+Print connection hints if you need to inspect the manual connection details:
 
 ```bash
 cgn mcp config
@@ -43,6 +41,12 @@ http://127.0.0.1:47832/mcp
 ```
 
 If ChatGPT cannot reach your local machine directly, use the official MCP connection flow available to your account, such as a Secure MCP Tunnel.
+
+Manual HTTP server fallback:
+
+```bash
+cgn mcp serve --host 127.0.0.1 --port 47832
+```
 
 ## 4. Let ChatGPT inspect and reply through MCP
 

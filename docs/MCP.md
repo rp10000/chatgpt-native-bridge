@@ -6,7 +6,27 @@ The bridge runs a local MCP server that lets ChatGPT inspect bounded project con
 
 Codex still executes locally. ChatGPT does not get arbitrary shell access.
 
-## Start the local server
+## One-command Codex install
+
+From a project where you want ChatGPT/Codex to use this bridge:
+
+```bash
+npx github:rp10000/chatgpt-native-bridge setup --mcp
+```
+
+This initializes the project files and writes a `chatgpt-native-bridge` MCP server block into the Codex config at `~/.codex/config.toml`.
+
+If the project was already initialized, install only the Codex MCP block:
+
+```bash
+cgn mcp install
+```
+
+Restart Codex, or open a new Codex thread, so Codex reloads MCP config.
+
+The installed MCP block uses `npx --yes github:rp10000/chatgpt-native-bridge mcp serve --stdio --root <project>`, so users do not need to globally install `cgn`.
+
+## Manual local server fallback
 
 ```bash
 cgn mcp serve --host 127.0.0.1 --port 47832
@@ -63,9 +83,9 @@ Do not use hidden ChatGPT endpoints, browser scraping, localStorage extraction, 
 ## Expected loop
 
 ```text
-1. Run cgn mcp serve locally.
-2. Connect ChatGPT to the MCP endpoint or tunnel.
-3. Ask ChatGPT to inspect the project through the MCP tools.
+1. Run npx github:rp10000/chatgpt-native-bridge setup --mcp once per project.
+2. Restart Codex, or open a new Codex thread, so MCP config reloads.
+3. Ask ChatGPT/Codex to inspect the project through the bridge MCP tools.
 4. ChatGPT calls create_handoff or reads bounded files as needed.
 5. ChatGPT calls submit_reply_to_codex with final advice.
 6. Codex reads .chatgpt-native/inbox/{id}/CODEX_READ_THIS.md and reply.md.

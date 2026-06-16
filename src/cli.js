@@ -5,6 +5,7 @@ const { codexGuideText } = require("./guide");
 const { formatHandoffSummary, getHandoffSummary } = require("./handoff-summary");
 const { importReply } = require("./import-reply");
 const { initProject } = require("./init");
+const { formatCodexMcpInstall, installCodexMcp } = require("./codex-mcp-install");
 const { runMcpCommand } = require("./mcp-cli");
 const { openRun } = require("./open-run");
 const { formatStatus, getStatus } = require("./status");
@@ -38,6 +39,15 @@ async function main(argv, io = defaultIo()) {
     const report = await getDoctorReport({ cwd: io.cwd });
     io.stdout.write(formatDoctorReport(report));
     io.stdout.write("\n");
+    if (parsed.flags.mcp) {
+      const mcp = await installCodexMcp({
+        cwd: io.cwd,
+        codexHome: parsed.flags["codex-home"],
+        dryRun: Boolean(parsed.flags["dry-run"])
+      });
+      io.stdout.write(formatCodexMcpInstall(mcp));
+      io.stdout.write("\n");
+    }
     io.stdout.write(codexGuideText(parsed.flags.lang || "en"));
     return;
   }
@@ -201,7 +211,8 @@ function parseArgs(args) {
     "mode",
     "host",
     "port",
-    "root"
+    "root",
+    "codex-home"
   ]);
 
   for (let index = 0; index < args.length; index += 1) {
@@ -295,6 +306,8 @@ function helpText() {
 Usage:
   cgn init
   cgn setup
+  cgn setup --mcp
+  cgn mcp install
   cgn mcp serve --host 127.0.0.1 --port 47832
   cgn mcp config
   cgn ask --task "Review pricing page" --type ux-review,naming-copy --include-diff
@@ -316,6 +329,8 @@ Safety:
   No OpenAI API key, no hidden endpoints, no ChatGPT scraping, no arbitrary shell execution.
 
 MCP:
+  cgn setup --mcp  Initialize the project and install this MCP into Codex config.
+  cgn mcp install  Install the Codex MCP config block for this project.
   cgn mcp serve   Start the local MCP server at http://127.0.0.1:47832/mcp.
   cgn mcp config  Print ChatGPT/Codex MCP connection hints.
   cgn mcp doctor  Check the local bridge and list MCP tools.

@@ -17,8 +17,8 @@ First decide whether the task needs ChatGPT-native planning, architecture critiq
 UX review, naming/copy review, research, image direction, or diff review.
 
 If yes:
-1. Prefer the MCP-first path. Run or ask me to run `cgn mcp serve`.
-2. Run `cgn mcp config` and tell me the endpoint/tools ChatGPT should use.
+1. Prefer the MCP-first path. Check whether the `chatgpt-native-bridge` MCP server is available in Codex.
+2. If it is not installed, run or ask me to run `npx github:rp10000/chatgpt-native-bridge setup --mcp`, then restart Codex or open a new thread.
 3. If MCP is unavailable, run `cgn handoff` with the right --type values.
 4. After ChatGPT submits through MCP or I import the reply with `cgn done`, read `reply.md` and `CODEX_READ_THIS.md`.
 5. Continue implementation locally.

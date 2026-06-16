@@ -16,6 +16,8 @@ test("demo prints the MCP-first bridge workflow", async () => {
 
   assert.match(io.output(), /30-second MCP-first bridge demo/);
   assert.match(io.output(), /cgn setup/);
+  assert.match(io.output(), /cgn setup --mcp/);
+  assert.match(io.output(), /cgn mcp install/);
   assert.match(io.output(), /cgn mcp serve/);
   assert.match(io.output(), /cgn mcp config/);
   assert.match(io.output(), /cgn handoff --task "Review onboarding UX"/);
@@ -29,6 +31,8 @@ test("help lists beginner guidance commands", async () => {
   await main(["--help"], io);
 
   assert.match(io.output(), /cgn setup/);
+  assert.match(io.output(), /cgn setup --mcp/);
+  assert.match(io.output(), /cgn mcp install/);
   assert.match(io.output(), /cgn mcp serve/);
   assert.match(io.output(), /cgn mcp config/);
   assert.match(io.output(), /cgn handoff/);
@@ -47,8 +51,8 @@ test("guide codex prints a ready-to-copy Codex prompt", async () => {
 
   assert.match(io.output(), /Copy this into Codex:/);
   assert.match(io.output(), /Use chatgpt-native-bridge for this task/);
-  assert.match(io.output(), /cgn mcp serve/);
-  assert.match(io.output(), /cgn mcp config/);
+  assert.match(io.output(), /npx github:rp10000\/chatgpt-native-bridge setup --mcp/);
+  assert.match(io.output(), /restart Codex/);
   assert.match(io.output(), /cgn handoff/);
   assert.match(io.output(), /cgn done/);
   assert.match(io.output(), /\.chatgpt-native\/inbox\/\{id\}\/reply\.md/);
@@ -61,8 +65,8 @@ test("guide codex supports Chinese output", async () => {
   await main(["guide", "codex", "--lang", "zh-CN"], io);
 
   assert.match(io.output(), /chatgpt-native-bridge/);
-  assert.match(io.output(), /cgn mcp serve/);
-  assert.match(io.output(), /cgn mcp config/);
+  assert.match(io.output(), /npx github:rp10000\/chatgpt-native-bridge setup --mcp/);
+  assert.match(io.output(), /重启 Codex/);
   assert.match(io.output(), /cgn done/);
   assert.match(io.output(), /CODEX_READ_THIS\.md/);
 });
@@ -81,6 +85,25 @@ test("setup initializes the project, runs doctor, and prints the Codex guide", a
     await exists(path.join(cwd, ".agents", "skills", "chatgpt-native-bridge", "SKILL.md")),
     true
   );
+});
+
+test("setup --mcp initializes the project and installs Codex MCP config", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-setup-mcp-"));
+  const codexHome = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-setup-mcp-home-"));
+  const io = createIo(cwd);
+
+  await main(["setup", "--mcp", "--codex-home", codexHome], io);
+
+  assert.match(io.output(), /Created:/);
+  assert.match(io.output(), /Codex MCP install: written/);
+  assert.match(io.output(), /Restart Codex/);
+
+  const config = await fs.readFile(path.join(codexHome, "config.toml"), "utf8");
+  assert.match(config, /\[mcp_servers\."chatgpt-native-bridge"\]/);
+  assert.match(config, /command = "npx"/);
+  assert.match(config, /"github:rp10000\/chatgpt-native-bridge"/);
+  assert.match(config, /"--root"/);
+  assert.match(config, new RegExp(escapeRegExp(JSON.stringify(cwd))));
 });
 
 test("handoff creates a handoff and opens it in dry-run mode", async () => {
@@ -222,4 +245,8 @@ async function listOutboxIds(cwd) {
     if (error.code === "ENOENT") return [];
     throw error;
   }
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
