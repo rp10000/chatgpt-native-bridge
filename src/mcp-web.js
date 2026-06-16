@@ -1,6 +1,9 @@
 const { spawn } = require("node:child_process");
+const { createWriteStream } = require("node:fs");
 const fs = require("node:fs/promises");
 const path = require("node:path");
+const { Readable } = require("node:stream");
+const { pipeline } = require("node:stream/promises");
 
 const { copyToClipboard } = require("./clipboard");
 
@@ -9,6 +12,7 @@ const DEFAULT_TUNNEL_PORT = 47832;
 const CHATGPT_CONNECTORS_URL = "https://chatgpt.com/#settings/Connectors";
 const CONNECTOR_NAME = "chatgpt-native-bridge";
 const CONNECTOR_DESCRIPTION = "Local Codex bridge. Use it to inspect bounded project context, read diffs, create handoff files, and submit ChatGPT advice back to Codex.";
+const CLOUDFLARED_WINDOWS_DOWNLOAD_URL = "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe";
 
 function formatMcpWebGuide({ host = DEFAULT_TUNNEL_HOST, port = DEFAULT_TUNNEL_PORT } = {}) {
   const localBase = `http://${host}:${port}`;
@@ -40,7 +44,7 @@ Local MCP URL:
   ${localBase}/mcp
 
 If cloudflared is not installed:
-  winget install --id Cloudflare.cloudflared
+  cgn mcp connect --yes --open tries winget first, then downloads cloudflared into .chatgpt-native/bin/
 
 Fallback without MCP:
   cgn handoff --task "..." --type plan,diff-review
@@ -56,7 +60,8 @@ Run:
 
 This will:
   1. Start the local MCP server at http://${host}:${port}/mcp
-  2. Install cloudflared with winget if it is missing
+  2. Install cloudflared if it is missing
+     - Windows: try winget first, then project-local download
   3. Start a temporary HTTPS tunnel
   4. Copy and print the HTTPS /mcp URL
   5. Open the ChatGPT connector settings page
@@ -108,15 +113,15 @@ async function runWebConnect({
   stdout.write("Starting one-command ChatGPT web connect\n\n");
   const server = await ensureLocalMcpServer({ host, port, cwd, stdout, stderr, spawnImpl });
 
-  let cloudflared = await resolveCloudflaredCommand();
+  let cloudflared = await resolveCloudflaredCommand({ cwd });
   if (!cloudflared) {
     if (!yes) {
       throw new Error(
         "cloudflared was not found. Re-run with --yes to install it automatically, or install it with: winget install --id Cloudflare.cloudflared -e"
       );
     }
-    await installCloudflared({ stdout, stderr, spawnImpl });
-    cloudflared = await resolveCloudflaredCommand();
+    await installCloudflared({ cwd, stdout, stderr, spawnImpl });
+    cloudflared = await resolveCloudflaredCommand({ cwd });
     if (!cloudflared) {
       throw new Error("cloudflared installed, but this terminal cannot find it yet. Close this terminal and run cgn mcp connect --yes --open again.");
     }
@@ -256,11 +261,12 @@ async function isHealthy(url) {
   }
 }
 
-async function resolveCloudflaredCommand() {
+async function resolveCloudflaredCommand({ cwd = process.cwd() } = {}) {
   if (await commandExists("cloudflared")) return "cloudflared";
   if (process.platform !== "win32") return null;
 
   const candidates = [
+    getProjectCloudflaredPath(cwd),
     process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, "Microsoft", "WinGet", "Links", "cloudflared.exe"),
     process.env.ProgramFiles && path.join(process.env.ProgramFiles, "cloudflared", "cloudflared.exe"),
     process.env["ProgramFiles(x86)"] && path.join(process.env["ProgramFiles(x86)"], "cloudflared", "cloudflared.exe")
@@ -272,24 +278,64 @@ async function resolveCloudflaredCommand() {
   return null;
 }
 
-async function installCloudflared({ stdout, stderr, spawnImpl }) {
+async function installCloudflared({
+  cwd = process.cwd(),
+  stdout = process.stdout,
+  stderr = process.stderr,
+  spawnImpl = spawn,
+  fetchImpl = fetch
+} = {}) {
   if (process.platform !== "win32") {
-    throw new Error("Automatic cloudflared install currently supports Windows winget. Install cloudflared manually, then run cgn mcp connect again.");
+    throw new Error("Automatic cloudflared install currently supports Windows. Install cloudflared manually, then run cgn mcp connect again.");
   }
 
-  if (!(await commandExists("winget"))) {
-    throw new Error("winget was not found. Install cloudflared manually, then run cgn mcp connect again.");
+  if (await commandExists("winget")) {
+    stdout.write("cloudflared not found. Installing with winget...\n");
+    try {
+      await runProcess("winget", [
+        "install",
+        "--id",
+        "Cloudflare.cloudflared",
+        "-e",
+        "--accept-source-agreements",
+        "--accept-package-agreements"
+      ], { stdout, stderr, spawnImpl });
+      return;
+    } catch (error) {
+      stdout.write(`winget install failed: ${error.message}\n`);
+      stdout.write("Falling back to a project-local cloudflared download...\n");
+    }
+  } else {
+    stdout.write("winget was not found. Falling back to a project-local cloudflared download...\n");
   }
 
-  stdout.write("cloudflared not found. Installing with winget...\n");
-  await runProcess("winget", [
-    "install",
-    "--id",
-    "Cloudflare.cloudflared",
-    "-e",
-    "--accept-source-agreements",
-    "--accept-package-agreements"
-  ], { stdout, stderr, spawnImpl });
+  await downloadCloudflared({ cwd, stdout, fetchImpl });
+}
+
+async function downloadCloudflared({
+  cwd = process.cwd(),
+  stdout = process.stdout,
+  fetchImpl = fetch
+} = {}) {
+  const target = getProjectCloudflaredPath(cwd);
+  const temp = `${target}.download`;
+  await fs.mkdir(path.dirname(target), { recursive: true });
+  await fs.rm(temp, { force: true });
+
+  stdout.write(`Downloading cloudflared to ${target}\n`);
+  const response = await fetchImpl(CLOUDFLARED_WINDOWS_DOWNLOAD_URL);
+  if (!response.ok || !response.body) {
+    throw new Error(`cloudflared download failed with HTTP ${response.status || "unknown"}`);
+  }
+
+  await pipeline(Readable.fromWeb(response.body), createWriteStream(temp));
+  await fs.rename(temp, target);
+  stdout.write("cloudflared downloaded.\n");
+  return target;
+}
+
+function getProjectCloudflaredPath(cwd) {
+  return path.join(cwd, ".chatgpt-native", "bin", "cloudflared.exe");
 }
 
 async function commandExists(command) {
@@ -354,14 +400,19 @@ function openUrl(url) {
 
 module.exports = {
   CHATGPT_CONNECTORS_URL,
+  CLOUDFLARED_WINDOWS_DOWNLOAD_URL,
   CONNECTOR_DESCRIPTION,
   CONNECTOR_NAME,
   DEFAULT_TUNNEL_HOST,
   DEFAULT_TUNNEL_PORT,
+  downloadCloudflared,
   findTryCloudflareUrl,
   formatConnectDryRun,
   formatMcpWebGuide,
   formatTunnelDryRun,
+  getProjectCloudflaredPath,
+  installCloudflared,
+  resolveCloudflaredCommand,
   runWebConnect,
   runCloudflareTunnel
 };

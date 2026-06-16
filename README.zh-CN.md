@@ -84,7 +84,7 @@ cgn mcp web
 cgn mcp connect --yes --open
 ```
 
-这条命令会启动本地 MCP server；Windows 上缺少 `cloudflared` 时会用 `winget` 安装；然后启动临时 HTTPS 隧道，把 `https://.../mcp` Server URL 复制到剪贴板，并打开 ChatGPT。
+这条命令会启动本地 MCP server；缺少 `cloudflared` 时会自动安装；然后启动临时 HTTPS 隧道，把 `https://.../mcp` Server URL 复制到剪贴板，并打开 ChatGPT。Windows 上会先试 `winget`；如果 `winget` 下载失败，会把 `cloudflared.exe` 下载到当前项目的 `.chatgpt-native/bin/`。
 
 本地 CLI 不能在不使用浏览器自动化或隐藏接口的情况下替你创建 ChatGPT 应用。最后一步仍然要在 ChatGPT 页面里手动点一次创建：
 

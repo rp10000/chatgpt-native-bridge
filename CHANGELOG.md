@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.2.5
+
+- Add a project-local `cloudflared` download fallback for `cgn mcp connect --yes --open` on Windows.
+- Keep trying `winget` first, but continue by downloading `cloudflared.exe` into `.chatgpt-native/bin/` when `winget` fails.
+- Update README, Chinese README, and MCP docs to explain the fallback install path.
+- Add a regression test for project-local `cloudflared.exe` download.
+
 ## v0.2.4
 
 - Add `cgn mcp connect --yes --open` as the recommended ChatGPT web setup command.

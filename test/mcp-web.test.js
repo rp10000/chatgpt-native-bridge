@@ -1,13 +1,19 @@
 const assert = require("node:assert/strict");
 const { EventEmitter } = require("node:events");
+const fs = require("node:fs/promises");
+const os = require("node:os");
+const path = require("node:path");
 const test = require("node:test");
 
 const {
   CHATGPT_CONNECTORS_URL,
+  CLOUDFLARED_WINDOWS_DOWNLOAD_URL,
+  downloadCloudflared,
   findTryCloudflareUrl,
   formatConnectDryRun,
   formatMcpWebGuide,
   formatTunnelDryRun,
+  getProjectCloudflaredPath,
   runCloudflareTunnel
 } = require("../src/mcp-web");
 
@@ -32,6 +38,7 @@ test("formatConnectDryRun explains the one-command path", () => {
   assert.match(guide, /cgn mcp connect --yes --open/);
   assert.match(guide, /Start the local MCP server/);
   assert.match(guide, /Install cloudflared/);
+  assert.match(guide, /project-local download/);
   assert.match(guide, /Copy and print the HTTPS \/mcp URL/);
   assert.match(guide, /https:\/\/chatgpt\.com\/#settings\/Connectors/);
   assert.match(guide, /Final step: click Create in ChatGPT/);
@@ -74,6 +81,32 @@ test("runCloudflareTunnel copies the Server URL and opens ChatGPT when requested
   assert.match(output, /Copied Server URL to clipboard/);
   assert.match(output, /Name: chatgpt-native-bridge/);
   assert.match(output, /Final step: click Create in ChatGPT/);
+});
+
+test("downloadCloudflared writes a project-local executable", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-cloudflared-"));
+  const writes = [];
+  const target = await downloadCloudflared({
+    cwd,
+    stdout: { write: (text) => writes.push(text) },
+    fetchImpl: async (url) => {
+      assert.equal(url, CLOUDFLARED_WINDOWS_DOWNLOAD_URL);
+      return {
+        ok: true,
+        status: 200,
+        body: new ReadableStream({
+          start(controller) {
+            controller.enqueue(new TextEncoder().encode("fake exe"));
+            controller.close();
+          }
+        })
+      };
+    }
+  });
+
+  assert.equal(target, getProjectCloudflaredPath(cwd));
+  assert.equal(await fs.readFile(target, "utf8"), "fake exe");
+  assert.match(writes.join(""), /cloudflared downloaded/);
 });
 
 function fakeCloudflaredSpawn(text) {
