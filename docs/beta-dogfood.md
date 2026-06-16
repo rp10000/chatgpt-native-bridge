@@ -11,16 +11,16 @@ Test target:
 ## Flow tested
 
 ```bash
-npx --yes --package github:rp10000/chatgpt-native-bridge#v0.1.0 cgn setup --lang zh-CN
-npx --yes --package github:rp10000/chatgpt-native-bridge#v0.1.0 cgn handoff \
+npx --yes --package github:rp10000/chatgpt-native-bridge#v0.1.0 -- cgn setup --lang zh-CN
+npx --yes --package github:rp10000/chatgpt-native-bridge#v0.1.0 -- cgn handoff \
   --task "Dogfood beta workflow and review the small greet diff" \
   --type plan,diff-review \
   --include-diff \
   --include-files "README.md,src/index.js" \
   --dry-run
-npx --yes --package github:rp10000/chatgpt-native-bridge#v0.1.0 cgn done dogfood-reply.md
-npx --yes --package github:rp10000/chatgpt-native-bridge#v0.1.0 cgn status
-npx --yes --package github:rp10000/chatgpt-native-bridge#v0.1.0 cgn doctor
+npx --yes --package github:rp10000/chatgpt-native-bridge#v0.1.0 -- cgn done dogfood-reply.md
+npx --yes --package github:rp10000/chatgpt-native-bridge#v0.1.0 -- cgn status
+npx --yes --package github:rp10000/chatgpt-native-bridge#v0.1.0 -- cgn doctor
 ```
 
 ## Result
@@ -55,15 +55,15 @@ Fix:
 After moving `v0.1.0` to the placeholder fix commit, the public GitHub install path was tested again from a fresh Windows temp project with a fresh npm cache:
 
 ```bash
-npx --yes --package github:rp10000/chatgpt-native-bridge#v0.1.0 cgn setup --lang zh-CN
-npx --yes --package github:rp10000/chatgpt-native-bridge#v0.1.0 cgn handoff \
+npx --yes --package github:rp10000/chatgpt-native-bridge#v0.1.0 -- cgn setup --lang zh-CN
+npx --yes --package github:rp10000/chatgpt-native-bridge#v0.1.0 -- cgn handoff \
   --task "Post-fix public beta dogfood" \
   --type plan,diff-review \
   --include-diff \
   --dry-run
-npx --yes --package github:rp10000/chatgpt-native-bridge#v0.1.0 cgn done dogfood-reply.md
-npx --yes --package github:rp10000/chatgpt-native-bridge#v0.1.0 cgn status
-npx --yes --package github:rp10000/chatgpt-native-bridge#v0.1.0 cgn doctor
+npx --yes --package github:rp10000/chatgpt-native-bridge#v0.1.0 -- cgn done dogfood-reply.md
+npx --yes --package github:rp10000/chatgpt-native-bridge#v0.1.0 -- cgn status
+npx --yes --package github:rp10000/chatgpt-native-bridge#v0.1.0 -- cgn doctor
 ```
 
 Result:

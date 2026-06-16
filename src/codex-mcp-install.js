@@ -93,7 +93,7 @@ Next:
 }
 
 function buildNpxPackageArgs(packageSpec, commandArgs) {
-  return ["--yes", "--package", packageSpec, "cgn", ...commandArgs];
+  return ["--yes", "--package", packageSpec, "--", "cgn", ...commandArgs];
 }
 
 function formatCommandLine(command, args) {

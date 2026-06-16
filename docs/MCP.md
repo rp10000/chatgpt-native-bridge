@@ -11,7 +11,7 @@ Codex still executes locally. ChatGPT does not get arbitrary shell access.
 From a project where you want ChatGPT/Codex to use this bridge:
 
 ```bash
-npx --yes --package github:rp10000/chatgpt-native-bridge cgn setup --mcp
+npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp
 ```
 
 This initializes the project files and writes a `chatgpt-native-bridge` MCP server block into the Codex config at `~/.codex/config.toml`.
@@ -24,7 +24,7 @@ cgn mcp install
 
 Restart Codex, or open a new Codex thread, so Codex reloads MCP config.
 
-The installed MCP block uses `npx --yes --package github:rp10000/chatgpt-native-bridge cgn mcp serve --stdio --root <project>`, so users do not need to globally install `cgn`.
+The installed MCP block uses `npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn mcp serve --stdio --root <project>`, so users do not need to globally install `cgn`.
 
 ## Manual local server fallback
 
@@ -110,7 +110,7 @@ This fallback uses ChatGPT's official GPT Actions/OpenAPI route instead of MCP w
 
 You can also test from a workspace with full MCP support.
 
-If ChatGPT says `review_current_project` or `write_to_codex` is unavailable, refresh the app tools in ChatGPT settings or recreate the draft app with the latest `https://.../mcp` URL and `No authentication`. Use `0.4.0` or newer.
+If ChatGPT says `review_current_project` or `write_to_codex` is unavailable, refresh the app tools in ChatGPT settings or recreate the draft app with the latest `https://.../mcp` URL and `No authentication`. Use `0.4.1` or newer.
 
 Run `cgn mcp trace` to see whether ChatGPT reached `/mcp`, listed tools, or actually called a tool.
 
@@ -198,7 +198,7 @@ Do not use hidden ChatGPT endpoints, browser scraping, localStorage extraction, 
 ## Expected loop
 
 ```text
-1. Run npx --yes --package github:rp10000/chatgpt-native-bridge cgn setup --mcp once per project.
+1. Run npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp once per project.
 2. Restart Codex, or open a new Codex thread, so MCP config reloads.
 3. Ask ChatGPT/Codex to inspect the project through the bridge MCP tools.
 4. Optionally run `cgn mcp wait` to confirm ChatGPT really called the connector.

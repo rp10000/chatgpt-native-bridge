@@ -19,8 +19,8 @@ UX review, naming/copy review, research, image direction, or diff review.
 If yes:
 1. First check whether `.chatgpt-native/inbox` has a new reply. If yes, read `reply.md` and `CODEX_READ_THIS.md`.
 2. Prefer the MCP-first path. If ChatGPT is connected, tell me to ask ChatGPT naturally: "Use chatgpt-native-bridge to review this project and send your final advice back to Codex."
-3. If MCP is not installed, run or ask me to run `npx --yes --package github:rp10000/chatgpt-native-bridge cgn setup --mcp`, then restart Codex or open a new thread.
-4. If ChatGPT web is not connected, run or ask me to run `npx --yes --package github:rp10000/chatgpt-native-bridge cgn mcp connect --yes --open`.
+3. If MCP is not installed, run or ask me to run `npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp`, then restart Codex or open a new thread.
+4. If ChatGPT web is not connected, run or ask me to run `npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn mcp connect --yes --open`.
 5. If MCP is unavailable, run `cgn handoff` with the right --type values.
 6. After ChatGPT writes back through MCP or I import the reply with `cgn done`, read `reply.md` and `CODEX_READ_THIS.md`.
 7. Continue implementation locally.

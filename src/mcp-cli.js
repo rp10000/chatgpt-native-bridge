@@ -137,7 +137,7 @@ function formatMcpConfig({ cwd, host = DEFAULT_MCP_HOST, port = DEFAULT_MCP_PORT
   return `chatgpt-native-bridge MCP config
 
 Codex install:
-  npx --yes --package github:rp10000/chatgpt-native-bridge cgn setup --mcp
+  npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp
 
 HTTP endpoint:
   ${endpoint}

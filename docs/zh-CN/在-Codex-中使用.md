@@ -41,11 +41,11 @@ https://github.com/rp10000/chatgpt-native-bridge
 
 你可以优先运行：
 
-npx --yes --package github:rp10000/chatgpt-native-bridge cgn setup --mcp
+npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp
 
 然后运行：
 
-npx --yes --package github:rp10000/chatgpt-native-bridge cgn doctor
+npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn doctor
 
 确认 .agents/skills/chatgpt-native-bridge/SKILL.md 和 .chatgpt-native/project-instructions.md 已生成。
 
@@ -74,7 +74,7 @@ npx --yes --package github:rp10000/chatgpt-native-bridge cgn doctor
 你自己运行：
 
 ```bash
-npx --yes --package github:rp10000/chatgpt-native-bridge cgn setup --mcp
+npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp
 ```
 
 然后重启 Codex，或打开一个新的 Codex 线程。ChatGPT 连接好以后，用户只需要在 ChatGPT 里自然语言要求它复核项目并写回 Codex。
@@ -109,8 +109,8 @@ cgn done
 ```text
 使用 chatgpt-native-bridge 做一次架构复核。
 先检查 .chatgpt-native/inbox 是否已有新回复，有就读取 reply.md 和 CODEX_READ_THIS.md。
-优先走 MCP 主路径。如果 ChatGPT 还没连接，你来运行或提示我运行 npx --yes --package github:rp10000/chatgpt-native-bridge cgn mcp connect --yes --open。
-如果 MCP 还没安装，你来运行或提示我运行 npx --yes --package github:rp10000/chatgpt-native-bridge cgn setup --mcp，然后提醒我重启 Codex 或打开新线程。
+优先走 MCP 主路径。如果 ChatGPT 还没连接，你来运行或提示我运行 npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn mcp connect --yes --open。
+如果 MCP 还没安装，你来运行或提示我运行 npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp，然后提醒我重启 Codex 或打开新线程。
 如果 MCP 不可用，再运行 cgn handoff，告诉我需要在 ChatGPT 里粘贴什么、上传什么。
 等 ChatGPT 自动写回，或我运行 cgn done 导入回复后，你读取 reply.md，继续执行。
 ```
@@ -163,8 +163,8 @@ cgn import latest --from-clipboard
 请使用 chatgpt-native-bridge。
 
 先检查 .chatgpt-native/inbox 是否已有新回复，有就读取 reply.md 和 CODEX_READ_THIS.md。
-优先走 MCP 主路径。如果 ChatGPT 还没连接，请运行或提示我运行 npx --yes --package github:rp10000/chatgpt-native-bridge cgn mcp connect --yes --open。
-如果 MCP 还没安装，请运行或提示我运行 npx --yes --package github:rp10000/chatgpt-native-bridge cgn setup --mcp，然后重启 Codex 或打开新线程。
+优先走 MCP 主路径。如果 ChatGPT 还没连接，请运行或提示我运行 npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn mcp connect --yes --open。
+如果 MCP 还没安装，请运行或提示我运行 npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp，然后重启 Codex 或打开新线程。
 如果 MCP 不可用，再运行 cgn handoff 生成并打开 handoff，告诉我需要在 ChatGPT 里粘贴什么、上传什么。
 等 ChatGPT 自动写回，或我运行 cgn done 导入回复后，
 你读取 .chatgpt-native/inbox/{id}/reply.md 和 CODEX_READ_THIS.md，

@@ -13,7 +13,7 @@ Codex Native Advisor
 在本地项目里运行：
 
 ```bash
-npx --yes --package github:rp10000/chatgpt-native-bridge cgn setup --mcp
+npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp
 ```
 
 然后打开：

@@ -7,12 +7,12 @@ This tutorial shows the MCP-first loop, then the Markdown fallback loop. It uses
 ![Run cgn setup --mcp](assets/quickstart/01-init.svg)
 
 ```bash
-npx --yes --package github:rp10000/chatgpt-native-bridge cgn setup --mcp
+npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp
 ```
 
 This creates the Codex Skill, the `.chatgpt-native` workspace, and the Codex MCP config block. Restart Codex, or open a new Codex thread, after this step.
 
-If `cgn` is not installed globally, run later commands as `npx --yes --package github:rp10000/chatgpt-native-bridge cgn <command>`.
+If `cgn` is not installed globally, run later commands as `npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn <command>`.
 
 ## 2. Create a ChatGPT Project
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.4.1
+
+- Fix GitHub npx command examples and generated Codex MCP config to include the required `--` command separator.
+- Update tests so the MCP config cannot regress to the failing `npx --package ... cgn ...` form.
+
+## v0.4.0
+
+- Add bounded local MCP agent tools: `agent_start_task`, `agent_status`, `agent_read_log`, `agent_read_result`, and `agent_stop`.
+- Add `cgn agent start/status/log/result/stop` for local testing and inbox writeback.
+- Write local agent results into `.chatgpt-native/agent/runs/{id}` and `.chatgpt-native/inbox/{id}` for Codex to continue.
+- Keep the safety boundary: no arbitrary shell, no direct source edits, no commit, no push.
+
 ## v0.2.11
 
 - Add loose `outputSchema` declarations for every MCP tool so ChatGPT app discovery gets complete descriptors when tools return `structuredContent`.
@@ -23,8 +35,8 @@
 
 ## v0.2.8
 
-- Use the more reliable GitHub npx form: `npx --yes --package github:rp10000/chatgpt-native-bridge cgn ...`.
-- Update generated Codex MCP config to launch through `npx --yes --package ... cgn mcp serve --stdio`.
+- Use the more reliable GitHub npx form: `npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn ...`.
+- Update generated Codex MCP config to launch through `npx --yes --package ... -- cgn mcp serve --stdio`.
 - Keep local/global users on the shorter `cgn ...` commands after installation.
 
 ## v0.2.7
@@ -74,7 +86,7 @@
 
 - Add one-command Codex MCP installation with `cgn setup --mcp`.
 - Add `cgn mcp install` to write the `chatgpt-native-bridge` MCP server block into Codex config.
-- Use `npx --yes --package github:rp10000/chatgpt-native-bridge cgn mcp serve --stdio` in generated MCP config so users do not need a global `cgn` install.
+- Use `npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn mcp serve --stdio` in generated MCP config so users do not need a global `cgn` install.
 - Update README, quickstart, Skill template, guide prompts, and troubleshooting docs for the MCP install-first workflow.
 - Keep manual `cgn mcp serve` and Markdown handoff as fallback paths.
 

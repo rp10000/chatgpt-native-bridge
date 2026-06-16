@@ -19,6 +19,7 @@ test("buildCodexMcpBlock uses npx GitHub command by default", () => {
   assert.match(block, /command = "npx"/);
   assert.match(block, /"--package"/);
   assert.match(block, /"github:rp10000\/chatgpt-native-bridge"/);
+  assert.match(block, /"--"/);
   assert.match(block, /"cgn"/);
   assert.match(block, /"mcp"/);
   assert.match(block, /"serve"/);
@@ -74,6 +75,7 @@ test("installCodexMcp writes config and supports dry-run", async () => {
   assert.match(written, /model = "gpt-5\.5"/);
   assert.match(written, /\[mcp_servers\."chatgpt-native-bridge"\]/);
   assert.match(written, /"--package"/);
+  assert.match(written, /"--"/);
   assert.match(written, /"cgn"/);
   assert.match(written, /"--root"/);
   assert.match(written, new RegExp(escapeRegExp(JSON.stringify(cwd))));

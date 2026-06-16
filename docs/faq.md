@@ -46,4 +46,4 @@ Do not upload secrets, private keys, cookies, session dumps, authorization heade
 
 ## How does Codex know when to use the bridge?
 
-`npx --yes --package github:rp10000/chatgpt-native-bridge cgn setup --mcp` installs `.agents/skills/chatgpt-native-bridge/SKILL.md` and the Codex MCP config block. You can also explicitly tell Codex: `Use chatgpt-native-bridge for this task.`
+`npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp` installs `.agents/skills/chatgpt-native-bridge/SKILL.md` and the Codex MCP config block. You can also explicitly tell Codex: `Use chatgpt-native-bridge for this task.`

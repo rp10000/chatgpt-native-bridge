@@ -32,7 +32,7 @@ The user controls the visible ChatGPT session.
 2. Prefer the MCP-first path:
    - Tell the user to ask ChatGPT naturally, such as: "Use chatgpt-native-bridge to review this project and send your final advice back to Codex."
    - ChatGPT should call MCP tools and `submit_reply_to_codex` automatically.
-   - If the MCP server is not available in Codex, ask the user to run `npx --yes --package github:rp10000/chatgpt-native-bridge cgn setup --mcp`, then restart Codex or open a new thread.
+   - If the MCP server is not available in Codex, ask the user to run `npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp`, then restart Codex or open a new thread.
    - If the project was already initialized but MCP is missing, run `cgn mcp install`.
 3. When MCP is unavailable, create a visible fallback handoff with `cgn handoff`.
 4. Include only relevant context:

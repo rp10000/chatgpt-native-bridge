@@ -76,7 +76,7 @@ test("guide codex prints a ready-to-copy Codex prompt", async () => {
 
   assert.match(io.output(), /Copy this into Codex:/);
   assert.match(io.output(), /Use chatgpt-native-bridge for this task/);
-  assert.match(io.output(), /npx --yes --package github:rp10000\/chatgpt-native-bridge cgn setup --mcp/);
+  assert.match(io.output(), /npx --yes --package github:rp10000\/chatgpt-native-bridge -- cgn setup --mcp/);
   assert.match(io.output(), /restart Codex/);
   assert.match(io.output(), /cgn handoff/);
   assert.match(io.output(), /cgn done/);
@@ -90,7 +90,7 @@ test("guide codex supports Chinese output", async () => {
   await main(["guide", "codex", "--lang", "zh-CN"], io);
 
   assert.match(io.output(), /chatgpt-native-bridge/);
-  assert.match(io.output(), /npx --yes --package github:rp10000\/chatgpt-native-bridge cgn setup --mcp/);
+  assert.match(io.output(), /npx --yes --package github:rp10000\/chatgpt-native-bridge -- cgn setup --mcp/);
   assert.match(io.output(), /重启 Codex/);
   assert.match(io.output(), /cgn done/);
   assert.match(io.output(), /CODEX_READ_THIS\.md/);
