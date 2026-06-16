@@ -46,7 +46,7 @@ test("ChatGPT project instructions define the automatic MCP loop", async () => {
 
   assert.match(instructions, /Use the local MCP bridge automatically/);
   assert.match(instructions, /The user should not need to name MCP tools/);
-  assert.match(instructions, /Call `bridge_status` first/);
+  assert.match(instructions, /Call `review_current_project` first/);
   assert.match(instructions, /Before your final answer, call `submit_reply_to_codex`/);
   assert.match(instructions, /Submit the final advice back to Codex yourself/);
 });

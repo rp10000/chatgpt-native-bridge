@@ -36,6 +36,12 @@ cgn mcp connect --yes --open
 
 Create the ChatGPT connector with the printed fields.
 
+After selecting the app in ChatGPT, keep the terminal open and verify the first real tool call:
+
+```bash
+cgn mcp wait
+```
+
 Manual HTTP server fallback:
 
 ```bash
@@ -50,6 +56,14 @@ Ask ChatGPT naturally:
 Use chatgpt-native-bridge to review this project.
 Check the current project state and diff, read relevant files if needed,
 then send your final advice back to Codex.
+```
+
+If ChatGPT does not call the connector, use the stronger prompt:
+
+```text
+Use chatgpt-native-bridge now.
+First call review_current_project.
+Then call submit_reply_to_codex with your final advice for Codex.
 ```
 
 ChatGPT should inspect the project and write its final advice back to:

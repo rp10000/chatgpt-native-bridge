@@ -66,6 +66,14 @@ cgn mcp connect --yes --open
 
 This starts the local server, installs `cloudflared` if needed, starts a temporary HTTPS tunnel, copies the `https://.../mcp` Server URL to your clipboard, and opens ChatGPT. On Windows it tries `winget` first; if `winget` fails, it downloads `cloudflared.exe` into `.chatgpt-native/bin/` for this project.
 
+After selecting the app in ChatGPT, verify that ChatGPT really used it:
+
+```bash
+cgn mcp wait
+```
+
+The ChatGPT UI can show the app as selected before any tool call happens. `cgn mcp wait` watches the local audit log and confirms whether a real MCP call arrived.
+
 In ChatGPT, use:
 
 ```text
@@ -111,6 +119,15 @@ ChatGPT should call the bridge tools automatically and use `submit_reply_to_code
 Read the latest ChatGPT reply and continue.
 ```
 
+If ChatGPT does not call the connector, send:
+
+```text
+Use chatgpt-native-bridge now.
+First call review_current_project.
+Read relevant files only if needed.
+Then call submit_reply_to_codex with your final advice for Codex.
+```
+
 Official OpenAI references:
 
 - [Apps SDK](https://developers.openai.com/apps-sdk)
@@ -123,6 +140,7 @@ Do not use hidden ChatGPT endpoints, browser scraping, localStorage extraction, 
 
 | Tool | Purpose |
 | --- | --- |
+| `review_current_project` | One-call project review entry: status, git state, safe diff, and next write-back step. |
 | `bridge_status` | Read local bridge, git, handoff, and reply status. |
 | `create_handoff` | Create a self-explaining handoff pack for a task. |
 | `list_handoff_files` | List generated handoff files and upload candidates. |
@@ -137,10 +155,11 @@ Do not use hidden ChatGPT endpoints, browser scraping, localStorage extraction, 
 1. Run npx github:rp10000/chatgpt-native-bridge setup --mcp once per project.
 2. Restart Codex, or open a new Codex thread, so MCP config reloads.
 3. Ask ChatGPT/Codex to inspect the project through the bridge MCP tools.
-4. ChatGPT calls create_handoff or reads bounded files as needed.
-5. ChatGPT calls submit_reply_to_codex with final advice.
-6. Codex reads .chatgpt-native/inbox/{id}/CODEX_READ_THIS.md and reply.md.
-7. Codex continues local implementation and runs tests.
+4. Optionally run `cgn mcp wait` to confirm ChatGPT really called the connector.
+5. ChatGPT calls `review_current_project`, then reads bounded files only as needed.
+6. ChatGPT calls submit_reply_to_codex with final advice.
+7. Codex reads .chatgpt-native/inbox/{id}/CODEX_READ_THIS.md and reply.md.
+8. Codex continues local implementation and runs tests.
 ```
 
 ## Stdio mode

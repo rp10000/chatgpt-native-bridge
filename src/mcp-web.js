@@ -40,6 +40,9 @@ Then copy the printed HTTPS /mcp URL into ChatGPT:
   Server URL: the printed https://.../mcp URL
   Authentication: No authentication
 
+After selecting the app in ChatGPT:
+  cgn mcp wait
+
 Local MCP URL:
   ${localBase}/mcp
 
@@ -74,6 +77,9 @@ ChatGPT fields:
   Server URL: the printed https://.../mcp URL
   Authentication: No authentication
   Final step: click Create in ChatGPT
+
+After selecting the app in ChatGPT:
+  cgn mcp wait
 `;
 }
 
@@ -198,6 +204,8 @@ async function runCloudflareTunnel({
       stdout.write(`  Server URL: ${serverUrl}\n`);
       stdout.write("  Authentication: No authentication\n");
       stdout.write("  Final step: click Create in ChatGPT\n\n");
+      stdout.write("After selecting the app in ChatGPT:\n");
+      stdout.write("  cgn mcp wait\n\n");
     }
     stdout.write(text);
   };

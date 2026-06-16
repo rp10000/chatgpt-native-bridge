@@ -13,6 +13,7 @@ const { startMcpHttpServer } = require("../src/mcp-server");
 
 test("MCP tool list is the stable minimum bridge surface", () => {
   assert.deepEqual(TOOL_NAMES, [
+    "review_current_project",
     "bridge_status",
     "create_handoff",
     "list_handoff_files",
@@ -25,13 +26,36 @@ test("MCP tool list is the stable minimum bridge surface", () => {
 
 test("MCP tool descriptions guide the automatic ChatGPT loop", () => {
   const tools = createMcpToolRegistry({ cwd: process.cwd() });
+  const reviewProject = tools.find((tool) => tool.name === "review_current_project");
   const bridgeStatus = tools.find((tool) => tool.name === "bridge_status");
   const readDiff = tools.find((tool) => tool.name === "read_git_diff");
   const submitReply = tools.find((tool) => tool.name === "submit_reply_to_codex");
 
-  assert.match(bridgeStatus.config.description, /Call this first/);
+  assert.match(reviewProject.config.description, /Call this automatically/);
+  assert.match(reviewProject.config._meta["openai/toolInvocation/invoking"], /Reviewing/);
+  assert.match(bridgeStatus.config.description, /prefer review_current_project/);
   assert.match(readDiff.config.description, /Call this after bridge_status/);
   assert.match(submitReply.config.description, /call this automatically before your final answer/);
+});
+
+test("review_current_project returns bounded project status and next action", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-mcp-review-"));
+  await initProject({ cwd });
+
+  const review = await runMcpTool(
+    "review_current_project",
+    {
+      task: "Review the current project",
+      includeDiff: true,
+      maxBytes: 1024
+    },
+    { cwd }
+  );
+
+  assert.equal(review.cwd, cwd);
+  assert.equal(review.task, "Review the current project");
+  assert.equal(review.diff.available, false);
+  assert.match(review.nextAction, /submit_reply_to_codex/);
 });
 
 test("read_repo_file blocks traversal and sensitive local files", async () => {

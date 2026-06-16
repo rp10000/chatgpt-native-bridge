@@ -6,11 +6,12 @@ Use the local MCP bridge automatically when tools are available.
 
 The user should not need to name MCP tools. When the user asks for project help, code review, planning, architecture advice, UX/copy review, research, or "send this back to Codex", follow this loop by default:
 
-1. Call `bridge_status` first.
-2. Call `read_git_diff` when there may be local changes.
-3. Read relevant files with `read_repo_file` only when needed.
-4. Create a handoff with `create_handoff` only when a self-contained package is useful.
-5. Before your final answer, call `submit_reply_to_codex` with your final Markdown advice so Codex can continue locally.
+1. Call `review_current_project` first.
+2. Read relevant files with `read_repo_file` only when needed.
+3. Create a handoff with `create_handoff` only when a self-contained package is useful.
+4. Before your final answer, call `submit_reply_to_codex` with your final Markdown advice so Codex can continue locally.
+
+Use `bridge_status` and `read_git_diff` only when you need lower-level status or diff checks after the first review call.
 
 Only skip `submit_reply_to_codex` when the user is clearly just asking a casual question that does not need Codex to act.
 

@@ -5,6 +5,7 @@ const { formatDoctorReport, getDoctorReport } = require("./doctor");
 const { TOOL_NAMES } = require("./mcp-tools");
 const { startMcpHttpServer, startMcpStdio } = require("./mcp-server");
 const { formatMcpWebGuide, runCloudflareTunnel, runWebConnect } = require("./mcp-web");
+const { DEFAULT_WAIT_SECONDS, formatMcpWaitResult, waitForMcpCall } = require("./mcp-wait");
 
 const DEFAULT_MCP_HOST = "127.0.0.1";
 const DEFAULT_MCP_PORT = 47832;
@@ -38,6 +39,15 @@ async function runMcpCommand({ subcommand, args, cwd, stdout, stderr }) {
   if (subcommand === "doctor") {
     const report = await getDoctorReport({ cwd: root });
     stdout.write(formatMcpDoctor({ cwd: root, host, port, report }));
+    return;
+  }
+
+  if (subcommand === "wait") {
+    const result = await waitForMcpCall({
+      cwd: root,
+      timeoutSeconds: parsed.flags.timeout || DEFAULT_WAIT_SECONDS
+    });
+    stdout.write(formatMcpWaitResult(result));
     return;
   }
 
@@ -154,6 +164,7 @@ function mcpHelpText() {
 Usage:
   cgn mcp install
   cgn mcp connect --yes --open
+  cgn mcp wait
   cgn mcp web
   cgn mcp tunnel
   cgn mcp serve --host 127.0.0.1 --port 47832
@@ -169,6 +180,7 @@ Options:
   --open             Open the ChatGPT connector settings page when the HTTPS URL is ready.
   --port PORT         HTTP bind port. Defaults to 47832.
   --stdio             Serve over stdio instead of HTTP.
+  --timeout SECONDS   How long cgn mcp wait should watch for a real ChatGPT MCP tool call. Defaults to 120.
 `;
 }
 

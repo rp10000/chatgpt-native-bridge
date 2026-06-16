@@ -212,7 +212,8 @@ function parseArgs(args) {
     "host",
     "port",
     "root",
-    "codex-home"
+    "codex-home",
+    "timeout"
   ]);
 
   for (let index = 0; index < args.length; index += 1) {
@@ -309,6 +310,7 @@ Usage:
   cgn setup --mcp
   cgn mcp install
   cgn mcp connect --yes --open
+  cgn mcp wait
   cgn mcp web
   cgn mcp tunnel
   cgn mcp serve --host 127.0.0.1 --port 47832
@@ -335,6 +337,7 @@ MCP:
   cgn setup --mcp  Initialize the project and install this MCP into Codex config.
   cgn mcp install  Install the Codex MCP config block for this project.
   cgn mcp connect  Start server, HTTPS tunnel, and optionally open ChatGPT.
+  cgn mcp wait     Watch for a real ChatGPT MCP tool call in the audit log.
   cgn mcp web      Print the shortest ChatGPT web connector setup.
   cgn mcp tunnel   Start a Cloudflare Tunnel and print the HTTPS /mcp URL.
   cgn mcp serve   Start the local MCP server at http://127.0.0.1:47832/mcp.

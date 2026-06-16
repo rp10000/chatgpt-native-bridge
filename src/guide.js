@@ -15,10 +15,11 @@ research, image direction, or diff review:
 2. Prefer the MCP-first path. If the ChatGPT connector is available, tell me to ask ChatGPT naturally: "Use chatgpt-native-bridge to review this project and send your final advice back to Codex."
 3. If MCP is not installed, run or ask me to run npx github:rp10000/chatgpt-native-bridge setup --mcp, then restart Codex or open a new thread.
 4. If ChatGPT web is not connected, run or ask me to run npx github:rp10000/chatgpt-native-bridge mcp connect --yes --open.
-5. If MCP is unavailable, run cgn handoff with the right --type values and tell me what to paste or upload into ChatGPT.
-6. After ChatGPT writes back through MCP or I run cgn done, read .chatgpt-native/inbox/{id}/reply.md and CODEX_READ_THIS.md.
-7. Apply only useful recommendations locally.
-8. Run tests.
+5. If ChatGPT is selected but no reply appears, run or ask me to run npx github:rp10000/chatgpt-native-bridge mcp wait to confirm whether ChatGPT actually called MCP.
+6. If MCP is unavailable, run cgn handoff with the right --type values and tell me what to paste or upload into ChatGPT.
+7. After ChatGPT writes back through MCP or I run cgn done, read .chatgpt-native/inbox/{id}/reply.md and CODEX_READ_THIS.md.
+8. Apply only useful recommendations locally.
+9. Run tests.
 `;
 }
 

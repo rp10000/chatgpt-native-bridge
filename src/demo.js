@@ -20,24 +20,27 @@ function demoText() {
    - Server URL: the copied https://.../mcp URL
    - Authentication: No authentication
 
-7. In ChatGPT, ask naturally:
+7. After selecting the app in ChatGPT, verify that it really calls MCP:
+   cgn mcp wait
+
+8. In ChatGPT, ask naturally:
    Use chatgpt-native-bridge to review this project and send your final advice back to Codex.
 
-8. If web MCP is unavailable, use the Markdown fallback:
+9. If web MCP is unavailable, use the Markdown fallback:
    cgn handoff --task "Review onboarding UX" --type plan,ux-review,naming-copy
 
-9. In fallback mode:
+10. In fallback mode:
    - paste 01_PASTE_TO_CHATGPT.md
    - upload context.md and any files/screenshots from the outbox
    - use native ChatGPT tools when helpful
 
-10. Copy ChatGPT's final answer, then import it:
+11. Copy ChatGPT's final answer, then import it:
    cgn done
 
-11. Ask Codex to read:
+12. Ask Codex to read:
    .chatgpt-native/inbox/{id}/reply.md
 
-12. Codex continues local implementation and runs relevant checks.
+13. Codex continues local implementation and runs relevant checks.
 `;
 }
 

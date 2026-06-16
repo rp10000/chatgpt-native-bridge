@@ -72,6 +72,14 @@ cgn mcp connect --yes --open
 
 This starts the local MCP server, installs `cloudflared` if needed, starts a temporary HTTPS tunnel, copies the `https://.../mcp` Server URL to your clipboard, and opens ChatGPT. On Windows it tries `winget` first; if `winget` fails, it downloads `cloudflared.exe` into `.chatgpt-native/bin/` for this project.
 
+After you select the app in ChatGPT, verify that ChatGPT really called it:
+
+```bash
+cgn mcp wait
+```
+
+Seeing the app checked in the ChatGPT UI only means it is selected. `cgn mcp wait` confirms a real MCP tool call.
+
 ChatGPT cannot be created by a local CLI without using browser automation or hidden web calls. The final ChatGPT step is still visible and manual:
 
 ```text
@@ -99,6 +107,15 @@ After the connector is created, do not ask the user to remember tool names. In C
 Use chatgpt-native-bridge to review this project.
 Check the current project state and diff, read relevant files if needed,
 then send your final advice back to Codex.
+```
+
+If ChatGPT does not start using the connector, send this stronger prompt:
+
+```text
+Use chatgpt-native-bridge now.
+First call review_current_project.
+Read relevant files only if needed.
+Then call submit_reply_to_codex with your final advice for Codex.
 ```
 
 ChatGPT should automatically inspect the project through MCP and call `submit_reply_to_codex` before it finishes. Then return to Codex and say:
@@ -253,6 +270,7 @@ Available MCP tools:
 
 | Tool | Purpose |
 | --- | --- |
+| `review_current_project` | One-call project review entry: status, git state, safe diff, and next write-back step. |
 | `bridge_status` | Read local bridge, git, handoff, and reply status. |
 | `create_handoff` | Create a self-explaining handoff pack. |
 | `list_handoff_files` | List generated handoff files and upload candidates. |
@@ -370,6 +388,7 @@ Do not use this for:
 cgn setup --mcp
 cgn mcp install
 cgn mcp connect --yes --open
+cgn mcp wait
 cgn mcp web
 cgn mcp tunnel
 cgn mcp doctor
@@ -397,6 +416,8 @@ MCP users can start with `cgn setup --mcp`, `cgn mcp install`, and `cgn mcp doct
 
 `cgn demo` prints the end-to-end workflow. `cgn doctor` checks whether a project has the skill, Project instructions, outbox/inbox folders, and latest handoff/reply state. `cgn guide codex` prints a ready-to-copy prompt for Codex, and `cgn guide codex --lang zh-CN` prints the Chinese version.
 The MCP server exposes only bounded local context tools and does not expose shell execution.
+
+If `cgn mcp wait` says no tool call was observed, ChatGPT did not actually use the connector in that chat yet. Re-select `chatgpt-native-bridge` in ChatGPT and ask it to call `review_current_project`.
 
 ## Request types
 

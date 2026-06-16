@@ -19,6 +19,7 @@ test("demo prints the MCP-first bridge workflow", async () => {
   assert.match(io.output(), /cgn setup --mcp/);
   assert.match(io.output(), /cgn mcp install/);
   assert.match(io.output(), /cgn mcp connect --yes --open/);
+  assert.match(io.output(), /cgn mcp wait/);
   assert.match(io.output(), /cgn mcp web/);
   assert.match(io.output(), /cgn handoff --task "Review onboarding UX"/);
   assert.match(io.output(), /cgn done/);
@@ -133,6 +134,16 @@ test("mcp connect supports dry-run without starting long-lived processes", async
   assert.match(io.output(), /Start the local MCP server/);
   assert.match(io.output(), /Install cloudflared/);
   assert.match(io.output(), /Open the ChatGPT connector settings page/);
+});
+
+test("mcp wait explains when ChatGPT selected the app but did not call it", async () => {
+  const io = createIo(await fs.mkdtemp(path.join(os.tmpdir(), "cgn-mcp-wait-")));
+
+  await main(["mcp", "wait", "--timeout", "0"], io);
+
+  assert.match(io.output(), /No MCP tool call observed/);
+  assert.match(io.output(), /selected in the UI/);
+  assert.match(io.output(), /review_current_project/);
 });
 
 test("mcp tunnel supports dry-run without starting a long-lived process", async () => {

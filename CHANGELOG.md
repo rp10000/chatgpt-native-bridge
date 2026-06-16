@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.2.7
+
+- Add `review_current_project` as the default one-call MCP entry for ChatGPT project review, planning, and continuation.
+- Add `cgn mcp wait` so users can verify whether ChatGPT actually called the connector instead of only selecting it in the UI.
+- Add ChatGPT Apps `_meta` invocation labels to MCP tool descriptors.
+- Update README, Chinese README, MCP docs, quickstart, demo, and Codex guide with the new verification flow.
+
 ## v0.2.6
 
 - Make the recommended ChatGPT flow automatic: users ask naturally, ChatGPT should inspect the project through MCP and write final advice back to Codex.

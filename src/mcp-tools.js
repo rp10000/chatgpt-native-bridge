@@ -15,6 +15,7 @@ const { getStatus } = require("./status");
 const DEFAULT_MAX_BYTES = 200 * 1024;
 const MAX_LISTED_FILES = 200;
 const TOOL_NAMES = [
+  "review_current_project",
   "bridge_status",
   "create_handoff",
   "list_handoff_files",
@@ -28,11 +29,60 @@ function createMcpToolRegistry(options = {}) {
   const cwd = path.resolve(options.cwd || process.cwd());
   return [
     {
+      name: "review_current_project",
+      config: {
+        title: "Review current project",
+        description: "Call this automatically when the user asks chatgpt-native-bridge to review, inspect, plan, or continue work on the current local project. It returns project status, git status, current diff when safe, and the expected next write-back step for Codex.",
+        inputSchema: {
+          task: z.string().optional().describe("What the user wants reviewed or planned."),
+          includeDiff: z.boolean().optional().describe("Include the current git diff when safe. Defaults to true."),
+          maxBytes: z.number().int().positive().optional().describe("Maximum diff bytes to return.")
+        },
+        annotations: readOnlyAnnotations(),
+        _meta: toolMeta("Reviewing the local project", "Local project review ready")
+      },
+      handler: withAudit(cwd, "review_current_project", async (args) => {
+        const status = await getStatus({ cwd });
+        let latestHandoff = null;
+        try {
+          latestHandoff = await resolveRunId(cwd, "latest");
+        } catch {
+          latestHandoff = null;
+        }
+
+        const includeDiff = args.includeDiff !== false;
+        const diff = includeDiff
+          ? await readGitDiffForMcp(cwd, args.maxBytes)
+          : {
+              available: false,
+              reason: "includeDiff was false",
+              text: "",
+              bytes: 0,
+              truncated: false
+            };
+
+        return {
+          cwd,
+          packageVersion: require("../package.json").version,
+          task: args.task || "",
+          gitStatus: await getGitStatus(cwd),
+          latestHandoff,
+          pending: status.pending.map((item) => item.id),
+          ready: status.ready.map((item) => item.id),
+          diff,
+          safety: safetySummary(),
+          nextAction:
+            "Use this context to answer the user. Read only relevant repo files if needed, then call submit_reply_to_codex with final Markdown advice before your final answer so Codex can continue locally."
+        };
+      })
+    },
+    {
       name: "bridge_status",
       config: {
         title: "Bridge status",
-        description: "Call this first for normal project tasks. It confirms the local project root, git state, latest handoff, and reply status.",
-        annotations: readOnlyAnnotations()
+        description: "Return the local project root, git state, latest handoff, and reply status. For normal project review, prefer review_current_project because it combines status and safe diff context.",
+        annotations: readOnlyAnnotations(),
+        _meta: toolMeta("Checking bridge status", "Bridge status ready")
       },
       handler: withAudit(cwd, "bridge_status", async () => {
         const status = await getStatus({ cwd });
@@ -52,7 +102,7 @@ function createMcpToolRegistry(options = {}) {
           ready: status.ready.map((item) => item.id),
           safety: safetySummary(),
           nextAction:
-            "For normal project advice, call read_git_diff next, then read relevant files only as needed, then call submit_reply_to_codex with final Markdown advice before answering the user."
+            "For normal project advice, call review_current_project or read_git_diff next, then read relevant files only as needed, then call submit_reply_to_codex with final Markdown advice before answering the user."
         };
       })
     },
@@ -84,7 +134,8 @@ function createMcpToolRegistry(options = {}) {
           destructiveHint: false,
           idempotentHint: false,
           openWorldHint: false
-        }
+        },
+        _meta: toolMeta("Creating handoff", "Handoff ready")
       },
       handler: withAudit(cwd, "create_handoff", async (args) => {
         const result = await createAsk({
@@ -118,7 +169,8 @@ function createMcpToolRegistry(options = {}) {
         inputSchema: {
           id: z.string().optional().describe('Run id, or omit/use "latest".')
         },
-        annotations: readOnlyAnnotations()
+        annotations: readOnlyAnnotations(),
+        _meta: toolMeta("Listing handoff files", "Handoff files ready")
       },
       handler: withAudit(cwd, "list_handoff_files", async (args) => {
         const id = await resolveRunId(cwd, args.id || "latest");
@@ -144,7 +196,8 @@ function createMcpToolRegistry(options = {}) {
           file: z.string().min(1).describe("Relative file path inside the handoff outbox."),
           maxBytes: z.number().int().positive().optional().describe("Maximum bytes to read.")
         },
-        annotations: readOnlyAnnotations()
+        annotations: readOnlyAnnotations(),
+        _meta: toolMeta("Reading handoff file", "Handoff file ready")
       },
       handler: withAudit(cwd, "read_handoff_file", async (args) => {
         const id = await resolveRunId(cwd, args.id || "latest");
@@ -173,7 +226,8 @@ function createMcpToolRegistry(options = {}) {
           path: z.string().min(1).describe("Relative path inside the current project."),
           maxBytes: z.number().int().positive().optional().describe("Maximum bytes to read.")
         },
-        annotations: readOnlyAnnotations()
+        annotations: readOnlyAnnotations(),
+        _meta: toolMeta("Reading repo file", "Repo file ready")
       },
       handler: withAudit(cwd, "read_repo_file", async (args) => {
         const read = await readSafeTextFile({
@@ -198,33 +252,13 @@ function createMcpToolRegistry(options = {}) {
         inputSchema: {
           maxBytes: z.number().int().positive().optional().describe("Maximum bytes to return.")
         },
-        annotations: readOnlyAnnotations()
+        annotations: readOnlyAnnotations(),
+        _meta: toolMeta("Reading git diff", "Git diff ready")
       },
       handler: withAudit(cwd, "read_git_diff", async (args) => {
-        const diff = await getGitDiff(cwd);
-        if (!diff.available) {
-          return {
-            available: false,
-            reason: diff.reason,
-            text: "",
-            nextAction:
-              "If no diff is available, answer from bridge_status and relevant files when needed, then call submit_reply_to_codex with final Markdown advice."
-          };
-        }
-
-        const inspection = inspectCandidate({ relativePath: "git-diff.patch", content: diff.text });
-        if (inspection.blocked) throw new Error(inspection.reason);
-
-        const maxBytes = clampMaxBytes(args.maxBytes);
-        const buffer = Buffer.from(diff.text, "utf8");
-        const truncated = buffer.length > maxBytes;
-        const text = truncated ? buffer.subarray(0, maxBytes).toString("utf8") : diff.text;
-
+        const diff = await readGitDiffForMcp(cwd, args.maxBytes);
         return {
-          available: true,
-          bytes: buffer.length,
-          truncated,
-          text,
+          ...diff,
           nextAction:
             "If the diff is enough, call submit_reply_to_codex with final Markdown advice. If context is missing, call read_repo_file for only the relevant files, then submit_reply_to_codex."
         };
@@ -245,7 +279,8 @@ function createMcpToolRegistry(options = {}) {
           destructiveHint: false,
           idempotentHint: false,
           openWorldHint: false
-        }
+        },
+        _meta: toolMeta("Writing reply for Codex", "Reply saved for Codex")
       },
       handler: withAudit(cwd, "submit_reply_to_codex", async (args) => {
         const result = await importReply({
@@ -335,6 +370,34 @@ async function listFiles(rootDir, currentDir, result = []) {
   return result;
 }
 
+async function readGitDiffForMcp(cwd, maxBytesValue) {
+  const diff = await getGitDiff(cwd);
+  if (!diff.available) {
+    return {
+      available: false,
+      reason: diff.reason,
+      bytes: 0,
+      truncated: false,
+      text: ""
+    };
+  }
+
+  const inspection = inspectCandidate({ relativePath: "git-diff.patch", content: diff.text });
+  if (inspection.blocked) throw new Error(inspection.reason);
+
+  const maxBytes = clampMaxBytes(maxBytesValue);
+  const buffer = Buffer.from(diff.text, "utf8");
+  const truncated = buffer.length > maxBytes;
+  const text = truncated ? buffer.subarray(0, maxBytes).toString("utf8") : diff.text;
+
+  return {
+    available: true,
+    bytes: buffer.length,
+    truncated,
+    text
+  };
+}
+
 function normalizeRelativePath(value) {
   const input = String(value || "").trim();
   if (!input) throw new Error("A relative path is required.");
@@ -372,6 +435,13 @@ function readOnlyAnnotations() {
     destructiveHint: false,
     idempotentHint: true,
     openWorldHint: false
+  };
+}
+
+function toolMeta(invoking, invoked) {
+  return {
+    "openai/toolInvocation/invoking": invoking,
+    "openai/toolInvocation/invoked": invoked
   };
 }
 

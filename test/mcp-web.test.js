@@ -22,6 +22,7 @@ test("formatMcpWebGuide explains the ChatGPT web connector path", () => {
 
   assert.match(guide, /ChatGPT web connector setup/);
   assert.match(guide, /cgn mcp connect --yes --open/);
+  assert.match(guide, /cgn mcp wait/);
   assert.match(guide, /cgn mcp serve --host 127\.0\.0\.1 --port 47832/);
   assert.match(guide, /cgn mcp tunnel/);
   assert.match(guide, /https:\/\/chatgpt\.com\/#settings\/Connectors/);
@@ -36,6 +37,7 @@ test("formatConnectDryRun explains the one-command path", () => {
 
   assert.match(guide, /One-command ChatGPT web connect/);
   assert.match(guide, /cgn mcp connect --yes --open/);
+  assert.match(guide, /cgn mcp wait/);
   assert.match(guide, /Start the local MCP server/);
   assert.match(guide, /Install cloudflared/);
   assert.match(guide, /project-local download/);
