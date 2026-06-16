@@ -88,9 +88,26 @@ cgn handoff --task "Review this project" --type diff-review
 cgn done
 ```
 
-or test from a workspace with full MCP support.
+or use the GPT Actions fallback:
 
-If ChatGPT says `review_current_project` or `write_to_codex` is unavailable, refresh the app tools in ChatGPT settings or recreate the draft app with the latest `https://.../mcp` URL and `No authentication`. Use `0.2.13` or newer.
+```text
+When cgn mcp connect prints:
+  https://example.trycloudflare.com/mcp
+
+Import this OpenAPI URL into a Custom GPT Action:
+  https://example.trycloudflare.com/action/openapi.json
+
+Then tell the Custom GPT:
+  First call review_current_project.
+  Read relevant files only if needed.
+  Finally call write_to_codex with your final Markdown advice for Codex.
+```
+
+This fallback uses ChatGPT's official GPT Actions/OpenAPI route instead of MCP write actions. GPT Actions are not available in Pro mode; use an action-capable Custom GPT model for this fallback. It writes only to `.chatgpt-native/inbox`.
+
+You can also test from a workspace with full MCP support.
+
+If ChatGPT says `review_current_project` or `write_to_codex` is unavailable, refresh the app tools in ChatGPT settings or recreate the draft app with the latest `https://.../mcp` URL and `No authentication`. Use `0.3.0` or newer.
 
 Run `cgn mcp trace` to see whether ChatGPT reached `/mcp`, listed tools, or actually called a tool.
 

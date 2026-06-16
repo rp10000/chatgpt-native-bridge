@@ -205,6 +205,50 @@ test("HTTP MCP raw tools list includes ChatGPT app descriptor metadata", async (
   }
 });
 
+test("HTTP action OpenAPI exposes GPT Actions write-back fallback", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-action-openapi-"));
+  await initProject({ cwd });
+  const server = await startMcpHttpServer({ cwd, port: 0 });
+
+  try {
+    const response = await fetch(`${server.healthUrl.replace("/health", "")}/action/openapi.json`);
+    assert.equal(response.status, 200);
+    const schema = await response.json();
+    assert.equal(schema.info.title, "chatgpt-native-bridge Actions");
+    assert.equal(schema.paths["/action/review-current-project"].post.operationId, "review_current_project");
+    assert.equal(schema.paths["/action/write-to-codex"].post.operationId, "write_to_codex");
+  } finally {
+    await server.close();
+  }
+});
+
+test("HTTP action write-to-codex writes a Codex inbox reply", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-action-write-"));
+  await initProject({ cwd });
+  const server = await startMcpHttpServer({ cwd, port: 0 });
+  const baseUrl = server.healthUrl.replace("/health", "");
+
+  try {
+    const response = await fetch(`${baseUrl}/action/write-to-codex`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        markdown: "## Codex next actions\n- Continue through GPT Actions fallback.\n"
+      })
+    });
+    assert.equal(response.status, 200);
+    const result = await response.json();
+    assert.match(result.id, /mcp-reply/);
+    assert.equal(
+      await fs.readFile(path.join(cwd, ".chatgpt-native", "inbox", result.id, "reply.md"), "utf8"),
+      "## Codex next actions\n- Continue through GPT Actions fallback.\n"
+    );
+    assert.equal(await exists(result.codexReadThisPath), true);
+  } finally {
+    await server.close();
+  }
+});
+
 test("HTTP MCP server writes request trace events", async () => {
   const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-mcp-trace-"));
   await initProject({ cwd });

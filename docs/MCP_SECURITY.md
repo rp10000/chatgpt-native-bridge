@@ -1,6 +1,6 @@
 # MCP security boundary
 
-`chatgpt-native-bridge` exposes a local MCP server for ChatGPT. It is designed as a bounded context bridge, not a remote-control agent.
+`chatgpt-native-bridge` exposes a local MCP server for ChatGPT. The same HTTP server can also expose a GPT Actions fallback under `/action/*` when MCP write tools are unavailable. It is designed as a bounded context bridge, not a remote-control agent.
 
 ## What MCP can do
 
@@ -10,6 +10,14 @@
 - Read bounded non-sensitive repo text files.
 - Read the current git diff after secret-content checks.
 - Write ChatGPT's final Markdown reply under `.chatgpt-native/inbox`.
+
+The GPT Actions fallback exposes the same bounded read/write capability through REST endpoints:
+
+- `/action/openapi.json`
+- `/action/review-current-project`
+- `/action/read-repo-file`
+- `/action/read-git-diff`
+- `/action/write-to-codex`
 
 ## What MCP cannot do
 
@@ -42,7 +50,7 @@ These checks are lightweight safeguards, not enterprise DLP. Do not expose a pro
 
 ## Write boundary
 
-The MCP server only writes bridge-owned files:
+The MCP server and GPT Actions fallback only write bridge-owned files:
 
 ```text
 .chatgpt-native/outbox/
@@ -72,6 +80,10 @@ The default HTTP server binds to:
 
 Avoid binding to `0.0.0.0` unless you understand the network exposure and have an approved private tunnel or firewall rule.
 
+## Tunnel exposure
+
+Temporary tunnel URLs are bearer-like addresses. Anyone with the URL can reach the exposed MCP/Action endpoints while the tunnel is running. Keep the tunnel private, stop it when finished, and do not expose repositories containing data you would not allow ChatGPT to inspect.
+
 ## Why no shell tool
 
-The project exists to let ChatGPT plan, review, research, and advise while Codex executes locally. A shell tool would collapse that boundary and turn the bridge into a remote-control agent. That is intentionally out of scope for `v0.2.0`.
+The project exists to let ChatGPT plan, review, research, and advise while Codex executes locally. A shell tool would collapse that boundary and turn the bridge into a remote-control agent. That is intentionally out of scope.

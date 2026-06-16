@@ -9,7 +9,7 @@ const { StreamableHTTPServerTransport } = require("@modelcontextprotocol/sdk/ser
 const { isInitializeRequest, ListToolsRequestSchema } = require("@modelcontextprotocol/sdk/types.js");
 const z = require("zod/v4");
 
-const { createMcpToolRegistry } = require("./mcp-tools");
+const { createMcpToolRegistry, runMcpTool } = require("./mcp-tools");
 
 function createBridgeMcpServer(options = {}) {
   const cwd = options.cwd || process.cwd();
@@ -63,9 +63,15 @@ async function startMcpHttpServer(options = {}) {
         JSON.stringify({
           ok: true,
           name: "chatgpt-native-bridge",
-          endpoint: "/mcp"
+          endpoint: "/mcp",
+          actionOpenApi: "/action/openapi.json"
         })
       );
+      return;
+    }
+
+    if (url.pathname.startsWith("/action/")) {
+      await handleActionRequest({ req, res, url, cwd });
       return;
     }
 
@@ -253,6 +259,158 @@ function setCorsHeaders(res) {
     "accept,content-type,mcp-session-id,mcp-protocol-version,authorization,last-event-id"
   );
   res.setHeader("access-control-expose-headers", "mcp-session-id");
+}
+
+async function handleActionRequest({ req, res, url, cwd }) {
+  try {
+    if (req.method === "GET" && url.pathname === "/action/openapi.json") {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify(buildActionOpenApi(getPublicBaseUrl(req)), null, 2));
+      return;
+    }
+
+    if (req.method !== "POST") {
+      res.writeHead(405, { "content-type": "application/json" });
+      res.end(JSON.stringify({ error: "Method not allowed." }));
+      return;
+    }
+
+    const body = await readJsonBody(req);
+    const toolName = actionPathToToolName(url.pathname);
+    if (!toolName) {
+      res.writeHead(404, { "content-type": "application/json" });
+      res.end(JSON.stringify({ error: "Unknown action endpoint." }));
+      return;
+    }
+
+    const result = await runMcpTool(toolName, body || {}, { cwd });
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(JSON.stringify(result, null, 2));
+  } catch (error) {
+    if (!res.headersSent) {
+      res.writeHead(500, { "content-type": "application/json" });
+    }
+    res.end(JSON.stringify({ error: error.message || "Internal server error" }));
+  }
+}
+
+function actionPathToToolName(pathname) {
+  return {
+    "/action/review-current-project": "review_current_project",
+    "/action/read-repo-file": "read_repo_file",
+    "/action/read-git-diff": "read_git_diff",
+    "/action/write-to-codex": "write_to_codex"
+  }[pathname];
+}
+
+function getPublicBaseUrl(req) {
+  const host = req.headers["x-forwarded-host"] || req.headers.host || "127.0.0.1:47832";
+  const proto = req.headers["x-forwarded-proto"] || (String(host).includes("localhost") || String(host).includes("127.0.0.1") ? "http" : "https");
+  return `${proto}://${host}`;
+}
+
+function buildActionOpenApi(baseUrl) {
+  return {
+    openapi: "3.1.0",
+    info: {
+      title: "chatgpt-native-bridge Actions",
+      version: require("../package.json").version,
+      description:
+        "Fallback REST actions for ChatGPT Custom GPTs when MCP write tools are unavailable. Reads are bounded; write-back is limited to .chatgpt-native/inbox."
+    },
+    servers: [{ url: baseUrl }],
+    paths: {
+      "/action/review-current-project": {
+        post: {
+          operationId: "review_current_project",
+          summary: "Review the current local project",
+          description:
+            "Call first. Returns project status, git status, a bounded diff, safety notes, and the next write-back step for Codex.",
+          requestBody: jsonRequest({
+            type: "object",
+            properties: {
+              task: { type: "string", description: "What the user wants reviewed or planned." },
+              includeDiff: { type: "boolean", description: "Include current git diff when safe. Defaults to true." },
+              maxBytes: { type: "integer", minimum: 1, description: "Maximum diff bytes to return." }
+            }
+          }),
+          responses: jsonResponses()
+        }
+      },
+      "/action/read-repo-file": {
+        post: {
+          operationId: "read_repo_file",
+          summary: "Read a bounded safe repo file",
+          description:
+            "Read only relevant non-sensitive files. The server blocks path traversal, .env, keys, cookies, sessions, .git, node_modules, and secret-like content.",
+          requestBody: jsonRequest({
+            type: "object",
+            required: ["path"],
+            properties: {
+              path: { type: "string", description: "Relative path inside the current project." },
+              maxBytes: { type: "integer", minimum: 1, description: "Maximum bytes to read." }
+            }
+          }),
+          responses: jsonResponses()
+        }
+      },
+      "/action/read-git-diff": {
+        post: {
+          operationId: "read_git_diff",
+          summary: "Read the current git diff",
+          description: "Read the current git diff with secret-content guarding.",
+          requestBody: jsonRequest({
+            type: "object",
+            properties: {
+              maxBytes: { type: "integer", minimum: 1, description: "Maximum bytes to return." }
+            }
+          }),
+          responses: jsonResponses()
+        }
+      },
+      "/action/write-to-codex": {
+        post: {
+          operationId: "write_to_codex",
+          summary: "Write final advice back to Codex",
+          description:
+            "Call last. Writes ChatGPT's final Markdown advice into the local Codex inbox so Codex can continue local implementation and testing.",
+          requestBody: jsonRequest({
+            type: "object",
+            required: ["markdown"],
+            properties: {
+              id: { type: "string", description: "Optional run id. Omit to create a new MCP reply run." },
+              markdown: { type: "string", description: "Final Markdown advice for Codex." }
+            }
+          }),
+          responses: jsonResponses()
+        }
+      }
+    }
+  };
+}
+
+function jsonRequest(schema) {
+  return {
+    required: true,
+    content: {
+      "application/json": {
+        schema
+      }
+    }
+  };
+}
+
+function jsonResponses() {
+  return {
+    200: {
+      description: "OK",
+      content: {
+        "application/json": {
+          schema: { type: "object", additionalProperties: true }
+        }
+      }
+    }
+  };
 }
 
 function installChatGptToolListHandler(server, tools) {

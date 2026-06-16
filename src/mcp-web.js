@@ -40,6 +40,13 @@ Then copy the printed HTTPS /mcp URL into ChatGPT:
   Server URL: the printed https://.../mcp URL
   Authentication: No authentication
 
+GPT Actions write-back fallback:
+  If MCP does not expose write_to_codex, create a Custom GPT Action with an action-capable model.
+  GPT Actions are not available in Pro mode.
+  Import OpenAPI schema URL:
+    https://.../action/openapi.json
+  Use the same tunnel host as the printed https://.../mcp URL.
+
 After selecting the app in ChatGPT:
   cgn mcp wait
 
@@ -85,6 +92,13 @@ ChatGPT fields:
   Server URL: the printed https://.../mcp URL
   Authentication: No authentication
   Final step: click Create in ChatGPT
+
+GPT Actions write-back fallback:
+  If MCP does not expose write_to_codex, create a Custom GPT Action with an action-capable model.
+  GPT Actions are not available in Pro mode.
+  Import OpenAPI schema URL:
+    https://.../action/openapi.json
+  Use the same tunnel host as the printed https://.../mcp URL.
 
 After selecting the app in ChatGPT:
   cgn mcp wait
@@ -220,6 +234,11 @@ async function runCloudflareTunnel({
       stdout.write(`  Server URL: ${serverUrl}\n`);
       stdout.write("  Authentication: No authentication\n");
       stdout.write("  Final step: click Create in ChatGPT\n\n");
+      stdout.write("GPT Actions write-back fallback:\n");
+      stdout.write("  If MCP does not expose write_to_codex, create a Custom GPT Action with an action-capable model.\n");
+      stdout.write("  GPT Actions are not available in Pro mode.\n");
+      stdout.write(`  Import OpenAPI schema URL: ${tunnelUrl}/action/openapi.json\n`);
+      stdout.write("  Action endpoint write-back: /action/write-to-codex\n\n");
       stdout.write("After selecting the app in ChatGPT:\n");
       stdout.write("  cgn mcp wait\n\n");
       stdout.write("Account support:\n");

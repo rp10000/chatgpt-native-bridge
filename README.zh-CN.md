@@ -100,9 +100,26 @@ ChatGPT 界面里出现勾选，只表示应用被选中；`cgn mcp wait` 才能
 - 自动写回依赖 `write_to_codex`，这是写入动作。
 - OpenAI 当前文档把包含写入/修改动作的完整 MCP 标为面向 ChatGPT Business、Enterprise、Edu 逐步开放。
 - Pro 账号可能可以创建和扫描 MCP app，但聊天里可能只暴露 read/fetch 权限，不暴露 `write_to_codex`。
-- 如果 Pro 上 ChatGPT 说 bridge 工具不可用，请使用 Markdown 备用路径：`cgn handoff`，然后 `cgn done`；或者在支持完整 MCP 的 workspace 里测试。
+- 如果 Pro 上 ChatGPT 说 bridge 工具不可用，请使用下面的 GPT Actions 写回备用路径、Markdown 备用路径：`cgn handoff` 然后 `cgn done`，或者在支持完整 MCP 的 workspace 里测试。
 
-如果 ChatGPT 说 `review_current_project` 或 `write_to_codex` 不可用，请在 ChatGPT 设置里刷新 app 工具；仍然不行就用最新 `https://.../mcp` URL 和 `No authentication` 重新创建草稿 app。请使用 `0.2.13` 或更新版本。
+GPT Actions 写回备用路径：
+
+```text
+cgn mcp connect 打印隧道 URL 后，把同一个 host 改成：
+  https://.../action/openapi.json
+
+创建一个 Custom GPT -> Configure -> Actions -> Import from URL。
+粘贴上面的 OpenAPI URL。
+
+然后对这个 GPT 说：
+  先调用 review_current_project。
+  只在需要时读取相关文件。
+  最后调用 write_to_codex，把最终 Markdown 建议写回 Codex。
+```
+
+这条路使用 ChatGPT 官方 GPT Actions/OpenAPI，不依赖 MCP write action。GPT Actions 不适用于 Pro mode；这条备用路径需要使用支持 Actions 的 Custom GPT 模型。
+
+如果 ChatGPT 说 `review_current_project` 或 `write_to_codex` 不可用，请在 ChatGPT 设置里刷新 app 工具；仍然不行就用最新 `https://.../mcp` URL 和 `No authentication` 重新创建草稿 app。请使用 `0.3.0` 或更新版本。
 
 运行 `cgn mcp trace` 可以看到 ChatGPT 是否真的访问了 `/mcp`、是否列出工具、是否调用了工具。
 

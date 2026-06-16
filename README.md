@@ -85,7 +85,24 @@ Account support:
 - Full automatic MCP write-back uses `write_to_codex`, a write action.
 - OpenAI currently documents full MCP, including write/modify actions, as rolling out for ChatGPT Business, Enterprise, and Edu.
 - Pro accounts may connect MCP apps with read/fetch permissions, but `write_to_codex` may not be exposed in chat.
-- If ChatGPT says the bridge tools are unavailable on Pro, use the Markdown fallback (`cgn handoff`, then `cgn done`) or test from a workspace with full MCP support.
+- If ChatGPT says the bridge tools are unavailable on Pro, use the GPT Actions fallback below, the Markdown fallback (`cgn handoff`, then `cgn done`), or test from a workspace with full MCP support.
+
+GPT Actions write-back fallback:
+
+```text
+When cgn mcp connect prints the tunnel URL, use the same host with:
+  https://.../action/openapi.json
+
+Create a Custom GPT -> Configure -> Actions -> Import from URL.
+Paste the OpenAPI URL above.
+
+Tell that GPT:
+  First call review_current_project.
+  Read relevant files only if needed.
+  Finally call write_to_codex with your final Markdown advice for Codex.
+```
+
+This uses ChatGPT's official GPT Actions/OpenAPI route instead of MCP write actions. GPT Actions are not available in Pro mode; use an action-capable Custom GPT model for this fallback.
 
 ChatGPT cannot be created by a local CLI without using browser automation or hidden web calls. The final ChatGPT step is still visible and manual:
 
@@ -428,7 +445,7 @@ The MCP server exposes only bounded local context tools and does not expose shel
 
 If `cgn mcp wait` says no tool call was observed, ChatGPT did not actually use the connector in that chat yet. Re-select `chatgpt-native-bridge` in ChatGPT and ask it to call `review_current_project`.
 
-If ChatGPT says `review_current_project` or `write_to_codex` is unavailable, refresh the app tools in ChatGPT settings or recreate the draft app with the latest `https://.../mcp` URL and `No authentication`. Use `0.2.13` or newer.
+If ChatGPT says `review_current_project` or `write_to_codex` is unavailable, refresh the app tools in ChatGPT settings or recreate the draft app with the latest `https://.../mcp` URL and `No authentication`. Use `0.3.0` or newer.
 
 Run `cgn mcp trace` to see whether ChatGPT reached `/mcp`, listed tools, or actually called a tool.
 

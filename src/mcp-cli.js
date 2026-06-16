@@ -141,6 +141,9 @@ Codex install:
 HTTP endpoint:
   ${endpoint}
 
+GPT Actions fallback endpoint:
+  http://${host}:${port}/action/openapi.json
+
 Start the local HTTP server:
   cgn mcp serve --host ${host} --port ${port} --root "${cwd}"
 

@@ -80,7 +80,7 @@ If no tool call is observed:
 3. Set Authentication to `No authentication`.
 4. Start a new ChatGPT chat, choose Developer mode, select `chatgpt-native-bridge`, then ask it to use `write_to_codex`.
 
-Use version `0.2.13` or newer. Older versions did not include complete ChatGPT app tool descriptors, top-level `securitySchemes`, request tracing, session `GET /mcp` SSE support, and clear Pro/read-fetch diagnostics.
+Use version `0.3.0` or newer. Older versions did not include complete ChatGPT app tool descriptors, top-level `securitySchemes`, request tracing, session `GET /mcp` SSE support, GPT Actions write-back fallback, and clear Pro/read-fetch diagnostics.
 
 If the request log shows `openai-mcp` `initialize` and `tools/list`, but the tool-call log has no new `tools/call`, the server is reachable and ChatGPT scanned the app. The remaining issue is on the ChatGPT side: the app was not exposed to that chat, the chat mode does not support custom apps, or the account only exposes read/fetch MCP actions.
 
@@ -93,7 +93,24 @@ cgn handoff --task "Review this project" --type diff-review
 cgn done
 ```
 
-or test from a workspace with full MCP support.
+or use the GPT Actions fallback:
+
+```text
+When cgn mcp connect prints:
+  https://example.trycloudflare.com/mcp
+
+Import this OpenAPI URL into a Custom GPT Action:
+  https://example.trycloudflare.com/action/openapi.json
+
+Then tell the Custom GPT:
+  First call review_current_project.
+  Read relevant files only if needed.
+  Finally call write_to_codex with your final Markdown advice for Codex.
+```
+
+This fallback uses ChatGPT's official GPT Actions/OpenAPI route instead of MCP write actions. GPT Actions are not available in Pro mode; use an action-capable Custom GPT model for this fallback. It writes only to `.chatgpt-native/inbox`.
+
+You can also test from a workspace with full MCP support.
 
 ## I expected a shell tool
 
