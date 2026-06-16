@@ -40,6 +40,7 @@ test("help lists beginner guidance commands", async () => {
   assert.match(io.output(), /cgn mcp tunnel/);
   assert.match(io.output(), /cgn mcp serve/);
   assert.match(io.output(), /cgn mcp config/);
+  assert.match(io.output(), /cgn agent start/);
   assert.match(io.output(), /cgn handoff/);
   assert.match(io.output(), /cgn done/);
   assert.match(io.output(), /cgn demo/);
@@ -47,6 +48,25 @@ test("help lists beginner guidance commands", async () => {
   assert.match(io.output(), /cgn guide codex/);
   assert.match(io.output(), /--mode manual/);
   assert.match(io.output(), /--mode auto/);
+});
+
+test("agent start creates a local agent run and Codex inbox reply", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-agent-start-"));
+  const io = createIo(cwd);
+
+  await initProject({ cwd });
+  await main(["agent", "start", "--task", "Review current project"], io);
+
+  assert.match(io.output(), /local agent/);
+  assert.match(io.output(), /State:\n  completed/);
+  assert.match(io.output(), /Codex inbox:/);
+
+  const inbox = path.join(cwd, ".chatgpt-native", "inbox");
+  const entries = await fs.readdir(inbox, { withFileTypes: true });
+  const ids = entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name);
+  assert.equal(ids.length, 1);
+  assert.equal(await exists(path.join(inbox, ids[0], "reply.md")), true);
+  assert.equal(await exists(path.join(inbox, ids[0], "CODEX_READ_THIS.md")), true);
 });
 
 test("guide codex prints a ready-to-copy Codex prompt", async () => {

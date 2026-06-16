@@ -80,7 +80,7 @@ If no tool call is observed:
 3. Set Authentication to `No authentication`.
 4. Start a new ChatGPT chat, choose Developer mode, select `chatgpt-native-bridge`, then ask it to use `write_to_codex`.
 
-Use version `0.3.0` or newer. Older versions did not include complete ChatGPT app tool descriptors, top-level `securitySchemes`, request tracing, session `GET /mcp` SSE support, GPT Actions write-back fallback, and clear Pro/read-fetch diagnostics.
+Use version `0.4.0` or newer. Older versions did not include complete ChatGPT app tool descriptors, top-level `securitySchemes`, request tracing, session `GET /mcp` SSE support, GPT Actions write-back fallback, the local MCP agent tools, and clear Pro/read-fetch diagnostics.
 
 If the request log shows `openai-mcp` `initialize` and `tools/list`, but the tool-call log has no new `tools/call`, the server is reachable and ChatGPT scanned the app. The remaining issue is on the ChatGPT side: the app was not exposed to that chat, the chat mode does not support custom apps, or the account only exposes read/fetch MCP actions.
 

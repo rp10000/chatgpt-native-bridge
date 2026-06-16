@@ -121,7 +121,7 @@ cgn mcp connect 打印隧道 URL 后，把同一个 host 改成：
 
 这条路使用 ChatGPT 官方 GPT Actions/OpenAPI，不依赖 MCP write action。GPT Actions 不适用于 Pro mode；这条备用路径需要使用支持 Actions 的 Custom GPT 模型。
 
-如果 ChatGPT 说 `review_current_project` 或 `write_to_codex` 不可用，请在 ChatGPT 设置里刷新 app 工具；仍然不行就用最新 `https://.../mcp` URL 和 `No authentication` 重新创建草稿 app。请使用 `0.3.0` 或更新版本。
+如果 ChatGPT 说 `review_current_project` 或 `write_to_codex` 不可用，请在 ChatGPT 设置里刷新 app 工具；仍然不行就用最新 `https://.../mcp` URL 和 `No authentication` 重新创建草稿 app。请使用 `0.4.0` 或更新版本。
 
 运行 `cgn mcp trace` 可以看到 ChatGPT 是否真的访问了 `/mcp`、是否列出工具、是否调用了工具。
 
@@ -306,10 +306,15 @@ MCP 暴露的工具只有这些：
 | `read_handoff_file` | 读取 outbox 里的受限文本文件。 |
 | `read_repo_file` | 读取项目里的受限非敏感文本文件。 |
 | `read_git_diff` | 读取当前 git diff，并做 secret guard。 |
+| `agent_start_task` | 启动受限本地 MCP agent run，并把结果写入 Codex inbox。 |
+| `agent_status` | 读取本地 agent run 状态。 |
+| `agent_read_log` | 读取受限本地 agent 日志。 |
+| `agent_read_result` | 读取本地 agent 结果 Markdown。 |
+| `agent_stop` | 取消正在运行的本地 agent 任务。 |
 | `submit_reply_to_codex` | 把 ChatGPT 最终建议写入本地 inbox。 |
 | `write_to_codex` | `submit_reply_to_codex` 的别名，方便 ChatGPT 查找写回动作。 |
 
-MCP 不提供 shell，不改源码，不 commit，不 push。Codex 仍然是本地执行者。
+MCP 不提供任意 shell，不直接改源码，不 commit，不 push。Codex 仍然是本地执行者。`agent_start_task` 只生成受限本地 run，并把结果写入 `.chatgpt-native/inbox` 让 Codex 继续执行。
 
 ## 手动模式：你自己运行命令
 

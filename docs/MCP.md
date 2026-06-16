@@ -110,7 +110,7 @@ This fallback uses ChatGPT's official GPT Actions/OpenAPI route instead of MCP w
 
 You can also test from a workspace with full MCP support.
 
-If ChatGPT says `review_current_project` or `write_to_codex` is unavailable, refresh the app tools in ChatGPT settings or recreate the draft app with the latest `https://.../mcp` URL and `No authentication`. Use `0.3.0` or newer.
+If ChatGPT says `review_current_project` or `write_to_codex` is unavailable, refresh the app tools in ChatGPT settings or recreate the draft app with the latest `https://.../mcp` URL and `No authentication`. Use `0.4.0` or newer.
 
 Run `cgn mcp trace` to see whether ChatGPT reached `/mcp`, listed tools, or actually called a tool.
 
@@ -187,6 +187,11 @@ Do not use hidden ChatGPT endpoints, browser scraping, localStorage extraction, 
 | `read_handoff_file` | Read a bounded text file from a handoff outbox. |
 | `read_repo_file` | Read a bounded non-sensitive text file from the project. |
 | `read_git_diff` | Read the current git diff with secret-content guarding. |
+| `agent_start_task` | Start a bounded local MCP agent run and write its result to the Codex inbox. |
+| `agent_status` | Read local agent run status. |
+| `agent_read_log` | Read a bounded local agent log. |
+| `agent_read_result` | Read the local agent result Markdown. |
+| `agent_stop` | Cancel a running local agent task. |
 | `submit_reply_to_codex` | Save ChatGPT's final Markdown advice into the local inbox. |
 | `write_to_codex` | Alias for `submit_reply_to_codex` when ChatGPT looks for a write-back action. |
 
@@ -197,8 +202,8 @@ Do not use hidden ChatGPT endpoints, browser scraping, localStorage extraction, 
 2. Restart Codex, or open a new Codex thread, so MCP config reloads.
 3. Ask ChatGPT/Codex to inspect the project through the bridge MCP tools.
 4. Optionally run `cgn mcp wait` to confirm ChatGPT really called the connector.
-5. ChatGPT calls `review_current_project`, then reads bounded files only as needed.
-6. ChatGPT calls submit_reply_to_codex with final advice.
+5. ChatGPT calls `review_current_project`, or starts the local agent with `agent_start_task`.
+6. ChatGPT calls `submit_reply_to_codex` with final advice, or Codex reads the local agent inbox result.
 7. Codex reads .chatgpt-native/inbox/{id}/CODEX_READ_THIS.md and reply.md.
 8. Codex continues local implementation and runs tests.
 ```

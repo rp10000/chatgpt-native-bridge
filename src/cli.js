@@ -1,3 +1,4 @@
+const { runAgentCommand } = require("./agent-cli");
 const { createAsk, VALID_TYPES } = require("./ask");
 const { demoText } = require("./demo");
 const { formatDoctorReport, getDoctorReport } = require("./doctor");
@@ -78,6 +79,18 @@ async function main(argv, io = defaultIo()) {
     await runMcpCommand({
       subcommand,
       args: parseArgs(mcpRest),
+      cwd: io.cwd,
+      stdout: io.stdout,
+      stderr: io.stderr
+    });
+    return;
+  }
+
+  if (command === "agent") {
+    const [subcommand, ...agentRest] = rest;
+    await runAgentCommand({
+      subcommand,
+      args: parseArgs(agentRest),
       cwd: io.cwd,
       stdout: io.stdout,
       stderr: io.stderr
@@ -213,7 +226,9 @@ function parseArgs(args) {
     "port",
     "root",
     "codex-home",
-    "timeout"
+    "timeout",
+    "id",
+    "max-bytes"
   ]);
 
   for (let index = 0; index < args.length; index += 1) {
@@ -316,6 +331,9 @@ Usage:
   cgn mcp tunnel
   cgn mcp serve --host 127.0.0.1 --port 47832
   cgn mcp config
+  cgn agent start --task "Review current project"
+  cgn agent status
+  cgn agent result
   cgn ask --task "Review pricing page" --type ux-review,naming-copy --include-diff
   cgn handoff --task "Review pricing page" --type ux-review --include-diff
   cgn handoff --task "Review pricing page" --mode manual
@@ -345,6 +363,11 @@ MCP:
   cgn mcp serve   Start the local MCP server at http://127.0.0.1:47832/mcp.
   cgn mcp config  Print ChatGPT/Codex MCP connection hints.
   cgn mcp doctor  Check the local bridge and list MCP tools.
+
+Local agent:
+  cgn agent start   Start a bounded local MCP agent run and write the result to Codex inbox.
+  cgn agent status  Show the latest local agent run status.
+  cgn agent result  Print the latest local agent result.
 
 Modes:
   --mode assist  Open ChatGPT and copy 01_PASTE_TO_CHATGPT.md. This is the default.

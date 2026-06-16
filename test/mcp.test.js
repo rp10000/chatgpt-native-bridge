@@ -21,6 +21,11 @@ test("MCP tool list is the stable minimum bridge surface", () => {
     "read_handoff_file",
     "read_repo_file",
     "read_git_diff",
+    "agent_start_task",
+    "agent_status",
+    "agent_read_log",
+    "agent_read_result",
+    "agent_stop",
     "submit_reply_to_codex",
     "write_to_codex"
   ]);
@@ -31,6 +36,7 @@ test("MCP tool descriptions guide the automatic ChatGPT loop", () => {
   const reviewProject = tools.find((tool) => tool.name === "review_current_project");
   const bridgeStatus = tools.find((tool) => tool.name === "bridge_status");
   const readDiff = tools.find((tool) => tool.name === "read_git_diff");
+  const agentStart = tools.find((tool) => tool.name === "agent_start_task");
   const submitReply = tools.find((tool) => tool.name === "submit_reply_to_codex");
   const writeToCodex = tools.find((tool) => tool.name === "write_to_codex");
 
@@ -41,6 +47,7 @@ test("MCP tool descriptions guide the automatic ChatGPT loop", () => {
   assert.match(reviewProject.config._meta["openai/toolInvocation/invoking"], /Reviewing/);
   assert.match(bridgeStatus.config.description, /prefer review_current_project/);
   assert.match(readDiff.config.description, /Call this after bridge_status/);
+  assert.match(agentStart.config.description, /local MCP coding-agent/);
   assert.match(submitReply.config.description, /call this automatically before your final answer/);
   assert.match(writeToCodex.config.description, /Alias for submit_reply_to_codex/);
 });
@@ -163,6 +170,40 @@ test("MCP writeback works without a prior handoff", async () => {
     "## Codex next actions\n- Continue from MCP review.\n"
   );
   assert.equal(await exists(reply.codexReadThisPath), true);
+});
+
+test("MCP local agent creates a run and writes Codex inbox result", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-mcp-agent-"));
+  await fs.writeFile(path.join(cwd, "README.md"), "# Demo\n");
+  await initProject({ cwd });
+
+  const started = await runMcpTool(
+    "agent_start_task",
+    {
+      task: "Review current project through the local MCP agent",
+      includeDiff: true,
+      maxBytes: 1024
+    },
+    { cwd }
+  );
+
+  assert.equal(started.state, "completed");
+  assert.match(started.id, /agent-task-review-current-project/);
+  assert.equal(await exists(started.resultPath), true);
+  assert.equal(await exists(started.replyPath), true);
+  assert.equal(await exists(started.codexReadThisPath), true);
+
+  const status = await runMcpTool("agent_status", { id: started.id }, { cwd });
+  assert.equal(status.state, "completed");
+  assert.equal(status.id, started.id);
+
+  const log = await runMcpTool("agent_read_log", { id: started.id }, { cwd });
+  assert.match(log.text, /started:/);
+  assert.match(log.text, /completed/);
+
+  const result = await runMcpTool("agent_read_result", { id: started.id }, { cwd });
+  assert.match(result.text, /Local MCP Agent Result/);
+  assert.match(result.text, /Codex Next Actions/);
 });
 
 test("HTTP MCP server can initialize and list bridge tools", async () => {

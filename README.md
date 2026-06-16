@@ -106,6 +106,16 @@ Tell that GPT:
 
 This uses ChatGPT's official GPT Actions/OpenAPI route instead of MCP write actions. GPT Actions are not available in Pro mode; use an action-capable Custom GPT model for this fallback.
 
+MCP local agent path:
+
+```text
+ChatGPT calls agent_start_task.
+The local MCP connector creates .chatgpt-native/agent/runs/{id}.
+The local agent captures bounded project status and diff.
+The result is written to .chatgpt-native/inbox/{id} for Codex.
+Codex continues local implementation and testing.
+```
+
 ChatGPT cannot be created by a local CLI without using browser automation or hidden web calls. The final ChatGPT step is still visible and manual:
 
 ```text
@@ -303,6 +313,11 @@ Available MCP tools:
 | `read_handoff_file` | Read a bounded text file from the handoff outbox. |
 | `read_repo_file` | Read a bounded non-sensitive repo file. |
 | `read_git_diff` | Read the current git diff with secret-content guarding. |
+| `agent_start_task` | Start a bounded local MCP agent run and write its result to the Codex inbox. |
+| `agent_status` | Read local agent run status. |
+| `agent_read_log` | Read a bounded local agent log. |
+| `agent_read_result` | Read the local agent result Markdown. |
+| `agent_stop` | Cancel a running local agent task. |
 | `submit_reply_to_codex` | Write ChatGPT's final advice into the local inbox for Codex. |
 | `write_to_codex` | Alias for `submit_reply_to_codex` when ChatGPT looks for a write-back action. |
 
@@ -447,7 +462,7 @@ The MCP server exposes only bounded local context tools and does not expose shel
 
 If `cgn mcp wait` says no tool call was observed, ChatGPT did not actually use the connector in that chat yet. Re-select `chatgpt-native-bridge` in ChatGPT and ask it to call `review_current_project`.
 
-If ChatGPT says `review_current_project` or `write_to_codex` is unavailable, refresh the app tools in ChatGPT settings or recreate the draft app with the latest `https://.../mcp` URL and `No authentication`. Use `0.3.0` or newer.
+If ChatGPT says `review_current_project` or `write_to_codex` is unavailable, refresh the app tools in ChatGPT settings or recreate the draft app with the latest `https://.../mcp` URL and `No authentication`. Use `0.4.0` or newer.
 
 Run `cgn mcp trace` to see whether ChatGPT reached `/mcp`, listed tools, or actually called a tool.
 

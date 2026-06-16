@@ -8,6 +8,13 @@ const { ensureDir, toPosix } = require("./fs-utils");
 const { getGitDiff, getGitStatus } = require("./git");
 const { getHandoffSummary } = require("./handoff-summary");
 const { importReply } = require("./import-reply");
+const {
+  getAgentStatus,
+  readAgentLog,
+  readAgentResult,
+  startAgentTask,
+  stopAgentTask
+} = require("./local-agent");
 const { resolveRunId } = require("./id");
 const { inspectCandidate, sensitivePathReason } = require("./secret-guard");
 const { getStatus } = require("./status");
@@ -22,6 +29,11 @@ const TOOL_NAMES = [
   "read_handoff_file",
   "read_repo_file",
   "read_git_diff",
+  "agent_start_task",
+  "agent_status",
+  "agent_read_log",
+  "agent_read_result",
+  "agent_stop",
   "submit_reply_to_codex",
   "write_to_codex"
 ];
@@ -291,6 +303,108 @@ function createMcpToolRegistry(options = {}) {
             "If the diff is enough, call submit_reply_to_codex with final Markdown advice. If context is missing, call read_repo_file for only the relevant files, then submit_reply_to_codex."
         };
       })
+    },
+    {
+      name: "agent_start_task",
+      config: {
+        title: "Start local agent task",
+        description: "Start a bounded local MCP coding-agent run for the current project. The local agent records project status and diff, writes a result into the Codex inbox, and does not expose arbitrary shell execution or edit source files.",
+        securitySchemes: noAuthSecuritySchemes(),
+        outputSchema: looseOutputSchema(),
+        inputSchema: {
+          task: z.string().min(1).describe("Task for the local coding agent."),
+          includeDiff: z.boolean().optional().describe("Include the current git diff when safe. Defaults to true."),
+          maxBytes: z.number().int().positive().optional().describe("Maximum diff bytes to capture.")
+        },
+        annotations: {
+          title: "Start local agent task",
+          readOnlyHint: false,
+          destructiveHint: false,
+          idempotentHint: false,
+          openWorldHint: false
+        },
+        _meta: toolMeta("Starting local agent task", "Local agent task ready")
+      },
+      handler: withAudit(cwd, "agent_start_task", async (args) =>
+        startAgentTask({
+          cwd,
+          task: args.task,
+          includeDiff: args.includeDiff,
+          maxBytes: args.maxBytes
+        })
+      )
+    },
+    {
+      name: "agent_status",
+      config: {
+        title: "Local agent status",
+        description: "Read status for a local MCP coding-agent run. Use id or omit it for latest.",
+        securitySchemes: noAuthSecuritySchemes(),
+        outputSchema: looseOutputSchema(),
+        inputSchema: {
+          id: z.string().optional().describe('Agent run id, or omit/use "latest".')
+        },
+        annotations: readOnlyAnnotations(),
+        _meta: toolMeta("Checking local agent status", "Local agent status ready")
+      },
+      handler: withAudit(cwd, "agent_status", async (args) => getAgentStatus({ cwd, id: args.id || "latest" }))
+    },
+    {
+      name: "agent_read_log",
+      config: {
+        title: "Read local agent log",
+        description: "Read a bounded log from a local MCP coding-agent run. Use id or omit it for latest.",
+        securitySchemes: noAuthSecuritySchemes(),
+        outputSchema: looseOutputSchema(),
+        inputSchema: {
+          id: z.string().optional().describe('Agent run id, or omit/use "latest".'),
+          maxBytes: z.number().int().positive().optional().describe("Maximum bytes to read.")
+        },
+        annotations: readOnlyAnnotations(),
+        _meta: toolMeta("Reading local agent log", "Local agent log ready")
+      },
+      handler: withAudit(cwd, "agent_read_log", async (args) =>
+        readAgentLog({ cwd, id: args.id || "latest", maxBytes: args.maxBytes })
+      )
+    },
+    {
+      name: "agent_read_result",
+      config: {
+        title: "Read local agent result",
+        description: "Read the result Markdown from a local MCP coding-agent run. Use id or omit it for latest.",
+        securitySchemes: noAuthSecuritySchemes(),
+        outputSchema: looseOutputSchema(),
+        inputSchema: {
+          id: z.string().optional().describe('Agent run id, or omit/use "latest".'),
+          maxBytes: z.number().int().positive().optional().describe("Maximum bytes to read.")
+        },
+        annotations: readOnlyAnnotations(),
+        _meta: toolMeta("Reading local agent result", "Local agent result ready")
+      },
+      handler: withAudit(cwd, "agent_read_result", async (args) =>
+        readAgentResult({ cwd, id: args.id || "latest", maxBytes: args.maxBytes })
+      )
+    },
+    {
+      name: "agent_stop",
+      config: {
+        title: "Stop local agent task",
+        description: "Cancel a running local MCP coding-agent run. Use id or omit it for latest.",
+        securitySchemes: noAuthSecuritySchemes(),
+        outputSchema: looseOutputSchema(),
+        inputSchema: {
+          id: z.string().optional().describe('Agent run id, or omit/use "latest".')
+        },
+        annotations: {
+          title: "Stop local agent task",
+          readOnlyHint: false,
+          destructiveHint: false,
+          idempotentHint: true,
+          openWorldHint: false
+        },
+        _meta: toolMeta("Stopping local agent task", "Local agent task stopped")
+      },
+      handler: withAudit(cwd, "agent_stop", async (args) => stopAgentTask({ cwd, id: args.id || "latest" }))
     },
     {
       name: "submit_reply_to_codex",

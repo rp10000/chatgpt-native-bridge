@@ -9,6 +9,8 @@
 - List and read bounded handoff text files.
 - Read bounded non-sensitive repo text files.
 - Read the current git diff after secret-content checks.
+- Start a bounded local agent run under `.chatgpt-native/agent/runs`.
+- Read local agent status, logs, and result files.
 - Write ChatGPT's final Markdown reply under `.chatgpt-native/inbox`.
 
 The GPT Actions fallback exposes the same bounded read/write capability through REST endpoints:
@@ -55,6 +57,7 @@ The MCP server and GPT Actions fallback only write bridge-owned files:
 ```text
 .chatgpt-native/outbox/
 .chatgpt-native/inbox/
+.chatgpt-native/agent/runs/
 .chatgpt-native/runs/mcp-audit.jsonl
 ```
 
