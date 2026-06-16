@@ -4,11 +4,11 @@ const path = require("node:path");
 const { readFromClipboard } = require("./clipboard");
 const { ensureDir } = require("./fs-utils");
 const { writeCodexReadThis } = require("./handoff-files");
-const { resolveRunId } = require("./id");
+const { makeRunId, resolveRunId } = require("./id");
 
 async function importReply(options) {
   const cwd = options.cwd || process.cwd();
-  const id = await resolveRunId(cwd, options.id || "latest");
+  const id = await resolveReplyRunId(cwd, options);
   let text = options.text;
 
   if (text === undefined && options.fromClipboard) {
@@ -30,6 +30,18 @@ async function importReply(options) {
   const codexReadThisPath = await writeCodexReadThis({ id, inboxDir, replyPath });
 
   return { id, replyPath, codexReadThisPath };
+}
+
+async function resolveReplyRunId(cwd, options) {
+  const requested = options.id || "latest";
+  try {
+    return await resolveRunId(cwd, requested);
+  } catch (error) {
+    if (options.allowNewRun && requested === "latest") {
+      return makeRunId("mcp-reply", options.now || new Date());
+    }
+    throw error;
+  }
 }
 
 module.exports = {

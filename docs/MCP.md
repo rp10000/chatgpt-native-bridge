@@ -148,6 +148,7 @@ Do not use hidden ChatGPT endpoints, browser scraping, localStorage extraction, 
 | `read_repo_file` | Read a bounded non-sensitive text file from the project. |
 | `read_git_diff` | Read the current git diff with secret-content guarding. |
 | `submit_reply_to_codex` | Save ChatGPT's final Markdown advice into the local inbox. |
+| `write_to_codex` | Alias for `submit_reply_to_codex` when ChatGPT looks for a write-back action. |
 
 ## Expected loop
 

@@ -20,7 +20,8 @@ test("MCP tool list is the stable minimum bridge surface", () => {
     "read_handoff_file",
     "read_repo_file",
     "read_git_diff",
-    "submit_reply_to_codex"
+    "submit_reply_to_codex",
+    "write_to_codex"
   ]);
 });
 
@@ -30,12 +31,14 @@ test("MCP tool descriptions guide the automatic ChatGPT loop", () => {
   const bridgeStatus = tools.find((tool) => tool.name === "bridge_status");
   const readDiff = tools.find((tool) => tool.name === "read_git_diff");
   const submitReply = tools.find((tool) => tool.name === "submit_reply_to_codex");
+  const writeToCodex = tools.find((tool) => tool.name === "write_to_codex");
 
   assert.match(reviewProject.config.description, /Call this automatically/);
   assert.match(reviewProject.config._meta["openai/toolInvocation/invoking"], /Reviewing/);
   assert.match(bridgeStatus.config.description, /prefer review_current_project/);
   assert.match(readDiff.config.description, /Call this after bridge_status/);
   assert.match(submitReply.config.description, /call this automatically before your final answer/);
+  assert.match(writeToCodex.config.description, /Alias for submit_reply_to_codex/);
 });
 
 test("review_current_project returns bounded project status and next action", async () => {
@@ -120,6 +123,30 @@ test("MCP tools create a handoff and submit a reply for Codex", async () => {
   assert.equal(
     await fs.readFile(path.join(cwd, ".chatgpt-native", "inbox", handoff.id, "reply.md"), "utf8"),
     "## Codex next actions\n- Tighten the headline.\n"
+  );
+  assert.equal(await exists(reply.codexReadThisPath), true);
+});
+
+test("MCP writeback works without a prior handoff", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-mcp-direct-write-"));
+  await initProject({ cwd });
+
+  const listed = await runMcpTool("list_handoff_files", { id: "latest" }, { cwd });
+  assert.equal(listed.available, false);
+  assert.match(listed.nextAction, /review_current_project/);
+
+  const reply = await runMcpTool(
+    "write_to_codex",
+    {
+      markdown: "## Codex next actions\n- Continue from MCP review.\n"
+    },
+    { cwd }
+  );
+
+  assert.match(reply.id, /mcp-reply/);
+  assert.equal(
+    await fs.readFile(path.join(cwd, ".chatgpt-native", "inbox", reply.id, "reply.md"), "utf8"),
+    "## Codex next actions\n- Continue from MCP review.\n"
   );
   assert.equal(await exists(reply.codexReadThisPath), true);
 });

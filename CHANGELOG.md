@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.2.9
+
+- Add `write_to_codex` as an alias for `submit_reply_to_codex`.
+- Allow MCP writeback to create an inbox run when no handoff run exists yet.
+- Make `list_handoff_files latest` return a helpful empty state instead of throwing when no handoff exists.
+- This fixes a real ChatGPT behavior where it called MCP tools, then stopped after finding no handoff run or no `write_to_codex` action.
+
 ## v0.2.8
 
 - Use the more reliable GitHub npx form: `npx --yes --package github:rp10000/chatgpt-native-bridge cgn ...`.

@@ -276,6 +276,7 @@ MCP 暴露的工具只有这些：
 | `read_repo_file` | 读取项目里的受限非敏感文本文件。 |
 | `read_git_diff` | 读取当前 git diff，并做 secret guard。 |
 | `submit_reply_to_codex` | 把 ChatGPT 最终建议写入本地 inbox。 |
+| `write_to_codex` | `submit_reply_to_codex` 的别名，方便 ChatGPT 查找写回动作。 |
 
 MCP 不提供 shell，不改源码，不 commit，不 push。Codex 仍然是本地执行者。
 

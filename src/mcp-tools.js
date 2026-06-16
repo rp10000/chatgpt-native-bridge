@@ -22,7 +22,8 @@ const TOOL_NAMES = [
   "read_handoff_file",
   "read_repo_file",
   "read_git_diff",
-  "submit_reply_to_codex"
+  "submit_reply_to_codex",
+  "write_to_codex"
 ];
 
 function createMcpToolRegistry(options = {}) {
@@ -173,7 +174,20 @@ function createMcpToolRegistry(options = {}) {
         _meta: toolMeta("Listing handoff files", "Handoff files ready")
       },
       handler: withAudit(cwd, "list_handoff_files", async (args) => {
-        const id = await resolveRunId(cwd, args.id || "latest");
+        let id;
+        try {
+          id = await resolveRunId(cwd, args.id || "latest");
+        } catch (error) {
+          if ((args.id || "latest") !== "latest") throw error;
+          return {
+            available: false,
+            reason: error.message,
+            files: [],
+            uploadItems: [],
+            nextAction:
+              "No handoff exists yet. For MCP-connected project review, call review_current_project instead. For final advice, call submit_reply_to_codex or write_to_codex."
+          };
+        }
         const outboxDir = path.join(cwd, ".chatgpt-native", "outbox", id);
         const files = await listFiles(outboxDir, outboxDir);
         const summary = await getHandoffSummary(outboxDir);
@@ -282,23 +296,48 @@ function createMcpToolRegistry(options = {}) {
         },
         _meta: toolMeta("Writing reply for Codex", "Reply saved for Codex")
       },
-      handler: withAudit(cwd, "submit_reply_to_codex", async (args) => {
-        const result = await importReply({
-          cwd,
-          id: args.id || "latest",
-          text: args.markdown
-        });
-
-        return {
-          id: result.id,
-          replyPath: result.replyPath,
-          codexReadThisPath: result.codexReadThisPath,
-          nextAction:
-            "Tell Codex to read CODEX_READ_THIS.md and reply.md, accept reasonable suggestions, continue local implementation, and run tests."
-        };
-      })
+      handler: createSubmitReplyHandler(cwd, "submit_reply_to_codex")
+    },
+    {
+      name: "write_to_codex",
+      config: {
+        title: "Write to Codex",
+        description: "Alias for submit_reply_to_codex. Use this when ChatGPT wants to write final advice back to the local Codex inbox.",
+        inputSchema: {
+          id: z.string().optional().describe('Run id, or omit/use "latest".'),
+          markdown: z.string().min(1).describe("Final ChatGPT response for Codex.")
+        },
+        annotations: {
+          title: "Write to Codex",
+          readOnlyHint: false,
+          destructiveHint: false,
+          idempotentHint: false,
+          openWorldHint: false
+        },
+        _meta: toolMeta("Writing reply for Codex", "Reply saved for Codex")
+      },
+      handler: createSubmitReplyHandler(cwd, "write_to_codex")
     }
   ];
+}
+
+function createSubmitReplyHandler(cwd, toolName) {
+  return withAudit(cwd, toolName, async (args) => {
+    const result = await importReply({
+      cwd,
+      id: args.id || "latest",
+      text: args.markdown,
+      allowNewRun: true
+    });
+
+    return {
+      id: result.id,
+      replyPath: result.replyPath,
+      codexReadThisPath: result.codexReadThisPath,
+      nextAction:
+        "Tell Codex to read CODEX_READ_THIS.md and reply.md, accept reasonable suggestions, continue local implementation, and run tests."
+    };
+  });
 }
 
 async function runMcpTool(name, args = {}, options = {}) {

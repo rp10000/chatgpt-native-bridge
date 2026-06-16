@@ -278,6 +278,7 @@ Available MCP tools:
 | `read_repo_file` | Read a bounded non-sensitive repo file. |
 | `read_git_diff` | Read the current git diff with secret-content guarding. |
 | `submit_reply_to_codex` | Write ChatGPT's final advice into the local inbox for Codex. |
+| `write_to_codex` | Alias for `submit_reply_to_codex` when ChatGPT looks for a write-back action. |
 
 ### 5. Markdown fallback beginner flow
 
