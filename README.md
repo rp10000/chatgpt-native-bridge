@@ -67,14 +67,30 @@ cgn mcp web
 Fast path:
 
 ```bash
-cgn mcp connect --yes
+cgn mcp connect --yes --open
 ```
 
-Paste the printed HTTPS `/mcp` URL into ChatGPT:
+This starts the local MCP server, installs `cloudflared` with `winget` on Windows if needed, starts a temporary HTTPS tunnel, copies the `https://.../mcp` Server URL to your clipboard, and opens ChatGPT.
+
+ChatGPT cannot be created by a local CLI without using browser automation or hidden web calls. The final ChatGPT step is still visible and manual:
 
 ```text
-Settings -> Connectors -> Create -> Server URL
-Authentication: No authentication
+Direct link:
+  https://chatgpt.com/#settings/Connectors
+
+If the direct link only opens ChatGPT:
+  Settings -> Apps & Connectors -> Create
+
+If there is no Create button:
+  Settings -> Apps & Connectors -> Advanced settings -> turn on Developer Mode
+
+New app fields:
+  Name: chatgpt-native-bridge
+  Description: Local Codex bridge. Use it to inspect bounded project context, read diffs, create handoff files, and submit ChatGPT advice back to Codex.
+  Connection: Server URL
+  Server URL: paste the copied https://.../mcp URL
+  Authentication: No authentication
+  Final step: click Create
 ```
 
 ## User Does Not Memorize Commands
@@ -339,7 +355,7 @@ Do not use this for:
 # Beginner path
 cgn setup --mcp
 cgn mcp install
-cgn mcp connect --yes
+cgn mcp connect --yes --open
 cgn mcp web
 cgn mcp tunnel
 cgn mcp doctor

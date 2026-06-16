@@ -18,7 +18,7 @@ test("demo prints the MCP-first bridge workflow", async () => {
   assert.match(io.output(), /cgn setup/);
   assert.match(io.output(), /cgn setup --mcp/);
   assert.match(io.output(), /cgn mcp install/);
-  assert.match(io.output(), /cgn mcp connect --yes/);
+  assert.match(io.output(), /cgn mcp connect --yes --open/);
   assert.match(io.output(), /cgn mcp web/);
   assert.match(io.output(), /cgn handoff --task "Review onboarding UX"/);
   assert.match(io.output(), /cgn done/);
@@ -33,7 +33,7 @@ test("help lists beginner guidance commands", async () => {
   assert.match(io.output(), /cgn setup/);
   assert.match(io.output(), /cgn setup --mcp/);
   assert.match(io.output(), /cgn mcp install/);
-  assert.match(io.output(), /cgn mcp connect --yes/);
+  assert.match(io.output(), /cgn mcp connect --yes --open/);
   assert.match(io.output(), /cgn mcp web/);
   assert.match(io.output(), /cgn mcp tunnel/);
   assert.match(io.output(), /cgn mcp serve/);
@@ -115,10 +115,11 @@ test("mcp web prints a beginner ChatGPT connector guide", async () => {
   await main(["mcp", "web"], io);
 
   assert.match(io.output(), /ChatGPT web connector setup/);
-  assert.match(io.output(), /cgn mcp connect --yes/);
+  assert.match(io.output(), /cgn mcp connect --yes --open/);
   assert.match(io.output(), /cgn mcp serve --host 127\.0\.0\.1 --port 47832/);
   assert.match(io.output(), /cgn mcp tunnel/);
-  assert.match(io.output(), /Settings -> Connectors -> Create -> Server URL/);
+  assert.match(io.output(), /https:\/\/chatgpt\.com\/#settings\/Connectors/);
+  assert.match(io.output(), /Settings -> Apps & Connectors -> Create/);
   assert.match(io.output(), /Authentication: No authentication/);
 });
 
@@ -128,9 +129,10 @@ test("mcp connect supports dry-run without starting long-lived processes", async
   await main(["mcp", "connect", "--dry-run"], io);
 
   assert.match(io.output(), /One-command ChatGPT web connect/);
-  assert.match(io.output(), /cgn mcp connect --yes/);
+  assert.match(io.output(), /cgn mcp connect --yes --open/);
   assert.match(io.output(), /Start the local MCP server/);
   assert.match(io.output(), /Install cloudflared/);
+  assert.match(io.output(), /Open the ChatGPT connector settings page/);
 });
 
 test("mcp tunnel supports dry-run without starting a long-lived process", async () => {

@@ -54,7 +54,8 @@ async function runMcpCommand({ subcommand, args, cwd, stdout, stderr }) {
       stdout,
       stderr,
       dryRun: Boolean(parsed.flags["dry-run"]),
-      yes: Boolean(parsed.flags.yes)
+      yes: Boolean(parsed.flags.yes),
+      openChatgpt: Boolean(parsed.flags.open) || Boolean(parsed.flags["open-chatgpt"])
     });
     return;
   }
@@ -65,7 +66,8 @@ async function runMcpCommand({ subcommand, args, cwd, stdout, stderr }) {
       port,
       stdout,
       stderr,
-      dryRun: Boolean(parsed.flags["dry-run"])
+      dryRun: Boolean(parsed.flags["dry-run"]),
+      openChatgpt: Boolean(parsed.flags.open) || Boolean(parsed.flags["open-chatgpt"])
     });
     return;
   }
@@ -151,7 +153,7 @@ function mcpHelpText() {
 
 Usage:
   cgn mcp install
-  cgn mcp connect --yes
+  cgn mcp connect --yes --open
   cgn mcp web
   cgn mcp tunnel
   cgn mcp serve --host 127.0.0.1 --port 47832
@@ -164,6 +166,7 @@ Options:
   --codex-home PATH   Codex home to update for install. Defaults to CODEX_HOME or ~/.codex.
   --dry-run           Show install output without writing config.
   --host HOST         HTTP bind host. Defaults to 127.0.0.1.
+  --open             Open the ChatGPT connector settings page when the HTTPS URL is ready.
   --port PORT         HTTP bind port. Defaults to 47832.
   --stdio             Serve over stdio instead of HTTP.
 `;

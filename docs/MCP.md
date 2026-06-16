@@ -61,10 +61,33 @@ cgn mcp doctor
 For the shortest ChatGPT web setup, run:
 
 ```bash
-cgn mcp connect --yes
+cgn mcp connect --yes --open
 ```
 
-Use the official ChatGPT MCP/App connection flow available to your account or workspace. If ChatGPT cannot directly reach a local `127.0.0.1` server, use an official Secure MCP Tunnel or another approved private MCP route.
+This starts the local server, installs `cloudflared` with `winget` on Windows if needed, starts a temporary HTTPS tunnel, copies the `https://.../mcp` Server URL to your clipboard, and opens ChatGPT.
+
+In ChatGPT, use:
+
+```text
+Direct link:
+  https://chatgpt.com/#settings/Connectors
+
+If the direct link only opens ChatGPT:
+  Settings -> Apps & Connectors -> Create
+
+If there is no Create button:
+  Settings -> Apps & Connectors -> Advanced settings -> turn on Developer Mode
+
+Fields:
+  Name: chatgpt-native-bridge
+  Description: Local Codex bridge. Use it to inspect bounded project context, read diffs, create handoff files, and submit ChatGPT advice back to Codex.
+  Connection: Server URL
+  Server URL: paste the copied https://.../mcp URL
+  Authentication: No authentication
+  Final step: click Create
+```
+
+Use the official ChatGPT MCP/App connection flow available to your account or workspace. The local CLI does not auto-create the ChatGPT app because that would require browser automation or hidden ChatGPT web calls.
 
 For a quick temporary HTTPS URL, keep the local server running and start:
 

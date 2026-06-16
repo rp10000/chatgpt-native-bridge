@@ -13,27 +13,32 @@ function demoText() {
    cgn mcp web
 
 5. For ChatGPT web, use one command:
-   cgn mcp connect --yes
+   cgn mcp connect --yes --open
 
-6. Use the ChatGPT MCP connector:
+6. In ChatGPT, create the connector with the printed fields:
+   - Name: chatgpt-native-bridge
+   - Server URL: the copied https://.../mcp URL
+   - Authentication: No authentication
+
+7. Use the ChatGPT MCP connector:
    - inspect bounded repo context with the bridge tools
    - submit final advice with submit_reply_to_codex
 
-7. If web MCP is unavailable, use the Markdown fallback:
+8. If web MCP is unavailable, use the Markdown fallback:
    cgn handoff --task "Review onboarding UX" --type plan,ux-review,naming-copy
 
-8. In fallback mode:
+9. In fallback mode:
    - paste 01_PASTE_TO_CHATGPT.md
    - upload context.md and any files/screenshots from the outbox
    - use native ChatGPT tools when helpful
 
-9. Copy ChatGPT's final answer, then import it:
+10. Copy ChatGPT's final answer, then import it:
    cgn done
 
-10. Ask Codex to read:
+11. Ask Codex to read:
    .chatgpt-native/inbox/{id}/reply.md
 
-11. Codex continues local implementation and runs relevant checks.
+12. Codex continues local implementation and runs relevant checks.
 `;
 }
 

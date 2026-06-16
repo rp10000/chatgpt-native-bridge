@@ -81,14 +81,30 @@ cgn mcp web
 最快路径：
 
 ```bash
-cgn mcp connect --yes
+cgn mcp connect --yes --open
 ```
 
-把命令打印出来的 HTTPS `/mcp` 地址填到 ChatGPT：
+这条命令会启动本地 MCP server；Windows 上缺少 `cloudflared` 时会用 `winget` 安装；然后启动临时 HTTPS 隧道，把 `https://.../mcp` Server URL 复制到剪贴板，并打开 ChatGPT。
+
+本地 CLI 不能在不使用浏览器自动化或隐藏接口的情况下替你创建 ChatGPT 应用。最后一步仍然要在 ChatGPT 页面里手动点一次创建：
 
 ```text
-Settings -> Connectors -> Create -> Server URL
-Authentication: No authentication
+直达链接：
+  https://chatgpt.com/#settings/Connectors
+
+如果直达链接只打开了 ChatGPT 首页：
+  Settings -> Apps & Connectors -> Create
+
+如果没有 Create 按钮：
+  Settings -> Apps & Connectors -> Advanced settings -> 打开 Developer Mode
+
+新应用字段：
+  名称: chatgpt-native-bridge
+  描述: Local Codex bridge. Use it to inspect bounded project context, read diffs, create handoff files, and submit ChatGPT advice back to Codex.
+  连接: Server URL
+  Server URL: 粘贴已经复制好的 https://.../mcp
+  身份验证: No authentication
+  最后一步: 点击 Create
 ```
 
 ## 我需要记哪些命令？
@@ -477,7 +493,7 @@ cgn done
 # 新手主路径
 cgn setup --mcp
 cgn mcp install
-cgn mcp connect --yes
+cgn mcp connect --yes --open
 cgn mcp web
 cgn mcp tunnel
 cgn mcp doctor

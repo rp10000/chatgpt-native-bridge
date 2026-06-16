@@ -2,8 +2,13 @@ const { spawn } = require("node:child_process");
 const fs = require("node:fs/promises");
 const path = require("node:path");
 
+const { copyToClipboard } = require("./clipboard");
+
 const DEFAULT_TUNNEL_HOST = "127.0.0.1";
 const DEFAULT_TUNNEL_PORT = 47832;
+const CHATGPT_CONNECTORS_URL = "https://chatgpt.com/#settings/Connectors";
+const CONNECTOR_NAME = "chatgpt-native-bridge";
+const CONNECTOR_DESCRIPTION = "Local Codex bridge. Use it to inspect bounded project context, read diffs, create handoff files, and submit ChatGPT advice back to Codex.";
 
 function formatMcpWebGuide({ host = DEFAULT_TUNNEL_HOST, port = DEFAULT_TUNNEL_PORT } = {}) {
   const localBase = `http://${host}:${port}`;
@@ -13,7 +18,7 @@ function formatMcpWebGuide({ host = DEFAULT_TUNNEL_HOST, port = DEFAULT_TUNNEL_P
 Use this when ChatGPT says localhost URLs are invalid.
 
 One-command path:
-  cgn mcp connect --yes
+  cgn mcp connect --yes --open
 
 Terminal 1 - start the local MCP server:
   cgn mcp serve --host ${host} --port ${port}
@@ -22,7 +27,13 @@ Terminal 2 - create a temporary HTTPS tunnel:
   cgn mcp tunnel
 
 Then copy the printed HTTPS /mcp URL into ChatGPT:
-  Settings -> Connectors -> Create -> Server URL
+  Direct link: ${CHATGPT_CONNECTORS_URL}
+  Fallback path: Settings -> Apps & Connectors -> Create
+  If there is no Create button: Settings -> Apps & Connectors -> Advanced settings -> turn on Developer Mode
+  Name: ${CONNECTOR_NAME}
+  Description: ${CONNECTOR_DESCRIPTION}
+  Connection: Server URL
+  Server URL: the printed https://.../mcp URL
   Authentication: No authentication
 
 Local MCP URL:
@@ -41,17 +52,23 @@ function formatConnectDryRun({ host = DEFAULT_TUNNEL_HOST, port = DEFAULT_TUNNEL
   return `One-command ChatGPT web connect
 
 Run:
-  cgn mcp connect --yes
+  cgn mcp connect --yes --open
 
 This will:
   1. Start the local MCP server at http://${host}:${port}/mcp
   2. Install cloudflared with winget if it is missing
   3. Start a temporary HTTPS tunnel
-  4. Print the HTTPS /mcp URL to paste into ChatGPT
+  4. Copy and print the HTTPS /mcp URL
+  5. Open the ChatGPT connector settings page
 
 ChatGPT fields:
+  Direct link: ${CHATGPT_CONNECTORS_URL}
+  Name: ${CONNECTOR_NAME}
+  Description: ${CONNECTOR_DESCRIPTION}
   Connection: Server URL
+  Server URL: the printed https://.../mcp URL
   Authentication: No authentication
+  Final step: click Create in ChatGPT
 `;
 }
 
@@ -66,6 +83,9 @@ When cloudflared prints a URL like:
 
 Paste this into ChatGPT:
   https://example.trycloudflare.com/mcp
+
+ChatGPT direct link:
+  ${CHATGPT_CONNECTORS_URL}
 `;
 }
 
@@ -77,6 +97,7 @@ async function runWebConnect({
   stderr = process.stderr,
   dryRun = false,
   yes = false,
+  openChatgpt = false,
   spawnImpl = spawn
 } = {}) {
   if (dryRun) {
@@ -97,7 +118,7 @@ async function runWebConnect({
     await installCloudflared({ stdout, stderr, spawnImpl });
     cloudflared = await resolveCloudflaredCommand();
     if (!cloudflared) {
-      throw new Error("cloudflared installed, but this terminal cannot find it yet. Close this terminal and run cgn mcp connect --yes again.");
+      throw new Error("cloudflared installed, but this terminal cannot find it yet. Close this terminal and run cgn mcp connect --yes --open again.");
     }
   }
 
@@ -109,6 +130,7 @@ async function runWebConnect({
       stdout,
       stderr,
       command: cloudflared,
+      openChatgpt,
       spawnImpl
     });
   } finally {
@@ -125,6 +147,9 @@ async function runCloudflareTunnel({
   stderr = process.stderr,
   dryRun = false,
   command = "cloudflared",
+  openChatgpt = false,
+  openUrlImpl = openUrl,
+  copyToClipboardImpl = copyToClipboard,
   spawnImpl = spawn
 } = {}) {
   if (dryRun) {
@@ -140,15 +165,34 @@ async function runCloudflareTunnel({
   });
 
   let printedUrl = false;
+  let openedChatgpt = false;
 
   const onData = (chunk) => {
     const text = String(chunk);
     const tunnelUrl = findTryCloudflareUrl(text);
     if (tunnelUrl && !printedUrl) {
+      const serverUrl = `${tunnelUrl}/mcp`;
       printedUrl = true;
-      stdout.write("\nPaste this Server URL into ChatGPT:\n");
-      stdout.write(`  ${tunnelUrl}/mcp\n\n`);
-      stdout.write("Authentication: No authentication\n\n");
+      try {
+        copyToClipboardImpl(serverUrl);
+        stdout.write("\nCopied Server URL to clipboard.\n");
+      } catch {
+        stdout.write("\nCould not copy Server URL automatically. Copy it manually from below.\n");
+      }
+      if (openChatgpt && !openedChatgpt) {
+        openedChatgpt = true;
+        openUrlImpl(CHATGPT_CONNECTORS_URL);
+        stdout.write(`Opened ChatGPT connector settings: ${CHATGPT_CONNECTORS_URL}\n`);
+      }
+      stdout.write("\nChatGPT connector fields:\n");
+      stdout.write(`  Direct link: ${CHATGPT_CONNECTORS_URL}\n`);
+      stdout.write("  If it does not open the form: Settings -> Apps & Connectors -> Create\n");
+      stdout.write(`  Name: ${CONNECTOR_NAME}\n`);
+      stdout.write(`  Description: ${CONNECTOR_DESCRIPTION}\n`);
+      stdout.write("  Connection: Server URL\n");
+      stdout.write(`  Server URL: ${serverUrl}\n`);
+      stdout.write("  Authentication: No authentication\n");
+      stdout.write("  Final step: click Create in ChatGPT\n\n");
     }
     stdout.write(text);
   };
@@ -298,7 +342,20 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function openUrl(url) {
+  const command = process.platform === "win32" ? "cmd.exe" : process.platform === "darwin" ? "open" : "xdg-open";
+  const args = process.platform === "win32" ? ["/c", "start", "", url] : [url];
+  spawn(command, args, {
+    detached: true,
+    stdio: "ignore",
+    windowsHide: true
+  }).unref();
+}
+
 module.exports = {
+  CHATGPT_CONNECTORS_URL,
+  CONNECTOR_DESCRIPTION,
+  CONNECTOR_NAME,
   DEFAULT_TUNNEL_HOST,
   DEFAULT_TUNNEL_PORT,
   findTryCloudflareUrl,

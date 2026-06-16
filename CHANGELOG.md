@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.2.4
+
+- Add `cgn mcp connect --yes --open` as the recommended ChatGPT web setup command.
+- Copy the generated HTTPS `/mcp` Server URL to the clipboard when the Cloudflare Tunnel URL is ready.
+- Open the ChatGPT connector settings page on request and print the exact new-app fields to fill.
+- Update README, Chinese README, and MCP docs with the direct ChatGPT link, Developer Mode fallback, and visible final Create step.
+
 ## v0.2.3
 
 - Add `cgn mcp connect --yes`, a one-command ChatGPT web connector path.
