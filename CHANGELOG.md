@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.2.3
+
+- Add `cgn mcp connect --yes`, a one-command ChatGPT web connector path.
+- Start the local MCP server, install `cloudflared` with `winget` on Windows if missing, start a Cloudflare Tunnel, and print the HTTPS `/mcp` URL for ChatGPT.
+- Keep `cgn mcp web`, `cgn mcp tunnel`, and `cgn mcp cloudflare` as guided/manual alternatives.
+- Fix HTTP MCP test support for `port: 0`.
+
 ## v0.2.2
 
 - Add `cgn mcp web`, a beginner guide for connecting ChatGPT web when localhost URLs are rejected.

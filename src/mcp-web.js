@@ -1,4 +1,6 @@
 const { spawn } = require("node:child_process");
+const fs = require("node:fs/promises");
+const path = require("node:path");
 
 const DEFAULT_TUNNEL_HOST = "127.0.0.1";
 const DEFAULT_TUNNEL_PORT = 47832;
@@ -9,6 +11,9 @@ function formatMcpWebGuide({ host = DEFAULT_TUNNEL_HOST, port = DEFAULT_TUNNEL_P
   return `ChatGPT web connector setup
 
 Use this when ChatGPT says localhost URLs are invalid.
+
+One-command path:
+  cgn mcp connect --yes
 
 Terminal 1 - start the local MCP server:
   cgn mcp serve --host ${host} --port ${port}
@@ -32,6 +37,24 @@ Fallback without MCP:
 `;
 }
 
+function formatConnectDryRun({ host = DEFAULT_TUNNEL_HOST, port = DEFAULT_TUNNEL_PORT } = {}) {
+  return `One-command ChatGPT web connect
+
+Run:
+  cgn mcp connect --yes
+
+This will:
+  1. Start the local MCP server at http://${host}:${port}/mcp
+  2. Install cloudflared with winget if it is missing
+  3. Start a temporary HTTPS tunnel
+  4. Print the HTTPS /mcp URL to paste into ChatGPT
+
+ChatGPT fields:
+  Connection: Server URL
+  Authentication: No authentication
+`;
+}
+
 function formatTunnelDryRun({ host = DEFAULT_TUNNEL_HOST, port = DEFAULT_TUNNEL_PORT } = {}) {
   return `Cloudflare tunnel command
 
@@ -44,6 +67,55 @@ When cloudflared prints a URL like:
 Paste this into ChatGPT:
   https://example.trycloudflare.com/mcp
 `;
+}
+
+async function runWebConnect({
+  host = DEFAULT_TUNNEL_HOST,
+  port = DEFAULT_TUNNEL_PORT,
+  cwd = process.cwd(),
+  stdout = process.stdout,
+  stderr = process.stderr,
+  dryRun = false,
+  yes = false,
+  spawnImpl = spawn
+} = {}) {
+  if (dryRun) {
+    stdout.write(formatConnectDryRun({ host, port }));
+    return { dryRun: true, started: false };
+  }
+
+  stdout.write("Starting one-command ChatGPT web connect\n\n");
+  const server = await ensureLocalMcpServer({ host, port, cwd, stdout, stderr, spawnImpl });
+
+  let cloudflared = await resolveCloudflaredCommand();
+  if (!cloudflared) {
+    if (!yes) {
+      throw new Error(
+        "cloudflared was not found. Re-run with --yes to install it automatically, or install it with: winget install --id Cloudflare.cloudflared -e"
+      );
+    }
+    await installCloudflared({ stdout, stderr, spawnImpl });
+    cloudflared = await resolveCloudflaredCommand();
+    if (!cloudflared) {
+      throw new Error("cloudflared installed, but this terminal cannot find it yet. Close this terminal and run cgn mcp connect --yes again.");
+    }
+  }
+
+  stdout.write("\nOpening HTTPS tunnel for ChatGPT...\n");
+  try {
+    return await runCloudflareTunnel({
+      host,
+      port,
+      stdout,
+      stderr,
+      command: cloudflared,
+      spawnImpl
+    });
+  } finally {
+    if (server.child) {
+      server.child.kill();
+    }
+  }
 }
 
 async function runCloudflareTunnel({
@@ -102,16 +174,137 @@ async function runCloudflareTunnel({
   });
 }
 
+async function ensureLocalMcpServer({ host, port, cwd, stdout, stderr, spawnImpl }) {
+  const healthUrl = `http://${host}:${port}/health`;
+  if (await isHealthy(healthUrl)) {
+    stdout.write(`Local MCP server already running: http://${host}:${port}/mcp\n`);
+    return { child: null, alreadyRunning: true };
+  }
+
+  stdout.write(`Starting local MCP server: http://${host}:${port}/mcp\n`);
+  const child = spawnImpl(process.execPath, [process.argv[1], "mcp", "serve", "--host", host, "--port", String(port)], {
+    cwd,
+    windowsHide: true
+  });
+
+  child.stdout.on("data", (chunk) => stdout.write(String(chunk)));
+  child.stderr.on("data", (chunk) => stderr.write(String(chunk)));
+
+  await waitForHealth(healthUrl, 20000);
+  return { child, alreadyRunning: false };
+}
+
+async function waitForHealth(url, timeoutMs) {
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    if (await isHealthy(url)) return true;
+    await sleep(500);
+  }
+  throw new Error(`Local MCP server did not become ready: ${url}`);
+}
+
+async function isHealthy(url) {
+  try {
+    const response = await fetch(url);
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function resolveCloudflaredCommand() {
+  if (await commandExists("cloudflared")) return "cloudflared";
+  if (process.platform !== "win32") return null;
+
+  const candidates = [
+    process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, "Microsoft", "WinGet", "Links", "cloudflared.exe"),
+    process.env.ProgramFiles && path.join(process.env.ProgramFiles, "cloudflared", "cloudflared.exe"),
+    process.env["ProgramFiles(x86)"] && path.join(process.env["ProgramFiles(x86)"], "cloudflared", "cloudflared.exe")
+  ].filter(Boolean);
+
+  for (const candidate of candidates) {
+    if (await fileExists(candidate)) return candidate;
+  }
+  return null;
+}
+
+async function installCloudflared({ stdout, stderr, spawnImpl }) {
+  if (process.platform !== "win32") {
+    throw new Error("Automatic cloudflared install currently supports Windows winget. Install cloudflared manually, then run cgn mcp connect again.");
+  }
+
+  if (!(await commandExists("winget"))) {
+    throw new Error("winget was not found. Install cloudflared manually, then run cgn mcp connect again.");
+  }
+
+  stdout.write("cloudflared not found. Installing with winget...\n");
+  await runProcess("winget", [
+    "install",
+    "--id",
+    "Cloudflare.cloudflared",
+    "-e",
+    "--accept-source-agreements",
+    "--accept-package-agreements"
+  ], { stdout, stderr, spawnImpl });
+}
+
+async function commandExists(command) {
+  const probe = process.platform === "win32" ? "where.exe" : "which";
+  const args = [command];
+  try {
+    const result = await runProcess(probe, args, { quiet: true });
+    return result.code === 0;
+  } catch {
+    return false;
+  }
+}
+
+async function runProcess(command, args, { stdout, stderr, spawnImpl = spawn, quiet = false } = {}) {
+  return await new Promise((resolve, reject) => {
+    const child = spawnImpl(command, args, { windowsHide: true });
+    child.stdout.on("data", (chunk) => {
+      if (!quiet && stdout) stdout.write(String(chunk));
+    });
+    child.stderr.on("data", (chunk) => {
+      if (!quiet && stderr) stderr.write(String(chunk));
+    });
+    child.on("error", reject);
+    child.on("close", (code) => {
+      if (code === 0 || quiet) {
+        resolve({ code });
+      } else {
+        reject(new Error(`${command} exited with code ${code}`));
+      }
+    });
+  });
+}
+
+async function fileExists(filePath) {
+  try {
+    await fs.stat(filePath);
+    return true;
+  } catch (error) {
+    if (error.code === "ENOENT") return false;
+    throw error;
+  }
+}
+
 function findTryCloudflareUrl(text) {
   const match = String(text).match(/https:\/\/[a-zA-Z0-9.-]+\.trycloudflare\.com\b/);
   return match ? match[0] : null;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 module.exports = {
   DEFAULT_TUNNEL_HOST,
   DEFAULT_TUNNEL_PORT,
   findTryCloudflareUrl,
+  formatConnectDryRun,
   formatMcpWebGuide,
   formatTunnelDryRun,
+  runWebConnect,
   runCloudflareTunnel
 };

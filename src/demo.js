@@ -12,9 +12,8 @@ function demoText() {
 4. If you want ChatGPT web to connect, print the web setup guide:
    cgn mcp web
 
-5. For ChatGPT web, keep a local server running and create an HTTPS tunnel:
-   cgn mcp serve --host 127.0.0.1 --port 47832
-   cgn mcp tunnel
+5. For ChatGPT web, use one command:
+   cgn mcp connect --yes
 
 6. Use the ChatGPT MCP connector:
    - inspect bounded repo context with the bridge tools

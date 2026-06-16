@@ -39,7 +39,7 @@ async function startMcpStdio(options = {}) {
 async function startMcpHttpServer(options = {}) {
   const cwd = options.cwd || process.cwd();
   const host = options.host || "127.0.0.1";
-  const port = Number(options.port || 47832);
+  const port = Number(options.port ?? 47832);
   const sessions = new Map();
 
   const httpServer = http.createServer(async (req, res) => {

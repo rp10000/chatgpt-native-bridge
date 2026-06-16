@@ -4,7 +4,7 @@ const { DEFAULT_PACKAGE_SPEC, formatCodexMcpInstall, installCodexMcp } = require
 const { formatDoctorReport, getDoctorReport } = require("./doctor");
 const { TOOL_NAMES } = require("./mcp-tools");
 const { startMcpHttpServer, startMcpStdio } = require("./mcp-server");
-const { formatMcpWebGuide, runCloudflareTunnel } = require("./mcp-web");
+const { formatMcpWebGuide, runCloudflareTunnel, runWebConnect } = require("./mcp-web");
 
 const DEFAULT_MCP_HOST = "127.0.0.1";
 const DEFAULT_MCP_PORT = 47832;
@@ -43,6 +43,19 @@ async function runMcpCommand({ subcommand, args, cwd, stdout, stderr }) {
 
   if (subcommand === "web") {
     stdout.write(formatMcpWebGuide({ host, port }));
+    return;
+  }
+
+  if (subcommand === "connect") {
+    await runWebConnect({
+      host,
+      port,
+      cwd: root,
+      stdout,
+      stderr,
+      dryRun: Boolean(parsed.flags["dry-run"]),
+      yes: Boolean(parsed.flags.yes)
+    });
     return;
   }
 
@@ -138,6 +151,7 @@ function mcpHelpText() {
 
 Usage:
   cgn mcp install
+  cgn mcp connect --yes
   cgn mcp web
   cgn mcp tunnel
   cgn mcp serve --host 127.0.0.1 --port 47832

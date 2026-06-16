@@ -81,11 +81,7 @@ cgn mcp web
 最快路径：
 
 ```bash
-# 终端 1
-cgn mcp serve --host 127.0.0.1 --port 47832
-
-# 终端 2
-cgn mcp tunnel
+cgn mcp connect --yes
 ```
 
 把命令打印出来的 HTTPS `/mcp` 地址填到 ChatGPT：
@@ -481,6 +477,7 @@ cgn done
 # 新手主路径
 cgn setup --mcp
 cgn mcp install
+cgn mcp connect --yes
 cgn mcp web
 cgn mcp tunnel
 cgn mcp doctor

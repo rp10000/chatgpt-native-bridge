@@ -67,11 +67,7 @@ cgn mcp web
 Fast path:
 
 ```bash
-# Terminal 1
-cgn mcp serve --host 127.0.0.1 --port 47832
-
-# Terminal 2
-cgn mcp tunnel
+cgn mcp connect --yes
 ```
 
 Paste the printed HTTPS `/mcp` URL into ChatGPT:
@@ -343,6 +339,7 @@ Do not use this for:
 # Beginner path
 cgn setup --mcp
 cgn mcp install
+cgn mcp connect --yes
 cgn mcp web
 cgn mcp tunnel
 cgn mcp doctor

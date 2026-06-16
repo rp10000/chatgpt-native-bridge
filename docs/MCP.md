@@ -61,7 +61,7 @@ cgn mcp doctor
 For the shortest ChatGPT web setup, run:
 
 ```bash
-cgn mcp web
+cgn mcp connect --yes
 ```
 
 Use the official ChatGPT MCP/App connection flow available to your account or workspace. If ChatGPT cannot directly reach a local `127.0.0.1` server, use an official Secure MCP Tunnel or another approved private MCP route.
