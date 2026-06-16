@@ -12,7 +12,8 @@ const {
 } = require("../src/codex-mcp-install");
 
 test("buildCodexMcpBlock uses npx GitHub command by default", () => {
-  const block = buildCodexMcpBlock({ root: "D:\\project\\demo" });
+  const root = path.resolve("demo-project");
+  const block = buildCodexMcpBlock({ root });
 
   assert.match(block, /^\[mcp_servers\."chatgpt-native-bridge"\]/);
   assert.match(block, /command = "npx"/);
@@ -21,7 +22,7 @@ test("buildCodexMcpBlock uses npx GitHub command by default", () => {
   assert.match(block, /"serve"/);
   assert.match(block, /"--stdio"/);
   assert.match(block, /"--root"/);
-  assert.match(block, /"D:\\\\project\\\\demo"/);
+  assert.match(block, new RegExp(escapeRegExp(JSON.stringify(root))));
 });
 
 test("mergeCodexMcpBlock replaces only the bridge MCP block", () => {
@@ -40,7 +41,7 @@ OLD_ENV = "old"
 [features]
 memories = true
 `;
-  const block = buildCodexMcpBlock({ root: "D:\\project\\demo" });
+  const block = buildCodexMcpBlock({ root: path.resolve("demo-project") });
   const merged = mergeCodexMcpBlock(existing, block);
 
   assert.match(merged, /model = "gpt-5\.5"/);
