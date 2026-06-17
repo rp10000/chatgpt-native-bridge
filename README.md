@@ -4,503 +4,129 @@
 
 English | [简体中文](README.zh-CN.md)
 
-Use ChatGPT's native web app and a small local GUI as a planning, review, and visual-direction layer for Codex.
+ChatGPT Native Bridge is a local desktop bridge for Codex.
 
-Codex executes locally. ChatGPT thinks, critiques, researches, reviews screenshots, and uses native ChatGPT tools through a local bridge. No API key. No hidden endpoints. No scraping. No arbitrary shell execution.
+Codex edits files and runs tests locally. ChatGPT does planning, review, UX judgment, research, and visual direction. The bridge moves context and replies between them without an API key, hidden endpoints, browser scraping, or arbitrary shell execution.
 
 ![chatgpt-native-bridge usage preview](docs/assets/marketing/hero.svg)
 
-> Public beta: v0.5 adds a local GUI and GPT-5.5 Pro clipboard relay. MCP and Markdown handoff remain available.
+## Main Path: Desktop Client
 
-![chatgpt-native-bridge flow](docs/assets/flow.svg)
-
-## Current reality
-
-What works today:
-
-- `cgn start` opens a local sidecar GUI for GPT-5.5 Pro clipboard relay.
-- The GUI can generate a Pro planning pack, copy it to the clipboard, watch for a matching Pro reply, and write it into the Codex inbox.
-- Codex can install and use this project through MCP.
-- `cgn handoff` and `cgn done` work as the reliable manual fallback.
-- ChatGPT web can use the MCP server when the app is connected to the current HTTPS `/mcp` URL.
-- `cgn mcp trace` shows whether ChatGPT actually reached the local server.
-
-What is not one-click:
-
-- ChatGPT cannot use `localhost` directly; it needs HTTPS, either Secure MCP Tunnel or a public tunnel.
-- GPT-5.5 Pro does not directly use Apps/MCP in ChatGPT. Use the GUI clipboard relay for Pro planning.
-- The built-in Cloudflare quick tunnel is temporary. If you restart it, the Server URL changes, and the ChatGPT app must be updated or recreated.
-- This project cannot silently create the ChatGPT app for you without browser automation or private web calls.
-
-## Local GUI Quickstart
-
-Run this in the project you want Codex to work on:
+Run this inside the project you want Codex to work on:
 
 ```bash
 npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn start
 ```
 
-The GUI opens at `http://127.0.0.1:47833`.
+`cgn start`, `cgn desktop`, and `cgn client` open the desktop client.
 
-For a deep GPT-5.5 Pro pass:
+The client keeps the normal user flow to three buttons:
 
-```text
-1. Click Deep Pro Plan / Copy Pro Prompt.
-2. Paste the prompt into GPT-5.5 Pro.
-3. Copy Pro's marked reply.
-4. The GUI imports it into .chatgpt-native/inbox for Codex.
-```
+- `Pro 深度规划`
+- `Thinking 工具复核`
+- `写回 Codex`
 
-The relay only accepts replies with the matching `CGN_BRIDGE_REPLY` id. Clipboard watch starts only after you click it and times out automatically.
+## GPT-5.5 Pro Flow
 
-## Why use this?
-
-Codex is strong at local repo work: editing files, reading diffs, running tests, and carrying implementation through. ChatGPT's web app is useful for native workflows that are awkward to force through a local CLI:
-
-- long-context planning
-- architecture critique
-- product and copy judgment
-- UI/UX screenshot review
-- web research and deep research
-- image generation and visual direction
-- file analysis, Canvas work, and long-running Project context
-- second-pass review of Codex diffs and reports
-
-This bridge gives ChatGPT a small MCP tool surface for local context, handoff creation, diff review, and reply import. Codex keeps execution authority: it edits files, runs tests, and decides what to accept locally.
-
-## Codex-First Usage
-
-Most users should not memorize every `cgn` command. Start from Codex:
+Use this when you want Pro to plan or review but Pro cannot directly call ChatGPT Apps/MCP.
 
 ```text
-Install and initialize this tool in the current project:
-
-https://github.com/rp10000/chatgpt-native-bridge
-
-Run:
-npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp
-
-Then run:
-npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn doctor
-
-Tell me whether setup worked, whether I should restart Codex,
-and where I should paste .chatgpt-native/project-instructions.md in a ChatGPT Project.
+1. Open the desktop client.
+2. Click Pro 深度规划.
+3. Paste the copied prompt into ChatGPT Pro.
+4. Copy Pro's reply.
+5. The client imports the matching reply into Codex inbox.
+6. Click 写回 Codex, then paste the copied sentence into Codex.
 ```
 
-For daily use, trigger the Skill in Codex with one of these:
+The client only watches the clipboard after you click the button, only accepts the current relay id, and times out automatically.
 
-- run `/skills` and choose `chatgpt-native-bridge`
-- type `$chatgpt-native-bridge`
-- say `Use chatgpt-native-bridge for this task`
+## Thinking / MCP Flow
 
-Do not use `/chatgpt-native-bridge`; custom Skills are selected through `/skills`, `$` mention, or natural language. Future plugin packaging may support an `@chatgpt-native-bridge` plugin entry.
+Use this when your ChatGPT mode can call tools through Developer Mode MCP.
 
-## ChatGPT Web Connection
+```text
+1. Open the desktop client.
+2. Click Thinking 工具复核.
+3. The client starts the local MCP server and tunnel.
+4. Create or refresh the ChatGPT connector with the shown Server URL.
+5. Ask Thinking to review the project and write back to Codex.
+```
 
-ChatGPT web needs an HTTPS MCP URL. The simple local path is:
+The MCP tool surface is bounded: read project status, read safe files/diffs, create handoffs, and submit replies to Codex inbox. It does not expose arbitrary shell, arbitrary file writes, commit, or push.
+
+## Fallbacks
+
+Local web GUI:
+
+```bash
+cgn app
+```
+
+Manual Markdown handoff:
+
+```bash
+cgn handoff --task "Review this project"
+cgn done
+```
+
+MCP terminal setup:
 
 ```bash
 cgn mcp connect --yes --open
-```
-
-This starts the local server, opens a temporary HTTPS tunnel, copies the `https://.../mcp` Server URL, and opens ChatGPT settings.
-
-Important: the built-in Cloudflare quick tunnel is temporary. Keep the command running. If you restart it, update or recreate the ChatGPT app with the new Server URL.
-
-In ChatGPT:
-
-```text
-Settings -> Apps & Connectors -> Create
-Name: chatgpt-native-bridge
-Connection: Server URL
-Server URL: paste the copied https://.../mcp URL
-Authentication: No authentication
-```
-
-Then verify that ChatGPT really called the local server:
-
-```bash
-cgn mcp wait
 cgn mcp trace
 ```
 
-If `trace` shows no requests, ChatGPT is not reaching the current Server URL. Refresh or recreate the ChatGPT app with the latest URL printed by `trace`.
+## Install Into Codex
 
-Use natural language in ChatGPT:
-
-```text
-Use chatgpt-native-bridge to review this project and send the final advice back to Codex.
-```
-
-Full details and fallbacks: [MCP setup](docs/MCP.md), [troubleshooting](docs/troubleshooting.md).
-
-## User Does Not Memorize Commands
-
-```text
-User describes task
-  -> Codex decides whether bridge helps
-  -> ChatGPT connects through local MCP when available
-  -> ChatGPT reads bounded context, creates handoff files, or submits advice
-  -> Codex reads reply.md and continues locally
-```
-
-When MCP is not available, the same loop falls back to:
-
-```text
-Codex runs cgn handoff
-  -> User works in visible ChatGPT web
-  -> User runs cgn done
-  -> Codex reads reply.md and continues locally
-```
-
-## For Chinese Users
-
-如果你第一次接触 Codex Skill、ChatGPT Project、handoff、outbox/inbox，建议从中文入口开始：
-
-- [中文 README](README.zh-CN.md)
-- [在 Codex 中使用](docs/zh-CN/在-Codex-中使用.md)
-- [快速开始](docs/zh-CN/快速开始.md)
-
-## Core workflow
-
-```text
-Codex local task
-  -> cgn setup --mcp writes Codex MCP config
-  -> Codex or ChatGPT MCP client starts the local stdio server
-  -> ChatGPT automatically reads bounded repo context when useful
-  -> ChatGPT writes final advice back to Codex
-  -> .chatgpt-native/inbox/{id}/reply.md
-  -> Codex continues local implementation
-```
-
-Fallback workflow:
-
-```text
-Codex local task
-  -> cgn handoff
-  -> .chatgpt-native/outbox/{id}/
-  -> ChatGPT web app with native tools
-  -> cgn done
-  -> .chatgpt-native/inbox/{id}/reply.md
-  -> Codex continues local implementation
-```
-
-## 30-second quickstart
-
-### 1. Initialize inside your Codex project
-
-From this GitHub repo before npm publication:
+For first-time setup in a project:
 
 ```bash
 npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp
 ```
 
-After npm publication:
+Then restart Codex if it asks you to.
+
+In Codex, trigger the Skill with:
+
+- `/skills` then choose `chatgpt-native-bridge`
+- `$chatgpt-native-bridge`
+- `Use chatgpt-native-bridge for this task`
+
+## Desktop Development
 
 ```bash
-npx chatgpt-native-bridge setup --mcp
-```
-
-For local development:
-
-```bash
-git clone https://github.com/rp10000/chatgpt-native-bridge.git
-cd chatgpt-native-bridge
-npm link
-cgn setup --mcp
-```
-
-This creates:
-
-```text
-.agents/skills/chatgpt-native-bridge/SKILL.md
-.chatgpt-native/project-instructions.md
-.chatgpt-native/outbox/
-.chatgpt-native/inbox/
-```
-
-If `cgn` is not installed globally, run any command through the GitHub package form:
-
-```bash
-npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn doctor
-npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn handoff --task "Review pricing page" --type ux-review
-```
-
-### 2. Create a ChatGPT Project
-
-Open ChatGPT, create a Project named:
-
-```text
-Codex Native Advisor
-```
-
-Paste this file into the Project instructions:
-
-```text
-.chatgpt-native/project-instructions.md
-```
-
-### 3. Ask Codex to use the bridge
-
-In Codex:
-
-```text
-Use chatgpt-native-bridge when this task needs planning, UX review, research, visual direction, or diff review.
-```
-
-### 4. MCP local bridge
-
-For Codex, `setup --mcp` installs this MCP server into `~/.codex/config.toml`:
-
-```bash
-cgn mcp install
-```
-
-Print connection hints:
-
-```bash
-cgn mcp config
-```
-
-Connect ChatGPT to:
-
-```text
-http://127.0.0.1:47832/mcp
-```
-
-Manual HTTP server fallback:
-
-```bash
-cgn mcp serve --host 127.0.0.1 --port 47832
-```
-
-Use ChatGPT Developer Mode or an official Secure MCP Tunnel when ChatGPT cannot directly reach your local machine. See [MCP setup](docs/MCP.md).
-
-Available MCP tools:
-
-| Tool | Purpose |
-| --- | --- |
-| `review_current_project` | One-call project review entry: status, git state, safe diff, and next write-back step. |
-| `bridge_status` | Read local bridge, git, handoff, and reply status. |
-| `create_handoff` | Create a self-explaining handoff pack. |
-| `list_handoff_files` | List generated handoff files and upload candidates. |
-| `read_handoff_file` | Read a bounded text file from the handoff outbox. |
-| `read_repo_file` | Read a bounded non-sensitive repo file. |
-| `read_git_diff` | Read the current git diff with secret-content guarding. |
-| `agent_start_task` | Start a bounded local MCP agent run and write its result to the Codex inbox. |
-| `agent_status` | Read local agent run status. |
-| `agent_read_log` | Read a bounded local agent log. |
-| `agent_read_result` | Read the local agent result Markdown. |
-| `agent_stop` | Cancel a running local agent task. |
-| `submit_reply_to_codex` | Write ChatGPT's final advice into the local inbox for Codex. |
-| `write_to_codex` | Alias for `submit_reply_to_codex` when ChatGPT looks for a write-back action. |
-
-### 5. Markdown fallback beginner flow
-
-```bash
-cgn handoff \
-  --task "Review the new pricing page" \
-  --type ux-review,naming-copy \
-  --include-diff \
-  --include-screenshots "screenshots/*.png"
-```
-
-This creates the handoff, opens ChatGPT, copies `01_PASTE_TO_CHATGPT.md` to your clipboard, and prints the exact prompt path plus the upload/select list from the outbox. Then follow:
-
-```text
-.chatgpt-native/outbox/{id}/START_HERE.md
-```
-
-The same modes work with `cgn handoff`:
-
-```bash
-cgn handoff --task "Review pricing page" --mode assist
-cgn handoff --task "Review pricing page" --mode manual
-cgn handoff --task "Review pricing page" --mode auto
-```
-
-`--mode auto` prepares the handoff only. It does not paste, upload, or submit inside ChatGPT.
-
-### 6. Import ChatGPT's answer manually
-
-After ChatGPT responds, copy the answer and run:
-
-```bash
-cgn done
-```
-
-Codex can now read:
-
-```text
-.chatgpt-native/inbox/{id}/reply.md
-```
-
-### Advanced split flow
-
-Advanced users can split the beginner command into separate steps:
-
-```bash
-cgn ask --task "Review pricing page" --type ux-review,naming-copy --include-diff
-cgn open latest
-cgn import latest --from-clipboard
-```
-
-MCP users should prefer `cgn setup --mcp` or `cgn mcp install`. `cgn handoff` is the recommended fallback path when MCP is unavailable. `cgn ask`, `cgn open`, and `cgn import` remain available for advanced workflows and Codex automation.
-
-## Self-Explaining Handoff Files
-
-Every handoff writes a small Markdown guide into `.chatgpt-native/outbox/{id}/`:
-
-| File | Purpose |
-| --- | --- |
-| `START_HERE.md` | Full local instructions for the handoff loop. |
-| `01_PASTE_TO_CHATGPT.md` | The prompt to paste into ChatGPT. `ask.md` is kept as a compatibility copy. |
-| `02_UPLOAD_THESE_FILES.md` | Clear upload/select checklist with context, diff, tests, screenshots, and selected file status. |
-| `03_AFTER_CHATGPT_REPLY.md` | What to do after ChatGPT responds. |
-| `manifest.json` | Structured metadata for tools and debugging. |
-
-After `cgn done`, the inbox also contains:
-
-| File | Purpose |
-| --- | --- |
-| `reply.md` | ChatGPT's imported final answer. |
-| `CODEX_READ_THIS.md` | Instructions for Codex to review `reply.md`, accept/reject/defer suggestions, continue locally, and run tests. |
-
-## Why not just copy and paste?
-
-| Approach | Tradeoff |
-| --- | --- |
-| Manual copy-paste | Easy to miss diffs, test output, screenshots, or relevant files. Context format changes every time. |
-| Codex only | Good for local execution, but product judgment, visual critique, research, and second-pass review may benefit from ChatGPT web workflows. |
-| OpenAI API only | Does not naturally use your visible ChatGPT Projects, Canvas, file upload, image generation, or other web-native workflows. |
-| Browser RPA | Fragile, high-maintenance, and touches boundaries this project intentionally avoids. |
-| `chatgpt-native-bridge` | ChatGPT uses a local MCP bridge when available; Markdown handoff files remain as a visible fallback. Codex continues local execution. |
-
-## When to use it
-
-| Scenario | Command shape |
-| --- | --- |
-| Complex requirement breakdown | `cgn handoff --task "..." --type plan,requirements` |
-| Architecture review before a refactor | `cgn handoff --task "..." --type architecture --include-files "src/**/*.js"` |
-| Page design or copy critique | `cgn handoff --task "..." --type ux-review,naming-copy --include-screenshots "screenshots/*.png"` |
-| Research or current-source synthesis | `cgn handoff --task "..." --type research` |
-| Visual direction or image prompts | `cgn handoff --task "..." --type image-direction --include-screenshots "screenshots/*.png"` |
-| Final review after Codex changes | `cgn handoff --task "..." --type diff-review --include-diff --include-tests` |
-
-## When not to use it
-
-Do not use this for:
-
-- typo-only changes
-- formatting-only changes
-- deterministic test fixes
-- lockfile-only updates
-- tasks containing secrets you are not willing to upload to ChatGPT
-
-## Commands
-
-```bash
-# Beginner path
-cgn setup --mcp
-cgn mcp install
-cgn mcp connect --yes --open
-cgn mcp wait
-cgn mcp trace
-cgn mcp web
-cgn mcp tunnel
-cgn mcp doctor
-cgn handoff --task "Review pricing page" --type ux-review --include-diff
-cgn done
-
-# Manual HTTP fallback
-cgn mcp serve --host 127.0.0.1 --port 47832
-cgn mcp config
-
-# Advanced split flow
-cgn init
-cgn ask --task "Review pricing page" --type ux-review,naming-copy --include-diff
-cgn open latest --mode assist
-cgn open latest --mode manual
-cgn open latest --mode auto
-cgn import latest --from-clipboard
-cgn status
-cgn demo
-cgn doctor
-cgn guide codex
-```
-
-MCP users can start with `cgn setup --mcp`, `cgn mcp install`, and `cgn mcp doctor`. When MCP is unavailable, use `cgn setup`, `cgn handoff`, and `cgn done`. The older commands remain available for advanced users and for Codex to run directly.
-
-`cgn demo` prints the end-to-end workflow. `cgn doctor` checks whether a project has the skill, Project instructions, outbox/inbox folders, and latest handoff/reply state. `cgn guide codex` prints a ready-to-copy prompt for Codex, and `cgn guide codex --lang zh-CN` prints the Chinese version.
-The MCP server exposes only bounded local context tools and does not expose shell execution.
-
-If `cgn mcp wait` says no tool call was observed, ChatGPT did not actually use the connector in that chat yet. Re-select `chatgpt-native-bridge` in ChatGPT and ask it to call `review_current_project`.
-
-If ChatGPT says `review_current_project` or `write_to_codex` is unavailable, refresh the app tools in ChatGPT settings or recreate the draft app with the latest `https://.../mcp` URL and `No authentication`. Use `0.4.1` or newer.
-
-Run `cgn mcp trace` to see whether ChatGPT reached `/mcp`, listed tools, or actually called a tool.
-
-## Request types
-
-- `plan`
-- `requirements`
-- `architecture`
-- `naming-copy`
-- `ux-review`
-- `research`
-- `image-direction`
-- `diff-review`
-
-ChatGPT can answer in free-form Markdown. The templates ask for a `Codex next actions` section when possible, but they do not require a strict schema.
-
-## Safety boundary
-
-The bridge has a lightweight secret guard. It blocks obvious sensitive paths or content:
-
-- `.env` and `.env.*`
-- private key files such as `*.pem`, `*.key`, SSH private keys
-- cookie or session files
-- private key blocks
-- Authorization headers
-- API key, token, secret, or password assignments
-- `.git`
-- `node_modules` through `read_repo_file`
-
-This is intentionally not an enterprise data-loss-prevention system. Review what you include before uploading anything to ChatGPT.
-
-The MCP server intentionally does not expose arbitrary shell execution, arbitrary file writes, commits, pushes, or browser automation. Its writes are limited to `.chatgpt-native/outbox` and `.chatgpt-native/inbox`.
-
-## Docs
-
-- [Quickstart tutorial](docs/quickstart.md)
-- [MCP setup](docs/MCP.md)
-- [MCP security boundary](docs/MCP_SECURITY.md)
-- [Why this exists](docs/why.md)
-- [Codex workflow prompts](docs/codex-workflow.md)
-- [ChatGPT Project setup](docs/chatgpt-project-setup.md)
-- [UX review tutorial](docs/tutorials/ux-review.md)
-- [Image direction tutorial](docs/tutorials/image-direction.md)
-- [Diff review tutorial](docs/tutorials/diff-review.md)
-- [FAQ](docs/faq.md)
-- [Troubleshooting](docs/troubleshooting.md)
-
-## Examples
-
-- [Basic planning handoff](examples/basic/README.md)
-- [Frontend UX review](examples/frontend-ux-review/README.md)
-- [Image direction](examples/image-direction/README.md)
-
-## Development
-
-```bash
-git clone https://github.com/rp10000/chatgpt-native-bridge.git
-cd chatgpt-native-bridge
 npm install
-npm link
-cgn --help
-npm test
-npm run smoke
-npm pack --dry-run
+npm run desktop:dev
+npm run desktop:pack
 ```
 
-This package uses the official MCP TypeScript SDK plus Zod for MCP tool schemas.
+The npm package keeps the CLI lightweight. Desktop installers are intended for GitHub Releases.
+
+## Safety
+
+- No OpenAI API key required.
+- No hidden ChatGPT endpoints.
+- No ChatGPT web scraping.
+- No browser plugin.
+- No arbitrary shell execution.
+- No automatic commit or push.
+
+## Useful Commands
+
+```bash
+cgn start
+cgn desktop
+cgn client
+cgn app
+cgn setup --mcp
+cgn mcp connect --yes --open
+cgn mcp trace
+cgn handoff
+cgn done
+cgn doctor
+```
+
+## Status
+
+`v0.6.0` changes the main path to a Windows-first desktop client. The local web GUI and Markdown handoff remain as fallback paths.

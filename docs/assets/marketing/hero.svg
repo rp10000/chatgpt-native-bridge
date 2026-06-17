@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
-  <title id="title">chatgpt-native-bridge GUI and MCP usage</title>
-  <desc id="desc">The local GUI relays GPT-5.5 Pro planning, MCP remains available for ChatGPT tools, and Codex continues local execution.</desc>
+  <title id="title">chatgpt-native-bridge desktop and MCP usage</title>
+  <desc id="desc">The desktop client relays GPT-5.5 Pro planning, MCP remains available for ChatGPT tools, and Codex continues local execution.</desc>
   <defs>
     <style>
       .bg { fill: #f8fafc; }
@@ -28,7 +28,7 @@
 
   <rect class="bg" width="1280" height="720" />
   <text class="title" x="330" y="64">chatgpt-native-bridge</text>
-  <text class="text" x="360" y="96">Local GUI, Pro relay, and MCP bridge for Codex</text>
+  <text class="text" x="334" y="96">Desktop client, Pro relay, and MCP bridge for Codex</text>
 
   <rect class="dark" x="54" y="140" width="330" height="400" />
   <text class="dark-title" x="92" y="188">Codex local project</text>
@@ -36,7 +36,7 @@
   <text class="code" x="86" y="270">  chatgpt-native-bridge</text>
   <text class="code" x="86" y="296">  -- cgn start</text>
   <rect class="ok" x="84" y="330" width="250" height="58" />
-  <text class="label" x="118" y="365">Sidecar GUI ready</text>
+  <text class="label" x="105" y="365">Desktop client</text>
   <text class="code-dim" x="86" y="430">No global cgn required</text>
   <text class="code-dim" x="86" y="460">No API key</text>
   <text class="code-dim" x="86" y="490">No browser scraping</text>

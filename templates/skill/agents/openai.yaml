@@ -1,13 +1,13 @@
 interface:
   display_name: "ChatGPT Native Bridge"
-  short_description: "Local GUI, MCP, and fallback handoff for planning, review, research, UX critique, image direction, and diff review between Codex and visible ChatGPT."
+  short_description: "Desktop client, MCP, and fallback handoff for planning, review, research, UX critique, image direction, and diff review between Codex and visible ChatGPT."
   default_prompt: |
     Use chatgpt-native-bridge for this task.
     Decide whether this task needs ChatGPT-native planning, architecture critique,
     UX review, naming/copy review, research, image direction, or diff review.
-    Prefer the local GUI for GPT-5.5 Pro planning: npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn start.
+    Prefer the desktop client for GPT-5.5 Pro planning: npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn start.
     Use MCP when ChatGPT Thinking should read/write through tools. If MCP is not installed, use npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp and ask the user to restart Codex or open a new thread.
-    If GUI relay and MCP are unavailable, create a cgn handoff fallback and tell the user what to paste or upload.
+    If desktop relay and MCP are unavailable, create a cgn handoff fallback and tell the user what to paste or upload.
 
 policy:
   allow_implicit_invocation: true

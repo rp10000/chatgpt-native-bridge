@@ -4,6 +4,7 @@ const { createAsk, VALID_TYPES } = require("./ask");
 const { demoText } = require("./demo");
 const { formatDoctorReport, getDoctorReport } = require("./doctor");
 const { codexGuideText } = require("./guide");
+const { launchDesktopClient } = require("./desktop-client");
 const { formatHandoffSummary, getHandoffSummary } = require("./handoff-summary");
 const { importReply } = require("./import-reply");
 const { initProject } = require("./init");
@@ -59,7 +60,18 @@ async function main(argv, io = defaultIo()) {
     return;
   }
 
-  if (command === "start" || command === "app") {
+  if (command === "start" || command === "desktop" || command === "client") {
+    const parsed = parseArgs(rest);
+    await launchDesktopClient({
+      cwd: io.cwd,
+      stdout: io.stdout,
+      dryRun: Boolean(parsed.flags["dry-run"]),
+      webFallback: Boolean(parsed.flags["web-fallback"])
+    });
+    return;
+  }
+
+  if (command === "app") {
     const parsed = parseArgs(rest);
     const host = parsed.flags.host || DEFAULT_APP_HOST;
     const port = parsed.flags.port || DEFAULT_APP_PORT;
@@ -347,6 +359,8 @@ function helpText() {
 
 Usage:
   cgn start
+  cgn desktop
+  cgn client
   cgn app
   cgn init
   cgn setup
@@ -380,10 +394,14 @@ Request types:
 Safety:
   No OpenAI API key, no hidden endpoints, no ChatGPT scraping, no arbitrary shell execution.
 
-GUI:
-  cgn start  Open the local sidecar GUI at http://127.0.0.1:47833.
-  cgn app    Alias for cgn start.
-  The GUI creates GPT-5.5 Pro clipboard relay packs and imports matching replies into Codex inbox.
+Desktop:
+  cgn start    Open ChatGPT Native Bridge Desktop.
+  cgn desktop  Alias for cgn start.
+  cgn client   Alias for cgn start.
+  The desktop client has three main actions: Pro planning, Thinking review, and copy the Codex continue prompt.
+
+Fallback GUI:
+  cgn app  Open the local web GUI at http://127.0.0.1:47833.
 
 MCP:
   cgn setup --mcp  Initialize the project and install this MCP into Codex config.

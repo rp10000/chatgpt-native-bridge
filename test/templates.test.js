@@ -54,8 +54,8 @@ test("ChatGPT project instructions define the automatic MCP loop", async () => {
 
 test("primary user-facing docs keep readable line breaks", async () => {
   const files = [
-    ["README.md", 120],
-    ["README.zh-CN.md", 180],
+    ["README.md", 80],
+    ["README.zh-CN.md", 80],
     [path.join("templates", "skill", "SKILL.md"), 40],
     [path.join("templates", "chatgpt", "project-instructions.md"), 20]
   ];
@@ -70,8 +70,14 @@ test("readme files keep expected section breaks", async () => {
   const readme = await fs.readFile(path.join(__dirname, "..", "README.md"), "utf8");
   const readmeZh = await fs.readFile(path.join(__dirname, "..", "README.zh-CN.md"), "utf8");
 
-  assert.ok(readme.includes("\n## Why use this?\n"));
-  assert.ok(readmeZh.includes("\n## 最简单用法：把这段复制给 Codex\n"));
+  assert.ok(readme.includes("\n## Main Path: Desktop Client\n"));
+  assert.ok(readme.includes("\n## GPT-5.5 Pro Flow\n"));
+  assert.ok(readme.includes("\n## Thinking / MCP Flow\n"));
+  assert.ok(readme.includes("\n## Fallbacks\n"));
+  assert.ok(readmeZh.includes("\n## 主入口：桌面客户端\n"));
+  assert.ok(readmeZh.includes("\n## Pro 深度规划\n"));
+  assert.ok(readmeZh.includes("\n## Thinking 工具复核\n"));
+  assert.ok(readmeZh.includes("\n## 备用方式\n"));
 });
 
 test("ci workflow keeps valid nested YAML shape", async () => {

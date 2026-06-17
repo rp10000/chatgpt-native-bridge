@@ -1,21 +1,20 @@
 # Quickstart tutorial
 
-This tutorial starts with the local GUI and GPT-5.5 Pro clipboard relay, then shows the MCP and Markdown fallback loops.
+This tutorial starts with the desktop client and GPT-5.5 Pro clipboard relay, then shows the MCP and Markdown fallback loops.
 
-## 1. Open the local GUI
+## 1. Open the desktop client
 
 ```bash
 npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn start
 ```
 
-The GUI opens at `http://127.0.0.1:47833`.
+Use `Pro 深度规划` when you want GPT-5.5 Pro to plan or review without API cost:
 
-Use `Deep Pro Plan` when you want GPT-5.5 Pro to plan or review without API cost:
-
-1. Click `Copy Pro Prompt`.
+1. Click `Pro 深度规划`.
 2. Paste it into GPT-5.5 Pro.
-3. Copy Pro's marked reply.
-4. Let the GUI import it into `.chatgpt-native/inbox`.
+3. Copy Pro's reply.
+4. Let the client import it into `.chatgpt-native/inbox`.
+5. Click `写回 Codex` and paste the copied sentence into Codex.
 
 ## 2. Initialize and install the Codex MCP bridge
 

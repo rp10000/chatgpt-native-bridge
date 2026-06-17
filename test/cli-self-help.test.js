@@ -34,6 +34,8 @@ test("help lists beginner guidance commands", async () => {
   await main(["--help"], io);
 
   assert.match(io.output(), /cgn start/);
+  assert.match(io.output(), /cgn desktop/);
+  assert.match(io.output(), /cgn client/);
   assert.match(io.output(), /cgn app/);
   assert.match(io.output(), /cgn setup/);
   assert.match(io.output(), /cgn setup --mcp/);
@@ -54,19 +56,28 @@ test("help lists beginner guidance commands", async () => {
   assert.match(io.output(), /--mode auto/);
 });
 
-test("start dry-run explains the local GUI and clipboard relay", async () => {
+test("start dry-run explains the desktop client", async () => {
   const io = createIo(await fs.mkdtemp(path.join(os.tmpdir(), "cgn-start-dry-run-")));
 
   await main(["start", "--dry-run"], io);
 
-  assert.match(io.output(), /local GUI/);
-  assert.match(io.output(), /http:\/\/127\.0\.0\.1:47833/);
-  assert.match(io.output(), /GPT-5\.5 Pro planning pack/);
-  assert.match(io.output(), /Clipboard watch is opt-in/);
+  assert.match(io.output(), /ChatGPT Native Bridge Desktop/);
+  assert.match(io.output(), /Pro 深度规划/);
+  assert.match(io.output(), /Thinking 工具复核/);
+  assert.match(io.output(), /写回 Codex/);
+
+  const desktopIo = createIo(await fs.mkdtemp(path.join(os.tmpdir(), "cgn-desktop-dry-run-")));
+  await main(["desktop", "--dry-run"], desktopIo);
+  assert.match(desktopIo.output(), /ChatGPT Native Bridge Desktop/);
+
+  const clientIo = createIo(await fs.mkdtemp(path.join(os.tmpdir(), "cgn-client-dry-run-")));
+  await main(["client", "--dry-run"], clientIo);
+  assert.match(clientIo.output(), /ChatGPT Native Bridge Desktop/);
 
   const aliasIo = createIo(await fs.mkdtemp(path.join(os.tmpdir(), "cgn-app-dry-run-")));
   await main(["app", "--dry-run"], aliasIo);
   assert.match(aliasIo.output(), /local GUI/);
+  assert.match(aliasIo.output(), /http:\/\/127\.0\.0\.1:47833/);
 });
 
 test("agent start creates a local agent run and Codex inbox reply", async () => {

@@ -1,14 +1,15 @@
 function demoText() {
   return `30-second chatgpt-native-bridge demo
 
-1. Open the local sidecar GUI inside a Codex project:
+1. Open the desktop client inside a Codex project:
    cgn start
 
 2. For GPT-5.5 Pro planning:
-   - click Deep Pro Plan / Copy Pro Prompt
+   - click Pro 深度规划
    - paste the prompt into GPT-5.5 Pro
-   - copy Pro's marked reply
-   - let the GUI import it into the Codex inbox
+   - copy Pro's reply
+   - let the client import it into the Codex inbox
+   - click 写回 Codex and paste the copied sentence into Codex
 
 3. Ask Codex to read:
    .chatgpt-native/inbox/{id}/reply.md

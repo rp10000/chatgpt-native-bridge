@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ChatGPT Native Bridge</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <img class="avatar" src="../assets/avatar.png" alt="">
+      <div class="title-block">
+        <h1>ChatGPT Native Bridge</h1>
+        <p id="projectPath">正在读取项目...</p>
+      </div>
+    </header>
+
+    <section class="status-grid" aria-label="当前状态">
+      <div class="tile">
+        <span>Codex</span>
+        <strong id="codexState">检查中</strong>
+      </div>
+      <div class="tile">
+        <span>回复</span>
+        <strong id="replyState">暂无</strong>
+      </div>
+      <div class="tile">
+        <span>Pro</span>
+        <strong id="proState">待开始</strong>
+      </div>
+      <div class="tile">
+        <span>Thinking</span>
+        <strong id="mcpState">未连接</strong>
+      </div>
+    </section>
+
+    <section class="panel primary">
+      <p class="eyebrow">推荐动作</p>
+      <h2 id="nextActionTitle">Pro 深度规划</h2>
+      <p id="nextActionText">客户端会复制项目上下文提示词并打开 ChatGPT。你把提示词发给 Pro，复制回复后客户端会自动写回 Codex。</p>
+
+      <label for="taskInput">任务</label>
+      <textarea id="taskInput">复核当前项目，给 Codex 一个简洁、可执行的下一步计划。</textarea>
+
+      <div class="actions">
+        <button id="proPlan">Pro 深度规划</button>
+        <button class="secondary" id="thinkingReview">Thinking 工具复核</button>
+        <button class="ghost" id="copyCodex">写回 Codex</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <details>
+        <summary>手动写回 / 诊断</summary>
+        <label for="manualReply">如果自动识别失败，把 Pro 回复粘贴到这里</label>
+        <textarea id="manualReply"></textarea>
+        <div class="actions">
+          <button class="secondary" id="manualImport">导入回复</button>
+          <button class="ghost" id="selectProject">选择项目</button>
+          <button class="ghost" id="openChatGPT">打开 ChatGPT</button>
+        </div>
+        <pre id="diagnostics">准备就绪。</pre>
+      </details>
+    </section>
+  </main>
+  <script src="./app.js"></script>
+</body>
+</html>

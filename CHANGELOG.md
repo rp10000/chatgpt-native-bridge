@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.6.0
+
+- Make the desktop client the main user path with `cgn start`, `cgn desktop`, and `cgn client`.
+- Add Electron desktop app source under `desktop/` with three main actions: Pro planning, Thinking review, and copy the Codex continue prompt.
+- Add shared desktop IPC handlers for project selection, status, Pro pack creation, clipboard import, MCP startup, and Codex continue prompt copying.
+- Keep `cgn app` as the local web GUI fallback and keep Markdown handoff as the low-risk fallback path.
+- Add Electron development and Windows packaging scripts.
+
 ## v0.5.0
 
 - Add `cgn start` and `cgn app` for a local sidecar GUI at `http://127.0.0.1:47833`.

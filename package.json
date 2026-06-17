@@ -1,7 +1,7 @@
 {
   "name": "chatgpt-native-bridge",
-  "version": "0.5.0",
-  "description": "A local MCP-first ChatGPT bridge for Codex.",
+  "version": "0.6.0",
+  "description": "A local desktop ChatGPT bridge for Codex.",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -11,16 +11,21 @@
     "url": "https://github.com/rp10000/chatgpt-native-bridge/issues"
   },
   "homepage": "https://github.com/rp10000/chatgpt-native-bridge#readme",
+  "main": "desktop/main.js",
   "bin": {
     "cgn": "./bin/cgn.js",
     "chatgpt-native-bridge": "./bin/cgn.js"
   },
   "scripts": {
     "test": "node --test",
-    "smoke": "node ./bin/cgn.js --help"
+    "smoke": "node ./bin/cgn.js --help",
+    "desktop:dev": "electron desktop/main.js",
+    "desktop:pack": "electron-builder --win --x64",
+    "desktop:smoke": "node ./bin/cgn.js desktop --dry-run"
   },
   "files": [
     "bin",
+    "desktop",
     "docs",
     "src",
     "templates",
@@ -43,5 +48,31 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
     "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "electron": "^42.4.1",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.rp10000.chatgpt-native-bridge",
+    "productName": "ChatGPT Native Bridge",
+    "directories": {
+      "output": "dist-desktop"
+    },
+    "files": [
+      "desktop/**/*",
+      "src/**/*",
+      "package.json",
+      "LICENSE"
+    ],
+    "win": {
+      "icon": "desktop/assets/icon.ico",
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }

@@ -2,7 +2,7 @@
 
 ## Is this using the OpenAI API?
 
-No. It is a local CLI that packages context and opens the visible ChatGPT web app.
+No. It is a local CLI and desktop client that packages context for the visible ChatGPT web app.
 
 ## Does it scrape ChatGPT?
 
@@ -11,6 +11,16 @@ No. It does not read DOM output, cookies, localStorage, IndexedDB, tokens, or ne
 ## Why not automate the browser?
 
 Browser automation is fragile and would blur the safety boundary. This project keeps the user in control of the visible ChatGPT session.
+
+## What is the main path now?
+
+Since `v0.6.0`, the main path is the desktop client:
+
+```bash
+cgn start
+```
+
+Use `Pro 深度规划` for GPT-5.5 Pro clipboard relay, `Thinking 工具复核` for MCP-capable ChatGPT modes, and `写回 Codex` to copy the Codex continuation prompt.
 
 ## Can I choose automatic or manual mode?
 
