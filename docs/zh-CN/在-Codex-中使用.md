@@ -34,7 +34,7 @@ $chatgpt-native-bridge
 
 ## Codex 应该怎么做
 
-Codex 应优先检查：
+Codex 应先检查：
 
 ```text
 .chatgpt-native/inbox/{id}/CODEX_READ_THIS.md
@@ -43,19 +43,21 @@ Codex 应优先检查：
 
 如果已经有回复，就直接读取并继续本地实现。
 
-如果需要 GPT-5.5 Pro 深度规划，优先让用户运行：
+如果需要 ChatGPT 复核，优先走桌面客户端主路径：
 
 ```bash
 npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn start
 ```
 
-如果需要 ChatGPT Thinking 读取项目，使用 MCP：
+客户端里的主流程是：
 
-```bash
-cgn mcp connect --yes --open
+```text
+连接 ChatGPT -> 开始复核 -> 交给 Codex
 ```
 
-如果桌面客户端和 MCP 都不可用，再走手动：
+如果只需要 GPT-5.5 Pro 辅助规划，使用客户端里的 `Pro 辅助规划`。注意：Pro 只能看客户端打包的上下文，不能直接读取本地项目。
+
+如果桌面客户端和 MCP 都不可用，再走手动备用：
 
 ```bash
 cgn handoff --task "复核当前项目"

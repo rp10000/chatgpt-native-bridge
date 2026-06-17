@@ -28,7 +28,7 @@ This will open:
 
 What it does:
   - Shows current project, MCP trace, and latest Codex inbox state.
-  - Creates a GPT-5.5 Pro planning pack.
+  - Creates a GPT-5.5 Pro packaged-context helper pack.
   - Copies the Pro prompt to clipboard.
   - Watches clipboard only after you click Start Clipboard Watch.
   - Imports a matching CGN_BRIDGE_REPLY back into .chatgpt-native/inbox.
@@ -418,7 +418,7 @@ function renderAppHtml() {
     </section>
 
     <section class="section">
-      <h2>Deep Pro Plan</h2>
+      <h2>Pro 辅助规划</h2>
       <label for="task">Task for GPT-5.5 Pro</label>
       <textarea id="task">Review this project and produce a concise implementation plan for Codex.</textarea>
       <div class="actions">

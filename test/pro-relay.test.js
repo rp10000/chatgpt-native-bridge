@@ -27,6 +27,8 @@ test("Pro prompt includes project context and id-bound reply markers", async () 
 
   assert.match(prompt, /GPT-5\.5 Pro Planning Pack/);
   assert.match(prompt, /Plan the next release/);
+  assert.match(prompt, /cannot directly read the user's local project/);
+  assert.match(prompt, /上下文不足/);
   assert.match(prompt, /Relay id: pro-test-1/);
   assert.match(prompt, new RegExp(`${PRO_REPLY_START} v1 id=pro-test-1`));
   assert.match(prompt, new RegExp(PRO_REPLY_END));

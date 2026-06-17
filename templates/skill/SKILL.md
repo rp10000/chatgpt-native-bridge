@@ -5,14 +5,14 @@ description: Use this when Codex should hand off high-level advisory work to the
 
 # ChatGPT Native Bridge
 
-Use this skill when the task benefits from ChatGPT web-native capabilities.
+Use this skill when the task benefits from ChatGPT web-native review or planning.
 
 ## Main idea
 
 Codex remains the local executor.
-The desktop client handles GPT-5.5 Pro clipboard relay.
-ChatGPT web can also act as the native advisor through the local MCP bridge when available.
-The user controls the visible ChatGPT session.
+ChatGPT Thinking/MCP is the main path for reading the local project and writing advice back to Codex.
+GPT-5.5 Pro is only a packaged-context helper; it cannot directly read local files through this bridge.
+The desktop client is the beginner entry point and hides command details.
 
 ## Use cases
 
@@ -27,19 +27,23 @@ The user controls the visible ChatGPT session.
 
 ## Workflow
 
-1. Start automatically:
+1. Check for existing write-back first:
    - Run `cgn status` or inspect `.chatgpt-native/inbox`.
-   - If `.chatgpt-native/inbox/{id}/CODEX_READ_THIS.md` exists, read it and `reply.md`, then continue local execution without asking the user for tool names.
-2. Prefer the desktop client path for GPT-5.5 Pro planning:
-   - Ask the user to run `npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn start`.
-   - The client creates a Pro prompt, watches for a matching marked reply, and imports it into the Codex inbox.
-3. Use MCP when ChatGPT Thinking should read/write through tools:
-   - Tell the user to ask ChatGPT naturally, such as: "Use chatgpt-native-bridge to review this project and send your final advice back to Codex."
-   - ChatGPT should call MCP tools and `submit_reply_to_codex` automatically.
-   - If the MCP server is not available in Codex, ask the user to run `npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp`, then restart Codex or open a new thread.
-   - If the project was already initialized but MCP is missing, run `cgn mcp install`.
-4. When desktop relay and MCP are unavailable, create a visible fallback handoff with `cgn handoff`.
-5. Include only relevant context:
+   - If `.chatgpt-native/inbox/{id}/CODEX_READ_THIS.md` exists, read it and `reply.md`, then continue local execution.
+2. Prefer the desktop main path:
+   - Ask the user to run `npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn start` if the client is not open.
+   - Main buttons are `连接 ChatGPT`, `开始复核`, and `交给 Codex`.
+   - ChatGPT prompt: `请使用 chatgpt-native-bridge 复核当前项目，并把最终建议写回 Codex。`
+3. Use Thinking/MCP for real project review:
+   - ChatGPT should call bridge tools automatically.
+   - Expected loop: inspect project status, read diff/files as needed, then write final advice with `submit_reply_to_codex` or `write_to_codex`.
+   - If MCP is missing in Codex, run `npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp`, then restart Codex or open a new thread.
+4. Use Pro only as an auxiliary planning path:
+   - Pro can only see the packaged context copied by the desktop client.
+   - Pro must not be treated as having direct access to local files, terminals, git state, or MCP tools.
+   - If context is insufficient, Pro should say the context is insufficient.
+5. When desktop and MCP are unavailable, create a visible fallback handoff with `cgn handoff`.
+6. Include only relevant context:
    - task
    - repo summary
    - relevant files
@@ -47,24 +51,15 @@ The user controls the visible ChatGPT session.
    - test output
    - screenshots
    - specific questions
-6. For fallback handoffs, `cgn handoff` opens ChatGPT and copies `01_PASTE_TO_CHATGPT.md`.
+7. For fallback handoffs, `cgn handoff` opens ChatGPT and copies `01_PASTE_TO_CHATGPT.md`.
    - Use `--mode assist` for the default open-and-copy flow.
    - Use `--mode manual` when the user wants paths only.
    - Use `--mode auto` to also open the outbox folder. This does not paste, upload, submit, or scrape ChatGPT.
-7. Keep user instructions simple:
-   - Desktop path: run `cgn start`, use Pro 深度规划, then let the client import the marked Pro reply.
-   - MCP path: ask ChatGPT naturally and let it submit the reply back to Codex.
-   - Fallback path: paste `.chatgpt-native/outbox/{run_id}/01_PASTE_TO_CHATGPT.md` into ChatGPT.
-   - Fallback path: upload/select files listed in `.chatgpt-native/outbox/{run_id}/02_UPLOAD_THESE_FILES.md`.
-   - Fallback path: open `.chatgpt-native/outbox/{run_id}/START_HERE.md` if the user needs the full local checklist.
-   - Fallback path: after ChatGPT replies, copy the final answer and run `cgn done`.
-   - Fallback path: then Codex should read `.chatgpt-native/inbox/{run_id}/reply.md`.
-8. Let the user use ChatGPT natively.
-9. Import the result with the desktop relay, MCP `submit_reply_to_codex`, `cgn import {id}`, or `cgn done`.
-10. Read `.chatgpt-native/inbox/{id}/reply.md` and `.chatgpt-native/inbox/{id}/CODEX_READ_THIS.md`.
-11. Continue local execution using Codex judgment.
-12. Run relevant tests.
-13. Summarize what was accepted, ignored, or deferred.
+8. Import the result with the desktop client, MCP write-back, `cgn import {id}`, or `cgn done`.
+9. Read `.chatgpt-native/inbox/{id}/reply.md` and `.chatgpt-native/inbox/{id}/CODEX_READ_THIS.md`.
+10. Continue local execution using Codex judgment.
+11. Run relevant tests.
+12. Summarize what was accepted, ignored, or deferred.
 
 ## Minimal safety
 

@@ -70,13 +70,13 @@ test("readme files keep expected section breaks", async () => {
   const readme = await fs.readFile(path.join(__dirname, "..", "README.md"), "utf8");
   const readmeZh = await fs.readFile(path.join(__dirname, "..", "README.zh-CN.md"), "utf8");
 
-  assert.ok(readme.includes("\n## Main Path: Desktop Client\n"));
-  assert.ok(readme.includes("\n## GPT-5.5 Pro Flow\n"));
-  assert.ok(readme.includes("\n## Thinking / MCP Flow\n"));
-  assert.ok(readme.includes("\n## Fallbacks\n"));
-  assert.ok(readmeZh.includes("\n## 主入口：桌面客户端\n"));
-  assert.ok(readmeZh.includes("\n## Pro 深度规划\n"));
-  assert.ok(readmeZh.includes("\n## Thinking 工具复核\n"));
+  assert.ok(readme.includes("\n## Main Path\n"));
+  assert.ok(readme.includes("\n## Paths\n"));
+  assert.ok(readme.includes("\n## First-Time Setup\n"));
+  assert.ok(readme.includes("\n## Fallback\n"));
+  assert.ok(readmeZh.includes("\n## 主路径\n"));
+  assert.ok(readmeZh.includes("\n## 三条路径\n"));
+  assert.ok(readmeZh.includes("\n## 第一次设置\n"));
   assert.ok(readmeZh.includes("\n## 备用方式\n"));
 });
 

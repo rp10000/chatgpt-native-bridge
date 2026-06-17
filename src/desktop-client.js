@@ -18,9 +18,12 @@ What it opens:
   A desktop client window.
 
 Main buttons:
-  - Pro 深度规划
-  - Thinking 工具复核
-  - 写回 Codex
+  - 连接 ChatGPT
+  - 开始复核
+  - 交给 Codex
+
+Helper:
+  - Pro 辅助规划 only uses packaged context. It cannot read local files directly.
 
 Fallback:
   If the desktop client is not installed in this checkout, open the latest GitHub Release:

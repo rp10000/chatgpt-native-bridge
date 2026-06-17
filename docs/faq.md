@@ -2,58 +2,53 @@
 
 ## Is this using the OpenAI API?
 
-No. It is a local CLI and desktop client that packages context for the visible ChatGPT web app.
+No. The normal flow uses the visible ChatGPT web app and a local bridge. No API key is required.
 
 ## Does it scrape ChatGPT?
 
-No. It does not read DOM output, cookies, localStorage, IndexedDB, tokens, or network requests.
+No. It does not read the ChatGPT page, DOM, cookies, localStorage, IndexedDB, tokens, or browser network requests.
+
+## What is the main path now?
+
+Since `v0.7.0`, the main path is:
+
+```text
+连接 ChatGPT -> 开始复核 -> 交给 Codex
+```
+
+ChatGPT Thinking/MCP is the path that can read the local project through bounded tools and write advice back to Codex.
+
+## What is GPT-5.5 Pro used for?
+
+Pro is an auxiliary planning path. It cannot directly read local files or call the bridge tools in this design.
+
+The desktop client packages context, copies it to the clipboard, and imports a marked Pro reply back into the Codex inbox.
 
 ## Why not automate the browser?
 
 Browser automation is fragile and would blur the safety boundary. This project keeps the user in control of the visible ChatGPT session.
 
-## What is the main path now?
+## Why cannot the client create the ChatGPT app automatically?
 
-Since `v0.6.0`, the main path is the desktop client:
+Creating or editing ChatGPT apps through the web UI would require browser automation or hidden web calls. This project does not do that.
+
+The client prepares the connection address and keeps the steps short.
+
+## Does MCP give ChatGPT shell access?
+
+No. The MCP tools are bounded. They can read project status, safe files, diffs, handoff files, and write final advice into `.chatgpt-native/inbox`.
+
+They do not expose arbitrary shell, arbitrary file writes, commit, or push.
+
+## Can I still use the manual mode?
+
+Yes:
 
 ```bash
-cgn start
+cgn handoff --task "Review this project"
+cgn done
 ```
 
-Use `Pro 深度规划` for GPT-5.5 Pro clipboard relay, `Thinking 工具复核` for MCP-capable ChatGPT modes, and `写回 Codex` to copy the Codex continuation prompt.
+## What should I not send to ChatGPT?
 
-## Can I choose automatic or manual mode?
-
-Yes, but automatic means preparation, not submission:
-
-```bash
-cgn open latest --mode manual
-cgn open latest --mode assist
-cgn open latest --mode auto
-```
-
-`manual` prints paths only. `assist` opens ChatGPT and copies `01_PASTE_TO_CHATGPT.md`. `auto` also opens the outbox folder so you can see and select attachments. It does not paste, upload, click send, or scrape ChatGPT output.
-
-## Do I need ChatGPT Plus or Pro?
-
-The bridge can create handoff packs regardless of your ChatGPT plan. ChatGPT feature availability depends on your account and workspace.
-
-## Can I use ChatGPT Projects?
-
-Yes. The recommended setup is a Project named `Codex Native Advisor` with `.chatgpt-native/project-instructions.md` pasted into the Project instructions.
-
-## Can I use images?
-
-Yes. Include screenshots with `--include-screenshots "screenshots/*.png"` and upload them in ChatGPT.
-
-## Can I upload files?
-
-Yes. Use `--include-files` for relevant non-sensitive files, then upload the copied files from the outbox.
-
-## What should I not upload?
-
-Do not upload secrets, private keys, cookies, session dumps, authorization headers, `.env` files, or anything you are not willing to send to ChatGPT.
-
-## How does Codex know when to use the bridge?
-
-`npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp` installs `.agents/skills/chatgpt-native-bridge/SKILL.md` and the Codex MCP config block. You can also explicitly tell Codex: `Use chatgpt-native-bridge for this task.`
+Do not send `.env`, private keys, cookies, session dumps, authorization headers, tokens, passwords, or anything you are not willing to share with ChatGPT.

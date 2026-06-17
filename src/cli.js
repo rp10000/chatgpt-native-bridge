@@ -398,7 +398,8 @@ Desktop:
   cgn start    Open ChatGPT Native Bridge Desktop.
   cgn desktop  Alias for cgn start.
   cgn client   Alias for cgn start.
-  The desktop client has three main actions: Pro planning, Thinking review, and copy the Codex continue prompt.
+  The desktop client has three main actions: connect ChatGPT, start review, and hand back to Codex.
+  GPT-5.5 Pro is a helper path that only uses packaged context.
 
 Fallback GUI:
   cgn app  Open the local web GUI at http://127.0.0.1:47833.

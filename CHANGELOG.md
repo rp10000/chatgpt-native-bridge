@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.7.0
+
+- Make Thinking/MCP the primary desktop path for real local project review and Codex write-back.
+- Move GPT-5.5 Pro into a packaged-context helper path instead of implying it can directly read local files.
+- Redesign the desktop client around three beginner actions: `连接 ChatGPT`, `开始复核`, and `交给 Codex`.
+- Add a simplified desktop bridge-state mapping: `未连接`, `已连接`, `ChatGPT 已调用`, `已写回`.
+- Clean up README and Chinese README to explain the main path, Pro helper path, and Markdown fallback path.
+
 ## v0.6.2
 
 - Make Pro relay prompts avoid copyable placeholder reply bodies.

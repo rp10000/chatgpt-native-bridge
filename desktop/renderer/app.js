@@ -38,33 +38,58 @@ async function refresh() {
   const ready = status.doctor && status.doctor.ready;
   setStatus("codexState", ready ? "就绪" : "需初始化", ready ? "ok" : "warn");
 
+  const bridge = status.bridgeState || { key: "disconnected", label: "未连接", kind: "warn" };
+  setStatus("bridgeState", bridge.label, bridge.kind);
+  updateMainAction(bridge.key);
+
   const latest = status.relay && status.relay.latest;
   if (latest && latest.id) state.currentRelayId = latest.id;
 
-  if (latest && latest.state === "imported") {
-    setStatus("replyState", "已写回", "ok");
-    setStatus("proState", "已完成", "ok");
-    $("nextActionTitle").textContent = "交给 Codex 继续";
-    $("nextActionText").textContent = "回复已经写入本地 inbox。点击“写回 Codex”复制一句话，贴给 Codex 继续执行。";
-  } else if (status.relay && status.relay.watcher) {
-    setStatus("replyState", "监听中", "warn");
-    setStatus("proState", "等 Pro 回复", "warn");
-  } else if (latest) {
-    setStatus("replyState", "待复制回复", "warn");
-    setStatus("proState", "提示词已复制", "warn");
+  const hasReply = Boolean(
+    status.handoff && status.handoff.latestReady ||
+    latest && latest.state === "imported"
+  );
+  setStatus("replyState", hasReply ? "已写回" : "暂无", hasReply ? "ok" : "warn");
+
+  if (status.relay && status.relay.watcher) {
+    setStatus("proState", "等待回复", "warn");
+  } else if (latest && latest.state === "imported") {
+    setStatus("proState", "已导入", "ok");
   } else {
-    setStatus("replyState", "暂无", "warn");
-    setStatus("proState", "待开始", "warn");
+    setStatus("proState", "辅助", "warn");
   }
 
-  const mcp = status.mcp || {};
-  if (mcp.latestToolCall || (mcp.toolCallCount && mcp.toolCallCount > 0)) {
-    setStatus("mcpState", "已调用", "ok");
-  } else if ((status.desktop && status.desktop.mcpServerRunning) || mcp.webConnection) {
-    setStatus("mcpState", "已准备", "warn");
-  } else {
-    setStatus("mcpState", "未连接", "warn");
+  const serverUrl = status.mcp && status.mcp.webConnection && status.mcp.webConnection.serverUrl;
+  if (serverUrl) {
+    logOnce("server-url-ready", "已复制连接地址，请在 ChatGPT 创建或刷新工具。");
   }
+}
+
+function updateMainAction(key) {
+  if (key === "written") {
+    $("nextActionTitle").textContent = "交给 Codex";
+    $("nextActionText").textContent = "ChatGPT 的建议已经写回本地。点击“交给 Codex”，再粘贴到 Codex 继续执行。";
+    return;
+  }
+  if (key === "called") {
+    $("nextActionTitle").textContent = "等待写回";
+    $("nextActionText").textContent = "ChatGPT 已经调用工具。等它完成后，回到这里交给 Codex。";
+    return;
+  }
+  if (key === "connected") {
+    $("nextActionTitle").textContent = "开始复核";
+    $("nextActionText").textContent = "连接已准备好。点击“开始复核”，把复制好的话发给 ChatGPT。";
+    return;
+  }
+  $("nextActionTitle").textContent = "连接 ChatGPT";
+  $("nextActionText").textContent = "先连接 ChatGPT 工具。连接后，让 ChatGPT 复核当前项目并写回 Codex。";
+}
+
+const logged = new Set();
+function logOnce(key, line) {
+  if (logged.has(key)) return;
+  logged.add(key);
+  log(line);
 }
 
 async function run(action) {
@@ -80,21 +105,14 @@ async function run(action) {
   }
 }
 
-$("proPlan").addEventListener("click", () => run(async () => {
-  const pack = await call("pro:create-pack", {
-    task: $("taskInput").value,
-    includeDiff: true,
-    openChatgpt: true
-  });
-  state.currentRelayId = pack.id;
-  log(`已复制 Pro 提示词：${pack.id}`);
-  await call("pro:start-watch", { id: pack.id });
-  log("已开始监听剪贴板。复制 Pro 回复后会自动写回。");
+$("connectChatGPT").addEventListener("click", () => run(async () => {
+  await call("mcp:start");
+  log("正在连接 ChatGPT。连接状态变为“已连接”后，去 ChatGPT 创建或刷新工具。");
 }));
 
-$("thinkingReview").addEventListener("click", () => run(async () => {
-  const result = await call("mcp:start");
-  log(result.log && result.log.length ? result.log.at(-1) : "Thinking 连接已启动。");
+$("copyChatGPTPrompt").addEventListener("click", () => run(async () => {
+  const result = await call("chatgpt:copy-review-prompt");
+  log(`已复制给 ChatGPT：${result.text}`);
 }));
 
 $("copyCodex").addEventListener("click", () => run(async () => {
@@ -102,10 +120,26 @@ $("copyCodex").addEventListener("click", () => run(async () => {
   log(`已复制给 Codex：${result.text}`);
 }));
 
+$("proPlan").addEventListener("click", () => run(async () => {
+  const pack = await call("pro:create-pack", {
+    task: $("taskInput").value,
+    includeDiff: true,
+    openChatgpt: true
+  });
+  state.currentRelayId = pack.id;
+  log(`已复制 Pro 上下文：${pack.id}`);
+}));
+
+$("startProWatch").addEventListener("click", () => run(async () => {
+  if (!state.currentRelayId) throw new Error("请先复制 Pro 上下文。");
+  await call("pro:start-watch", { id: state.currentRelayId });
+  log("正在等待 Pro 回复。复制 Pro 回复后会自动导入。");
+}));
+
 $("manualImport").addEventListener("click", () => run(async () => {
   const text = $("manualReply").value.trim();
   if (!text) throw new Error("请先粘贴 Pro 回复。");
-  if (!state.currentRelayId) throw new Error("请先生成一次 Pro 深度规划。");
+  if (!state.currentRelayId) throw new Error("请先复制 Pro 上下文。");
   const imported = await call("pro:manual-import", {
     id: state.currentRelayId,
     text

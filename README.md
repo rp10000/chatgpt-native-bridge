@@ -6,11 +6,11 @@ English | [简体中文](README.zh-CN.md)
 
 ChatGPT Native Bridge is a local desktop bridge for Codex.
 
-Codex edits files and runs tests locally. ChatGPT does planning, review, UX judgment, research, and visual direction. The bridge moves context and replies between them without an API key, hidden endpoints, browser scraping, or arbitrary shell execution.
+Codex edits files and runs tests locally. ChatGPT reviews, plans, and writes advice back through a bounded local bridge. GPT-5.5 Pro can still help with deeper planning, but only from the context the client packages for it.
 
 ![chatgpt-native-bridge usage preview](docs/assets/marketing/hero.svg)
 
-## Main Path: Desktop Client
+## Main Path
 
 Run this inside the project you want Codex to work on:
 
@@ -18,80 +18,77 @@ Run this inside the project you want Codex to work on:
 npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn start
 ```
 
-`cgn start`, `cgn desktop`, and `cgn client` open the desktop client.
-
-The client keeps the normal user flow to three buttons:
-
-- `Pro 深度规划`
-- `Thinking 工具复核`
-- `写回 Codex`
-
-## GPT-5.5 Pro Flow
-
-Use this when you want Pro to plan or review but Pro cannot directly call ChatGPT Apps/MCP.
+The desktop client shows three main actions:
 
 ```text
-1. Open the desktop client.
-2. Click Pro 深度规划.
-3. Paste the copied prompt into ChatGPT Pro.
-4. Copy Pro's reply.
-5. The client imports the matching reply into Codex inbox.
-6. Click 写回 Codex, then paste the copied sentence into Codex.
+Connect ChatGPT -> Start Review -> Hand to Codex
 ```
 
-The client only watches the clipboard after you click the button, only accepts the current relay id, and times out automatically.
+In the client:
 
-## Thinking / MCP Flow
+1. Click `连接 ChatGPT`.
+2. Create or refresh the ChatGPT tool when the connection is ready.
+3. Click `开始复核` and paste the copied request into ChatGPT.
+4. Wait for ChatGPT to write back.
+5. Click `交给 Codex` and paste the copied sentence into Codex.
 
-Use this when your ChatGPT mode can call tools through Developer Mode MCP.
+## Paths
+
+Main path:
 
 ```text
-1. Open the desktop client.
-2. Click Thinking 工具复核.
-3. The client starts the local MCP server and tunnel.
-4. Create or refresh the ChatGPT connector with the shown Server URL.
-5. Ask Thinking to review the project and write back to Codex.
+ChatGPT Thinking/MCP reads the project -> writes back to Codex
 ```
 
-The MCP tool surface is bounded: read project status, read safe files/diffs, create handoffs, and submit replies to Codex inbox. It does not expose arbitrary shell, arbitrary file writes, commit, or push.
+Helper path:
 
-## Fallbacks
-
-Local web GUI:
-
-```bash
-cgn app
+```text
+Pro 辅助规划 -> clipboard relay
 ```
 
-Manual Markdown handoff:
+Pro cannot directly read local files. It only sees the context copied by the desktop client.
+
+## Fallback
+
+Fallback path:
 
 ```bash
 cgn handoff --task "Review this project"
 cgn done
 ```
 
-MCP terminal setup:
+## First-Time Setup
 
-```bash
-cgn mcp connect --yes --open
-cgn mcp trace
-```
-
-## Install Into Codex
-
-For first-time setup in a project:
+For Codex MCP setup in a project:
 
 ```bash
 npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp
 ```
 
-Then restart Codex if it asks you to.
+Restart Codex if prompted.
 
-In Codex, trigger the Skill with:
+## Useful Commands
 
-- `/skills` then choose `chatgpt-native-bridge`
-- `$chatgpt-native-bridge`
-- `Use chatgpt-native-bridge for this task`
+```bash
+cgn start
+cgn desktop
+cgn client
+cgn setup --mcp
+cgn mcp connect --yes --open
+cgn mcp trace
+cgn handoff
+cgn done
+cgn doctor
+```
+
+## Safety
+
+- No OpenAI API key required.
+- No browser plugin.
+- No ChatGPT web scraping.
+- No hidden ChatGPT endpoints.
+- No arbitrary shell execution.
+- No automatic commit or push.
 
 ## Desktop Development
 
@@ -103,30 +100,6 @@ npm run desktop:pack
 
 The npm package keeps the CLI lightweight. Desktop installers are intended for GitHub Releases.
 
-## Safety
-
-- No OpenAI API key required.
-- No hidden ChatGPT endpoints.
-- No ChatGPT web scraping.
-- No browser plugin.
-- No arbitrary shell execution.
-- No automatic commit or push.
-
-## Useful Commands
-
-```bash
-cgn start
-cgn desktop
-cgn client
-cgn app
-cgn setup --mcp
-cgn mcp connect --yes --open
-cgn mcp trace
-cgn handoff
-cgn done
-cgn doctor
-```
-
 ## Status
 
-`v0.6.2` keeps the Windows-first desktop client path and rejects placeholder-only Pro relay replies instead of importing them.
+`v0.7.0` makes Thinking/MCP the main path for real local project review, and keeps GPT-5.5 Pro as packaged-context planning only.

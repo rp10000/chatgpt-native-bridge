@@ -23,10 +23,10 @@ Codex Native Advisor
 在 ChatGPT 里可以说：
 
 ```text
-请使用 chatgpt-native-bridge 复核这个项目，并把最终建议写回 Codex。
+请使用 chatgpt-native-bridge 复核当前项目，并把最终建议写回 Codex。
 ```
 
-如果当前模型不能调用 MCP，就用桌面客户端的 `Pro 深度规划`。
+如果当前模型不能调用 MCP，就用桌面客户端的 `Pro 辅助规划`。Pro 只能看客户端复制过去的上下文，不能直接读取本地项目。
 
 ## 4. MCP connector
 
@@ -36,4 +36,4 @@ Codex Native Advisor
 cgn mcp connect --yes --open
 ```
 
-然后在 ChatGPT 的 Apps & Connectors 里创建或刷新 connector，使用命令打印出来的 `https://.../mcp` Server URL。
+然后在 ChatGPT 的 Apps & Connectors 里创建或刷新 connector，使用命令复制出来的 `https://.../mcp` Server URL。

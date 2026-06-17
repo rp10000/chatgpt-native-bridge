@@ -5,8 +5,10 @@ const path = require("node:path");
 const test = require("node:test");
 
 const {
+  CHATGPT_REVIEW_PROMPT,
   CHATGPT_URL,
   CONTINUE_PROMPT,
+  computeBridgeState,
   createDesktopHandlers,
   invokeDesktopHandler
 } = require("../src/desktop-ipc");
@@ -71,6 +73,64 @@ test("desktop IPC can copy the Codex continue prompt", async () => {
   assert.equal(clipboard.text, CONTINUE_PROMPT);
 });
 
+test("desktop IPC can copy the ChatGPT review prompt", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-desktop-chatgpt-prompt-"));
+  const clipboard = fakeClipboard();
+  const opened = [];
+  const handlers = createDesktopHandlers({
+    cwd,
+    clipboard,
+    shell: {
+      openExternal(url) {
+        opened.push(url);
+      }
+    }
+  });
+
+  const result = await invokeDesktopHandler(handlers, "chatgpt:copy-review-prompt");
+
+  assert.equal(result.ok, true);
+  assert.equal(result.data.text, CHATGPT_REVIEW_PROMPT);
+  assert.equal(clipboard.text, CHATGPT_REVIEW_PROMPT);
+  assert.equal(opened[0], CHATGPT_URL);
+});
+
+test("desktop bridge state maps the beginner flow", () => {
+  assert.deepEqual(computeBridgeState({}), {
+    key: "disconnected",
+    label: "未连接",
+    kind: "warn"
+  });
+  assert.deepEqual(computeBridgeState({
+    mcp: {
+      webConnection: { createdAt: "2026-06-17T00:00:00.000Z" }
+    }
+  }), {
+    key: "connected",
+    label: "已连接",
+    kind: "warn"
+  });
+  assert.deepEqual(computeBridgeState({
+    mcp: {
+      webConnection: { createdAt: "2026-06-17T00:00:00.000Z" },
+      latestToolCall: { ts: "2026-06-17T00:00:01.000Z" }
+    }
+  }), {
+    key: "called",
+    label: "ChatGPT 已调用",
+    kind: "ok"
+  });
+  assert.deepEqual(computeBridgeState({
+    handoff: {
+      latestReady: { id: "reply-id" }
+    }
+  }), {
+    key: "written",
+    label: "已写回",
+    kind: "ok"
+  });
+});
+
 test("desktop IPC starts MCP with injected tunnel dependencies", async () => {
   const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-desktop-mcp-"));
   let tunnelStarted = false;
@@ -95,7 +155,7 @@ test("desktop IPC starts MCP with injected tunnel dependencies", async () => {
   assert.equal(result.ok, true);
   assert.equal(result.data.mcpServerRunning, true);
   assert.equal(tunnelStarted, true);
-  assert.equal(result.data.log.some((line) => line.includes("Local MCP server ready")), true);
+  assert.equal(result.data.log.some((line) => line.includes("Local bridge ready")), true);
 
   await handlers.dispose();
   assert.equal(closed, true);

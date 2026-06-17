@@ -14,6 +14,7 @@ const { getMcpTrace } = require("./mcp-trace");
 const { createProPack, getLatestProRelayState, importProReply } = require("./pro-relay");
 
 const CHATGPT_URL = "https://chatgpt.com";
+const CHATGPT_REVIEW_PROMPT = "请使用 chatgpt-native-bridge 复核当前项目，并把最终建议写回 Codex。";
 const CONTINUE_PROMPT = "读取最新 Bridge 回复，然后继续执行。";
 
 function createDesktopHandlers(options = {}) {
@@ -57,7 +58,7 @@ function createDesktopHandlers(options = {}) {
 
     async "status:get"() {
       const status = await getAppStatus({ cwd: state.cwd, watcher: state.watcher });
-      return {
+      const result = {
         ...status,
         project: projectInfo(state.cwd),
         desktop: {
@@ -65,6 +66,10 @@ function createDesktopHandlers(options = {}) {
           mcpServerRunning: Boolean(state.mcpServer),
           clipboardWatcher: state.watcher ? state.watcher.publicState() : null
         }
+      };
+      return {
+        ...result,
+        bridgeState: computeBridgeState(result)
       };
     },
 
@@ -93,7 +98,7 @@ function createDesktopHandlers(options = {}) {
         const latest = await getLatestProRelayState(state.cwd);
         id = latest && latest.id;
       }
-      if (!id) throw new Error("请先生成 Pro 深度规划。");
+      if (!id) throw new Error("请先生成 Pro 辅助规划。");
       if (state.watcher) state.watcher.stop("replaced");
       state.watcher = startClipboardWatch({
         cwd: state.cwd,
@@ -119,6 +124,12 @@ function createDesktopHandlers(options = {}) {
     async "chatgpt:open"() {
       await shell.openExternal(CHATGPT_URL);
       return { opened: true, url: CHATGPT_URL };
+    },
+
+    async "chatgpt:copy-review-prompt"() {
+      clipboard.writeText(CHATGPT_REVIEW_PROMPT);
+      await shell.openExternal(CHATGPT_URL);
+      return { copied: true, text: CHATGPT_REVIEW_PROMPT, opened: true, url: CHATGPT_URL };
     },
 
     async "mcp:start"() {
@@ -161,6 +172,37 @@ function createDesktopHandlers(options = {}) {
   };
 }
 
+function computeBridgeState(status = {}) {
+  if (hasLatestReply(status)) {
+    return { key: "written", label: "已写回", kind: "ok" };
+  }
+  if (hasFreshToolCall(status.mcp || {})) {
+    return { key: "called", label: "ChatGPT 已调用", kind: "ok" };
+  }
+  if ((status.desktop && status.desktop.mcpServerRunning) || (status.mcp && status.mcp.webConnection)) {
+    return { key: "connected", label: "已连接", kind: "warn" };
+  }
+  return { key: "disconnected", label: "未连接", kind: "warn" };
+}
+
+function hasLatestReply(status = {}) {
+  return Boolean(
+    (status.handoff && status.handoff.latestReady) ||
+    (status.relay && status.relay.latest && status.relay.latest.state === "imported")
+  );
+}
+
+function hasFreshToolCall(mcp = {}) {
+  const latest = mcp.latestToolCall;
+  if (!latest) return false;
+  const connectionTime = mcp.webConnection && Date.parse(mcp.webConnection.createdAt || "");
+  const toolTime = Date.parse(latest.ts || "");
+  if (Number.isFinite(connectionTime) && Number.isFinite(toolTime)) {
+    return toolTime >= connectionTime;
+  }
+  return true;
+}
+
 async function startDesktopMcp({
   cwd,
   appendLog,
@@ -171,18 +213,18 @@ async function startDesktopMcp({
   startMcpHttpServerImpl = startMcpHttpServer
 }) {
   if (!state.mcpServer) {
-    appendLog(`Starting local MCP server on ${DEFAULT_TUNNEL_HOST}:${DEFAULT_TUNNEL_PORT}`);
+    appendLog(`Starting local bridge on ${DEFAULT_TUNNEL_HOST}:${DEFAULT_TUNNEL_PORT}`);
     state.mcpServer = await startMcpHttpServerImpl({
       cwd,
       host: DEFAULT_TUNNEL_HOST,
       port: DEFAULT_TUNNEL_PORT
     });
-    appendLog(`Local MCP server ready: ${state.mcpServer.url}`);
+    appendLog(`Local bridge ready`);
   }
 
   let cloudflared = await resolveCloudflaredCommandImpl({ cwd });
   if (!cloudflared) {
-    appendLog("cloudflared not found; installing");
+    appendLog("Installing secure tunnel helper");
     await installCloudflaredImpl({
       cwd,
       stdout: writer((line) => appendLog(line)),
@@ -190,9 +232,9 @@ async function startDesktopMcp({
     });
     cloudflared = await resolveCloudflaredCommandImpl({ cwd });
   }
-  if (!cloudflared) throw new Error("cloudflared is not available.");
+  if (!cloudflared) throw new Error("无法启动安全通道。请使用 Pro 辅助规划或 Markdown 备用路径。");
 
-  appendLog("Starting ChatGPT HTTPS tunnel");
+  appendLog("Starting ChatGPT connection");
   runCloudflareTunnelImpl({
     cwd,
     host: DEFAULT_TUNNEL_HOST,
@@ -201,7 +243,7 @@ async function startDesktopMcp({
     openChatgpt: true,
     stdout: writer((line) => appendLog(line)),
     stderr: writer((line) => appendLog(line))
-  }).catch((error) => appendLog(`MCP tunnel stopped: ${error.message}`));
+  }).catch((error) => appendLog(`ChatGPT connection stopped: ${error.message}`));
 }
 
 function writer(writeLine) {
@@ -233,8 +275,10 @@ async function invokeDesktopHandler(handlers, channel, payload) {
 }
 
 module.exports = {
+  CHATGPT_REVIEW_PROMPT,
   CHATGPT_URL,
   CONTINUE_PROMPT,
+  computeBridgeState,
   createDesktopHandlers,
   invokeDesktopHandler,
   projectInfo,

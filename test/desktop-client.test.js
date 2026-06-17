@@ -19,9 +19,11 @@ test("desktop dry-run explains the final client entry", () => {
   assert.match(text, /cgn desktop/);
   assert.match(text, /cgn client/);
   assert.match(text, /cgn start/);
-  assert.match(text, /Pro 深度规划/);
-  assert.match(text, /Thinking 工具复核/);
-  assert.match(text, /写回 Codex/);
+  assert.match(text, /连接 ChatGPT/);
+  assert.match(text, /开始复核/);
+  assert.match(text, /交给 Codex/);
+  assert.match(text, /Pro 辅助规划/);
+  assert.match(text, /cannot read local files directly/);
   assert.match(text, /No API key/);
 });
 

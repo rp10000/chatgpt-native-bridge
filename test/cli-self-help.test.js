@@ -16,7 +16,8 @@ test("demo prints the GUI-first bridge workflow", async () => {
 
   assert.match(io.output(), /30-second chatgpt-native-bridge demo/);
   assert.match(io.output(), /cgn start/);
-  assert.match(io.output(), /GPT-5\.5 Pro/);
+  assert.match(io.output(), /Main path/);
+  assert.match(io.output(), /Pro helper path/);
   assert.match(io.output(), /cgn setup/);
   assert.match(io.output(), /cgn setup --mcp/);
   assert.match(io.output(), /cgn mcp install/);
@@ -62,9 +63,10 @@ test("start dry-run explains the desktop client", async () => {
   await main(["start", "--dry-run"], io);
 
   assert.match(io.output(), /ChatGPT Native Bridge Desktop/);
-  assert.match(io.output(), /Pro 深度规划/);
-  assert.match(io.output(), /Thinking 工具复核/);
-  assert.match(io.output(), /写回 Codex/);
+  assert.match(io.output(), /连接 ChatGPT/);
+  assert.match(io.output(), /开始复核/);
+  assert.match(io.output(), /交给 Codex/);
+  assert.match(io.output(), /Pro 辅助规划/);
 
   const desktopIo = createIo(await fs.mkdtemp(path.join(os.tmpdir(), "cgn-desktop-dry-run-")));
   await main(["desktop", "--dry-run"], desktopIo);

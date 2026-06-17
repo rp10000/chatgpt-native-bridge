@@ -129,6 +129,13 @@ h2 {
   line-height: 1.48;
 }
 
+.hint {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 label {
   display: block;
   margin: 14px 0 6px;
@@ -155,6 +162,10 @@ textarea {
   grid-template-columns: 1fr;
   gap: 8px;
   margin-top: 10px;
+}
+
+.three-step {
+  grid-template-columns: 1fr;
 }
 
 button {
@@ -221,8 +232,12 @@ pre {
     grid-template-columns: 1fr 1fr;
   }
 
+  .three-step {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
   #copyCodex,
   #openChatGPT {
-    grid-column: span 2;
+    grid-column: auto;
   }
 }

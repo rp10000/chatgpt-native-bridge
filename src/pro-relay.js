@@ -65,7 +65,9 @@ async function buildProPrompt(options = {}) {
 
   return `# GPT-5.5 Pro Planning Pack
 
-You are GPT-5.5 Pro. Use the local project context below to produce a deep planning and review answer for Codex.
+You are GPT-5.5 Pro. You cannot directly read the user's local project, files, terminal, or git state.
+Use only the packaged context below to produce planning advice for Codex.
+If the packaged context is not enough for a real review, say "上下文不足" and list the exact missing context.
 
 Important boundaries:
 - You do not need MCP, Apps, browser automation, or API calls for this step.

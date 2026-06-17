@@ -11,7 +11,7 @@ test("formatAppDryRun explains GUI URL and safety boundary", () => {
   const text = formatAppDryRun({ host: "127.0.0.1", port: 47833 });
 
   assert.match(text, /http:\/\/127\.0\.0\.1:47833/);
-  assert.match(text, /GPT-5\.5 Pro planning pack/);
+  assert.match(text, /GPT-5\.5 Pro packaged-context helper pack/);
   assert.match(text, /No API key/);
   assert.match(text, /No ChatGPT scraping/);
   assert.match(text, /Clipboard watch is opt-in/);

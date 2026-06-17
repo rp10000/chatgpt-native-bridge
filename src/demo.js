@@ -4,56 +4,59 @@ function demoText() {
 1. Open the desktop client inside a Codex project:
    cgn start
 
-2. For GPT-5.5 Pro planning:
-   - click Pro 深度规划
-   - paste the prompt into GPT-5.5 Pro
-   - copy Pro's reply
-   - let the client import it into the Codex inbox
-   - click 写回 Codex and paste the copied sentence into Codex
+2. Main path:
+   - click 连接 ChatGPT
+   - create or refresh the ChatGPT tool when the connection is ready
+   - click 开始复核
+   - paste the copied request into ChatGPT
+   - wait for ChatGPT to write back
+   - click 交给 Codex and paste the copied sentence into Codex
 
-3. Ask Codex to read:
+3. Pro helper path:
+   - use Pro 辅助规划 when ChatGPT cannot call tools
+   - Pro can only use the packaged context copied by the client
+
+4. Ask Codex to read:
    .chatgpt-native/inbox/{id}/reply.md
+   .chatgpt-native/inbox/{id}/CODEX_READ_THIS.md
 
-4. Codex continues local implementation and runs relevant checks.
+5. Codex continues local implementation and runs relevant checks.
 
-5. To initialize the bridge in a new project:
+Install path:
+
+6. Initialize the project:
+   cgn setup
+
+7. Install Codex MCP config:
    cgn setup --mcp
-
-6. If the project was already initialized, install only the MCP config:
+   or
    cgn mcp install
 
-7. Restart Codex, or open a new Codex thread, so it reloads MCP config.
+8. Restart Codex, or open a new Codex thread, so it reloads MCP config.
 
-8. If you want ChatGPT Thinking to connect through MCP, print the web setup guide:
+Terminal fallback:
+
+9. If you want ChatGPT Thinking to connect through MCP, print the web setup guide:
    cgn mcp web
 
-9. For ChatGPT web MCP, use one command:
+10. One-command ChatGPT web connector setup:
    cgn mcp connect --yes --open
 
-10. In ChatGPT, create the connector with the printed fields:
-   - Name: chatgpt-native-bridge
-   - Server URL: the copied https://.../mcp URL
-   - Authentication: No authentication
-
-11. After selecting the app in ChatGPT, verify that it really calls MCP:
+11. Watch whether ChatGPT actually called the bridge:
    cgn mcp wait
+   cgn mcp trace
 
-12. In ChatGPT Thinking, ask naturally:
-   Use chatgpt-native-bridge to review this project and send your final advice back to Codex.
+Markdown fallback:
 
-13. If web MCP is unavailable, use the Markdown fallback:
-   cgn handoff --task "Review onboarding UX" --type plan,ux-review,naming-copy
+12. Create a handoff:
+   cgn handoff --task "Review onboarding UX" --type ux-review --include-diff
 
-14. In fallback mode:
-   - paste 01_PASTE_TO_CHATGPT.md
-   - upload context.md and any files/screenshots from the outbox
-   - use native ChatGPT tools when helpful
-
-15. Copy ChatGPT's final answer, then import it:
+13. Paste the generated handoff into ChatGPT, then import the reply:
    cgn done
 `;
 }
 
 module.exports = {
-  demoText
+  demoText,
+  formatDemo: demoText
 };

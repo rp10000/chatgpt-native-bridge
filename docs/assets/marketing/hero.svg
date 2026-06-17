@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
   <title id="title">chatgpt-native-bridge desktop and MCP usage</title>
-  <desc id="desc">The desktop client relays GPT-5.5 Pro planning, MCP remains available for ChatGPT tools, and Codex continues local execution.</desc>
+  <desc id="desc">The desktop client makes Thinking/MCP the main path, keeps GPT-5.5 Pro as a helper, and lets Codex continue local execution.</desc>
   <defs>
     <style>
       .bg { fill: #f8fafc; }
@@ -28,7 +28,7 @@
 
   <rect class="bg" width="1280" height="720" />
   <text class="title" x="330" y="64">chatgpt-native-bridge</text>
-  <text class="text" x="334" y="96">Desktop client, Pro relay, and MCP bridge for Codex</text>
+  <text class="text" x="334" y="96">Desktop client, Thinking/MCP, and Pro helper for Codex</text>
 
   <rect class="dark" x="54" y="140" width="330" height="400" />
   <text class="dark-title" x="92" y="188">Codex local project</text>
@@ -45,11 +45,11 @@
   <rect class="mcp" x="470" y="185" width="340" height="310" />
   <text class="label" x="548" y="235">ChatGPT relay</text>
   <rect class="panel" x="510" y="270" width="260" height="54" />
-  <text class="text" x="548" y="304">Pro prompt pack</text>
+  <text class="text" x="548" y="304">Thinking/MCP main path</text>
   <rect class="panel" x="510" y="340" width="260" height="54" />
   <text class="text" x="550" y="374">clipboard watch</text>
   <rect class="panel" x="510" y="410" width="260" height="54" />
-  <text class="text" x="540" y="444">MCP optional tools</text>
+  <text class="text" x="540" y="444">Pro packaged helper</text>
 
   <line class="arrow" x1="810" y1="340" x2="895" y2="340" />
   <rect class="dark" x="895" y="140" width="330" height="400" />

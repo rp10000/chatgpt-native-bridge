@@ -4,13 +4,11 @@
 
 ChatGPT Native Bridge 是给 Codex 用的本地桌面桥接客户端。
 
-Codex 负责本地改文件、跑测试、提交结果。ChatGPT 负责规划、复核、UX 判断、研究、图片方向和长上下文思考。这个项目负责在两边之间传递上下文和回复。
-
-不需要 OpenAI API key。不调用隐藏接口。不抓 ChatGPT 网页。不提供任意 shell 执行。
+Codex 负责本地改代码、跑测试、提交结果。ChatGPT 负责复核、规划和把建议写回 Codex。GPT-5.5 Pro 可以辅助规划，但它只能看客户端复制过去的上下文，不能直接读取你的本地项目。
 
 ![chatgpt-native-bridge 使用预览](docs/assets/marketing/hero.svg)
 
-## 主入口：桌面客户端
+## 主路径
 
 在你要处理的项目目录里运行：
 
@@ -18,81 +16,75 @@ Codex 负责本地改文件、跑测试、提交结果。ChatGPT 负责规划、
 npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn start
 ```
 
-`cgn start`、`cgn desktop`、`cgn client` 都是打开桌面客户端。
-
-普通用户只需要看三个按钮：
-
-- `Pro 深度规划`
-- `Thinking 工具复核`
-- `写回 Codex`
-
-## Pro 深度规划
-
-适合 GPT-5.5 Pro 不能直接调用 Apps/MCP 的情况。
+桌面客户端只保留三个主按钮：
 
 ```text
-1. 打开客户端。
-2. 点 Pro 深度规划。
-3. 客户端复制提示词并打开 ChatGPT。
-4. 你把提示词粘贴给 Pro。
-5. 复制 Pro 的回复。
-6. 客户端自动写回 Codex inbox。
-7. 点 写回 Codex，把复制好的句子发给 Codex。
+连接 ChatGPT -> 开始复核 -> 交给 Codex
 ```
 
-剪贴板监听只在你点击后启动，只接受当前任务 id 的回复，并且会自动超时。
+使用方式：
 
-## Thinking 工具复核
+1. 点 `连接 ChatGPT`。
+2. 连接状态变成已连接后，在 ChatGPT 创建或刷新工具。
+3. 点 `开始复核`，把复制好的话发给 ChatGPT。
+4. 等 ChatGPT 写回。
+5. 点 `交给 Codex`，把复制好的话发给 Codex。
 
-适合当前 ChatGPT 模式可以通过 Developer Mode MCP 调用工具的情况。
+## 三条路径
+
+主路径：
 
 ```text
-1. 打开客户端。
-2. 点 Thinking 工具复核。
-3. 客户端启动本地 MCP server 和 tunnel。
-4. 在 ChatGPT 里创建或刷新 connector。
-5. 让 Thinking 读取项目、复核、写回 Codex。
+ChatGPT Thinking/MCP 读取项目 -> 写回 Codex
 ```
 
-MCP 只暴露有限能力：读取项目状态、安全读取文件和 diff、生成 handoff、把回复写回 Codex inbox。它不提供任意 shell、任意写文件、自动 commit 或 push。
+辅助路径：
+
+```text
+Pro 辅助规划 -> 剪贴板接力
+```
+
+Pro 不能直接读取本地文件。它只能基于客户端打包给它的上下文做规划。
 
 ## 备用方式
-
-本地网页 GUI：
-
-```bash
-cgn app
-```
-
-手动 Markdown 交接：
 
 ```bash
 cgn handoff --task "复核这个项目"
 cgn done
 ```
 
-终端 MCP 连接：
+## 第一次设置
 
-```bash
-cgn mcp connect --yes --open
-cgn mcp trace
-```
-
-## 安装到 Codex
-
-第一次在项目里安装：
+在项目里安装 Codex MCP 配置：
 
 ```bash
 npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp
 ```
 
-如果 Codex 提示需要重启，就重启 Codex。
+如果 Codex 提示需要重启，就重启 Codex，或者开一个新线程。
 
-在 Codex 里可以这样触发：
+## 常用命令
 
-- `/skills` 里选择 `chatgpt-native-bridge`
-- 输入 `$chatgpt-native-bridge`
-- 直接说：`请使用 chatgpt-native-bridge 处理这个任务`
+```bash
+cgn start
+cgn desktop
+cgn client
+cgn setup --mcp
+cgn mcp connect --yes --open
+cgn mcp trace
+cgn handoff
+cgn done
+cgn doctor
+```
+
+## 安全边界
+
+- 不需要 OpenAI API key。
+- 不做浏览器插件。
+- 不抓取 ChatGPT 网页。
+- 不调用隐藏接口。
+- 不提供任意 shell 执行。
+- 不自动 commit 或 push。
 
 ## 桌面端开发
 
@@ -102,32 +94,8 @@ npm run desktop:dev
 npm run desktop:pack
 ```
 
-npm 包仍然保持 CLI 轻量。桌面安装包适合通过 GitHub Release 发布。
-
-## 安全边界
-
-- 不需要 OpenAI API key。
-- 不调用隐藏 ChatGPT 接口。
-- 不抓取 ChatGPT 网页。
-- 不做浏览器插件。
-- 不提供任意 shell 执行。
-- 不自动 commit 或 push。
-
-## 常用命令
-
-```bash
-cgn start
-cgn desktop
-cgn client
-cgn app
-cgn setup --mcp
-cgn mcp connect --yes --open
-cgn mcp trace
-cgn handoff
-cgn done
-cgn doctor
-```
+npm 包保持 CLI 轻量。桌面安装包通过 GitHub Release 发布。
 
 ## 当前状态
 
-`v0.6.2` 继续保持 Windows 优先桌面客户端主路径，并拒绝只有占位符的 Pro 写回，避免误导 Codex 继续执行。
+`v0.7.0` 把 Thinking/MCP 改为真实读取本地项目的主路径，GPT-5.5 Pro 只保留为打包上下文后的辅助规划。

@@ -45,8 +45,8 @@
   <line class="arrow" x1="745" y1="151" x2="810" y2="151" />
   <rect class="box" x="810" y="70" width="240" height="165" />
   <text class="text" x="858" y="111">ChatGPT</text>
-  <text class="sub" x="845" y="142">Pro 深度规划</text>
-  <text class="sub" x="845" y="164">Thinking 工具复核</text>
+  <text class="sub" x="845" y="142">Thinking/MCP 主路径</text>
+  <text class="sub" x="845" y="164">Pro 辅助规划</text>
   <text class="sub" x="845" y="186">研究 / 图片 / UX</text>
   <text class="sub" x="845" y="208">用户可见控制</text>
 

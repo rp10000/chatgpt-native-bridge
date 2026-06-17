@@ -18,47 +18,60 @@
 
     <section class="status-grid" aria-label="当前状态">
       <div class="tile">
-        <span>Codex</span>
-        <strong id="codexState">检查中</strong>
+        <span>连接</span>
+        <strong id="bridgeState">未连接</strong>
       </div>
       <div class="tile">
         <span>回复</span>
         <strong id="replyState">暂无</strong>
       </div>
       <div class="tile">
-        <span>Pro</span>
-        <strong id="proState">待开始</strong>
+        <span>Codex</span>
+        <strong id="codexState">检查中</strong>
       </div>
       <div class="tile">
-        <span>Thinking</span>
-        <strong id="mcpState">未连接</strong>
+        <span>Pro</span>
+        <strong id="proState">辅助</strong>
       </div>
     </section>
 
     <section class="panel primary">
-      <p class="eyebrow">推荐动作</p>
-      <h2 id="nextActionTitle">Pro 深度规划</h2>
-      <p id="nextActionText">客户端会复制项目上下文提示词并打开 ChatGPT。你把提示词发给 Pro，复制回复后客户端会自动写回 Codex。</p>
+      <p class="eyebrow">主流程</p>
+      <h2 id="nextActionTitle">连接 ChatGPT</h2>
+      <p id="nextActionText">先连接 ChatGPT 工具。连接后，让 ChatGPT 复核当前项目并写回 Codex。</p>
 
-      <label for="taskInput">任务</label>
-      <textarea id="taskInput">复核当前项目，给 Codex 一个简洁、可执行的下一步计划。</textarea>
-
-      <div class="actions">
-        <button id="proPlan">Pro 深度规划</button>
-        <button class="secondary" id="thinkingReview">Thinking 工具复核</button>
-        <button class="ghost" id="copyCodex">写回 Codex</button>
+      <div class="actions three-step">
+        <button id="connectChatGPT">连接 ChatGPT</button>
+        <button class="secondary" id="copyChatGPTPrompt">开始复核</button>
+        <button class="ghost" id="copyCodex">交给 Codex</button>
       </div>
     </section>
 
     <section class="panel">
       <details>
-        <summary>手动写回 / 诊断</summary>
-        <label for="manualReply">如果自动识别失败，把 Pro 回复粘贴到这里</label>
+        <summary>Pro 辅助规划</summary>
+        <p class="hint">Pro 不能直接读取本地项目，只能根据客户端复制过去的上下文做规划。</p>
+        <label for="taskInput">给 Pro 的任务</label>
+        <textarea id="taskInput">基于下面的项目上下文，给 Codex 一个简洁、可执行的下一步计划。如果上下文不足，请明确说上下文不足。</textarea>
+        <div class="actions">
+          <button class="secondary" id="proPlan">复制 Pro 上下文</button>
+          <button class="ghost" id="startProWatch">等待 Pro 回复</button>
+        </div>
+
+        <label for="manualReply">手动粘贴 Pro 回复</label>
         <textarea id="manualReply"></textarea>
         <div class="actions">
-          <button class="secondary" id="manualImport">导入回复</button>
-          <button class="ghost" id="selectProject">选择项目</button>
+          <button class="ghost" id="manualImport">导入 Pro 回复</button>
           <button class="ghost" id="openChatGPT">打开 ChatGPT</button>
+        </div>
+      </details>
+    </section>
+
+    <section class="panel">
+      <details>
+        <summary>诊断</summary>
+        <div class="actions">
+          <button class="ghost" id="selectProject">选择项目</button>
         </div>
         <pre id="diagnostics">准备就绪。</pre>
       </details>
