@@ -12,6 +12,7 @@ const CHANNELS = [
   "pro:start-watch",
   "pro:manual-import",
   "chatgpt:open",
+  "chatgpt:copy-review-prompt",
   "mcp:start",
   "mcp:trace",
   "codex:copy-continue-prompt"

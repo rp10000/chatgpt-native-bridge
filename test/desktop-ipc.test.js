@@ -193,6 +193,12 @@ test("desktop preload allows the ChatGPT review prompt channel", async () => {
   assert.match(preload, /"chatgpt:copy-review-prompt"/);
 });
 
+test("desktop main registers the ChatGPT review prompt channel", async () => {
+  const main = await fs.readFile(path.join(__dirname, "..", "desktop", "main.js"), "utf8");
+
+  assert.match(main, /"chatgpt:copy-review-prompt"/);
+});
+
 test("desktop IPC blocks unknown channels with stable JSON", async () => {
   const handlers = createDesktopHandlers();
   const result = await invokeDesktopHandler(handlers, "unknown:channel");

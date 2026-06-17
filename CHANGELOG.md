@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.7.2
+
+- Register `chatgpt:copy-review-prompt` in the Electron main process, fixing `No handler registered for 'chatgpt:copy-review-prompt'` after `v0.7.1`.
+
 ## v0.7.1
 
 - Allow the desktop renderer to call `chatgpt:copy-review-prompt`, fixing the `Blocked channel` error when clicking `开始复核`.
