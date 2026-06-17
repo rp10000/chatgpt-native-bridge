@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.6.2
+
+- Make Pro relay prompts avoid copyable placeholder reply bodies.
+- Reject placeholder-only Pro replies instead of importing them into the Codex inbox.
+- Make `cgn status` list Pro relay replies that are written directly to inbox without a Markdown outbox run.
+
 ## v0.6.1
 
 - Fix Windows clipboard read/write encoding so Chinese Pro relay replies are preserved when imported into Codex.

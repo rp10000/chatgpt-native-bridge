@@ -8,10 +8,13 @@ async function getStatus(options = {}) {
   const outboxDir = path.join(cwd, ".chatgpt-native", "outbox");
   const inboxDir = path.join(cwd, ".chatgpt-native", "inbox");
   const ids = await listDirs(outboxDir);
+  const inboxIds = await listDirs(inboxDir);
+  const seen = new Set();
   const pending = [];
   const ready = [];
 
   for (const id of ids) {
+    seen.add(id);
     const replyPath = path.join(inboxDir, id, "reply.md");
     const item = {
       id,
@@ -20,6 +23,17 @@ async function getStatus(options = {}) {
     };
     if (item.replyPath) ready.push(item);
     else pending.push(item);
+  }
+
+  for (const id of inboxIds) {
+    if (seen.has(id)) continue;
+    const replyPath = path.join(inboxDir, id, "reply.md");
+    if (!(await pathExists(replyPath))) continue;
+    ready.push({
+      id,
+      outboxDir: null,
+      replyPath
+    });
   }
 
   return { pending, ready };

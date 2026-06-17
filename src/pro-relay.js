@@ -73,13 +73,13 @@ Important boundaries:
 - Do not invent file contents not shown here.
 - Focus on decisions, risks, implementation order, and what Codex should do next.
 
-When you answer, use this exact wrapper so chatgpt-native-bridge can import your reply:
+When you answer, use this wrapper so chatgpt-native-bridge can import your reply:
 
-\`\`\`text
-${PRO_REPLY_START} v1 id=${id}
-<your Markdown advice for Codex>
-${PRO_REPLY_END}
-\`\`\`
+1. First line exactly: \`${PRO_REPLY_START} v1 id=${id}\`
+2. Then write your actual Markdown advice for Codex.
+3. Last line exactly: \`${PRO_REPLY_END}\`
+
+Do not include placeholder text or angle-bracket examples.
 
 ## Task
 
@@ -139,8 +139,16 @@ function parseProReply(text, expectedId) {
   if (!markdown) {
     return { ok: false, reason: "reply body is empty", id };
   }
+  if (isPlaceholderReply(markdown)) {
+    return { ok: false, reason: "reply body is a placeholder", id };
+  }
 
   return { ok: true, id, markdown };
+}
+
+function isPlaceholderReply(markdown) {
+  const normalized = String(markdown || "").trim().toLowerCase();
+  return normalized === "<your markdown advice for codex>";
 }
 
 async function importProReply(options = {}) {
@@ -293,6 +301,7 @@ module.exports = {
   getProRelayLatestPath,
   getProRelayRoot,
   importProReply,
+  isPlaceholderReply,
   parseProReply,
   readProRelayState,
   writeProRelayState

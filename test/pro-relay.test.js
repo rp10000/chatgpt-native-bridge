@@ -30,6 +30,7 @@ test("Pro prompt includes project context and id-bound reply markers", async () 
   assert.match(prompt, /Relay id: pro-test-1/);
   assert.match(prompt, new RegExp(`${PRO_REPLY_START} v1 id=pro-test-1`));
   assert.match(prompt, new RegExp(PRO_REPLY_END));
+  assert.doesNotMatch(prompt, /<your Markdown advice for Codex>/);
 });
 
 test("parseProReply accepts only the matching relay id", () => {
@@ -43,6 +44,14 @@ test("parseProReply accepts only the matching relay id", () => {
   assert.equal(parseProReply(good, "other").ok, false);
   assert.equal(parseProReply("plain answer", "abc-123").ok, false);
   assert.equal(parseProReply(`${PRO_REPLY_START} v1 id=abc-123\n${PRO_REPLY_END}`, "abc-123").ok, false);
+  assert.deepEqual(
+    parseProReply(`${PRO_REPLY_START} v1 id=abc-123\n<your Markdown advice for Codex>\n${PRO_REPLY_END}`, "abc-123"),
+    {
+      ok: false,
+      reason: "reply body is a placeholder",
+      id: "abc-123"
+    }
+  );
 });
 
 test("createProPack copies the prompt and writes Pro pack state", async () => {

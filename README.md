@@ -129,4 +129,4 @@ cgn doctor
 
 ## Status
 
-`v0.6.1` keeps the Windows-first desktop client path and fixes Windows clipboard relay encoding for Chinese Pro replies.
+`v0.6.2` keeps the Windows-first desktop client path and rejects placeholder-only Pro relay replies instead of importing them.

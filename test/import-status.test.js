@@ -46,3 +46,16 @@ test("importReply saves a reply and status marks the run ready", async () => {
   assert.deepEqual(after.pending, []);
   assert.deepEqual(after.ready.map((item) => item.id), [ask.id]);
 });
+
+test("status lists inbox-only Pro relay replies as ready", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-status-pro-"));
+  const inbox = path.join(cwd, ".chatgpt-native", "inbox", "pro-reply-id");
+  await fs.mkdir(inbox, { recursive: true });
+  await fs.writeFile(path.join(inbox, "reply.md"), "# GPT-5.5 Pro Reply\n", "utf8");
+
+  const status = await getStatus({ cwd });
+
+  assert.deepEqual(status.pending, []);
+  assert.deepEqual(status.ready.map((item) => item.id), ["pro-reply-id"]);
+  assert.equal(status.ready[0].outboxDir, null);
+});
