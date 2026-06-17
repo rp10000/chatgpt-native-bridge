@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.6.1
+
+- Fix Windows clipboard read/write encoding so Chinese Pro relay replies are preserved when imported into Codex.
+- Clear the Windows clipboard through the native clipboard API when importing or restoring empty text.
+- Add regression coverage for the Windows clipboard command construction.
+
 ## v0.6.0
 
 - Make the desktop client the main user path with `cgn start`, `cgn desktop`, and `cgn client`.

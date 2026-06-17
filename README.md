@@ -129,4 +129,4 @@ cgn doctor
 
 ## Status
 
-`v0.6.0` changes the main path to a Windows-first desktop client. The local web GUI and Markdown handoff remain as fallback paths.
+`v0.6.1` keeps the Windows-first desktop client path and fixes Windows clipboard relay encoding for Chinese Pro replies.

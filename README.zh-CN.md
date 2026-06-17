@@ -130,4 +130,4 @@ cgn doctor
 
 ## 当前状态
 
-`v0.6.0` 开始，主路径改为 Windows 优先的桌面客户端。本地网页 GUI 和 Markdown handoff 继续保留为备用路径。
+`v0.6.1` 继续保持 Windows 优先桌面客户端主路径，并修复 Windows 剪贴板接力导入中文 Pro 回复时的编码问题。

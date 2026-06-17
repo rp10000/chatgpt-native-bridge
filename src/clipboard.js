@@ -5,7 +5,7 @@ function copyToClipboard(text) {
     run("powershell.exe", [
       "-NoProfile",
       "-Command",
-      "Set-Clipboard -Value ([Console]::In.ReadToEnd())"
+      windowsSetClipboardCommand()
     ], text);
     return;
   }
@@ -34,7 +34,11 @@ function copyToClipboard(text) {
 
 function readFromClipboard() {
   if (process.platform === "win32") {
-    return run("powershell.exe", ["-NoProfile", "-Command", "Get-Clipboard -Raw"]);
+    return run("powershell.exe", [
+      "-NoProfile",
+      "-Command",
+      windowsGetClipboardCommand()
+    ]);
   }
 
   if (process.platform === "darwin") {
@@ -70,7 +74,26 @@ function run(command, args, input) {
   return result.stdout || "";
 }
 
+function windowsClipboardUtf8Preamble() {
+  return [
+    "$utf8 = New-Object System.Text.UTF8Encoding $false;",
+    "[Console]::InputEncoding = $utf8;",
+    "[Console]::OutputEncoding = $utf8;"
+  ].join(" ");
+}
+
+function windowsSetClipboardCommand() {
+  return `${windowsClipboardUtf8Preamble()} $text = [Console]::In.ReadToEnd(); if ($null -eq $text -or $text.Length -eq 0) { Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.Clipboard]::Clear(); } else { Set-Clipboard -Value $text; }`;
+}
+
+function windowsGetClipboardCommand() {
+  return `${windowsClipboardUtf8Preamble()} Get-Clipboard -Raw`;
+}
+
 module.exports = {
   copyToClipboard,
-  readFromClipboard
+  readFromClipboard,
+  windowsClipboardUtf8Preamble,
+  windowsGetClipboardCommand,
+  windowsSetClipboardCommand
 };
