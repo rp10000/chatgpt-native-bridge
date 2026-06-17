@@ -161,6 +161,38 @@ test("desktop IPC starts MCP with injected tunnel dependencies", async () => {
   assert.equal(closed, true);
 });
 
+test("desktop IPC reuses an existing healthy local bridge on the default port", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-desktop-existing-mcp-"));
+  let tunnelStarted = false;
+  const handlers = createDesktopHandlers({
+    cwd,
+    resolveCloudflaredCommandImpl: async () => "cloudflared",
+    startMcpHttpServerImpl: async () => {
+      const error = new Error("listen EADDRINUSE: address already in use 127.0.0.1:47832");
+      error.code = "EADDRINUSE";
+      throw error;
+    },
+    checkLocalBridgeHealthImpl: async () => true,
+    runCloudflareTunnelImpl: async () => {
+      tunnelStarted = true;
+      return { started: true };
+    }
+  });
+
+  const result = await invokeDesktopHandler(handlers, "mcp:start");
+
+  assert.equal(result.ok, true);
+  assert.equal(result.data.mcpServerRunning, true);
+  assert.equal(tunnelStarted, true);
+  assert.equal(result.data.log.some((line) => line.includes("Existing local bridge ready")), true);
+});
+
+test("desktop preload allows the ChatGPT review prompt channel", async () => {
+  const preload = await fs.readFile(path.join(__dirname, "..", "desktop", "preload.js"), "utf8");
+
+  assert.match(preload, /"chatgpt:copy-review-prompt"/);
+});
+
 test("desktop IPC blocks unknown channels with stable JSON", async () => {
   const handlers = createDesktopHandlers();
   const result = await invokeDesktopHandler(handlers, "unknown:channel");

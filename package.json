@@ -1,6 +1,6 @@
 {
   "name": "chatgpt-native-bridge",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "A local desktop ChatGPT bridge for Codex.",
   "license": "MIT",
   "repository": {

@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.7.1
+
+- Allow the desktop renderer to call `chatgpt:copy-review-prompt`, fixing the `Blocked channel` error when clicking `开始复核`.
+- Reuse an already-running healthy local bridge on `127.0.0.1:47832` instead of failing with `EADDRINUSE`.
+
 ## v0.7.0
 
 - Make Thinking/MCP the primary desktop path for real local project review and Codex write-back.

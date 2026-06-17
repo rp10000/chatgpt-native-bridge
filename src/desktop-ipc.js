@@ -141,7 +141,8 @@ function createDesktopHandlers(options = {}) {
           installCloudflaredImpl: options.installCloudflaredImpl,
           resolveCloudflaredCommandImpl: options.resolveCloudflaredCommandImpl,
           runCloudflareTunnelImpl: options.runCloudflareTunnelImpl,
-          startMcpHttpServerImpl: options.startMcpHttpServerImpl
+          startMcpHttpServerImpl: options.startMcpHttpServerImpl,
+          checkLocalBridgeHealthImpl: options.checkLocalBridgeHealthImpl
         }).finally(() => {
           state.mcpStarting = null;
         });
@@ -210,16 +211,35 @@ async function startDesktopMcp({
   installCloudflaredImpl = installCloudflared,
   resolveCloudflaredCommandImpl = resolveCloudflaredCommand,
   runCloudflareTunnelImpl = runCloudflareTunnel,
-  startMcpHttpServerImpl = startMcpHttpServer
+  startMcpHttpServerImpl = startMcpHttpServer,
+  checkLocalBridgeHealthImpl = checkLocalBridgeHealth
 }) {
   if (!state.mcpServer) {
     appendLog(`Starting local bridge on ${DEFAULT_TUNNEL_HOST}:${DEFAULT_TUNNEL_PORT}`);
-    state.mcpServer = await startMcpHttpServerImpl({
-      cwd,
-      host: DEFAULT_TUNNEL_HOST,
-      port: DEFAULT_TUNNEL_PORT
-    });
-    appendLog(`Local bridge ready`);
+    try {
+      state.mcpServer = await startMcpHttpServerImpl({
+        cwd,
+        host: DEFAULT_TUNNEL_HOST,
+        port: DEFAULT_TUNNEL_PORT
+      });
+      appendLog(`Local bridge ready`);
+    } catch (error) {
+      if (!isAddressInUse(error)) throw error;
+      appendLog("Local bridge port is already in use; checking existing bridge");
+      const healthy = await checkLocalBridgeHealthImpl({
+        host: DEFAULT_TUNNEL_HOST,
+        port: DEFAULT_TUNNEL_PORT
+      });
+      if (!healthy) {
+        throw new Error("本地连接端口已被其他程序占用。请关闭占用 47832 的程序后再连接。");
+      }
+      state.mcpServer = {
+        url: `http://${DEFAULT_TUNNEL_HOST}:${DEFAULT_TUNNEL_PORT}/mcp`,
+        external: true,
+        close: async () => {}
+      };
+      appendLog("Existing local bridge ready");
+    }
   }
 
   let cloudflared = await resolveCloudflaredCommandImpl({ cwd });
@@ -244,6 +264,24 @@ async function startDesktopMcp({
     stdout: writer((line) => appendLog(line)),
     stderr: writer((line) => appendLog(line))
   }).catch((error) => appendLog(`ChatGPT connection stopped: ${error.message}`));
+}
+
+function isAddressInUse(error) {
+  return Boolean(
+    error &&
+    (error.code === "EADDRINUSE" || /EADDRINUSE|address already in use/i.test(error.message || ""))
+  );
+}
+
+async function checkLocalBridgeHealth({ host, port }) {
+  try {
+    const response = await fetch(`http://${host}:${port}/health`);
+    if (!response.ok) return false;
+    const data = await response.json();
+    return data && data.ok === true && data.name === "chatgpt-native-bridge";
+  } catch {
+    return false;
+  }
 }
 
 function writer(writeLine) {
@@ -280,6 +318,7 @@ module.exports = {
   CONTINUE_PROMPT,
   computeBridgeState,
   createDesktopHandlers,
+  checkLocalBridgeHealth,
   invokeDesktopHandler,
   projectInfo,
   startDesktopMcp
