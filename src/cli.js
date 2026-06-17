@@ -1,4 +1,5 @@
 const { runAgentCommand } = require("./agent-cli");
+const { DEFAULT_APP_HOST, DEFAULT_APP_PORT, formatAppDryRun, startAppServer } = require("./app-server");
 const { createAsk, VALID_TYPES } = require("./ask");
 const { demoText } = require("./demo");
 const { formatDoctorReport, getDoctorReport } = require("./doctor");
@@ -55,6 +56,31 @@ async function main(argv, io = defaultIo()) {
 
   if (command === "demo") {
     io.stdout.write(demoText());
+    return;
+  }
+
+  if (command === "start" || command === "app") {
+    const parsed = parseArgs(rest);
+    const host = parsed.flags.host || DEFAULT_APP_HOST;
+    const port = parsed.flags.port || DEFAULT_APP_PORT;
+    if (parsed.flags["dry-run"]) {
+      io.stdout.write(formatAppDryRun({ host, port }));
+      return;
+    }
+
+    const server = await startAppServer({
+      cwd: io.cwd,
+      host,
+      port,
+      stdout: io.stdout,
+      openBrowser: !parsed.flags["no-browser"]
+    });
+    const close = async () => {
+      await server.close();
+      process.exit(0);
+    };
+    process.once("SIGINT", close);
+    process.once("SIGTERM", close);
     return;
   }
 
@@ -320,6 +346,8 @@ function helpText() {
   return `chatgpt-native-bridge
 
 Usage:
+  cgn start
+  cgn app
   cgn init
   cgn setup
   cgn setup --mcp
@@ -351,6 +379,11 @@ Request types:
 
 Safety:
   No OpenAI API key, no hidden endpoints, no ChatGPT scraping, no arbitrary shell execution.
+
+GUI:
+  cgn start  Open the local sidecar GUI at http://127.0.0.1:47833.
+  cgn app    Alias for cgn start.
+  The GUI creates GPT-5.5 Pro clipboard relay packs and imports matching replies into Codex inbox.
 
 MCP:
   cgn setup --mcp  Initialize the project and install this MCP into Codex config.

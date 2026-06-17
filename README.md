@@ -4,13 +4,13 @@
 
 English | [简体中文](README.zh-CN.md)
 
-Use ChatGPT's native web app as an MCP-connected planning, review, research, and visual-direction layer for Codex.
+Use ChatGPT's native web app and a small local GUI as a planning, review, and visual-direction layer for Codex.
 
-Codex executes locally. ChatGPT thinks, critiques, researches, reviews screenshots, and uses native ChatGPT tools through a local MCP bridge. No API key. No hidden endpoints. No scraping. No arbitrary shell execution.
+Codex executes locally. ChatGPT thinks, critiques, researches, reviews screenshots, and uses native ChatGPT tools through a local bridge. No API key. No hidden endpoints. No scraping. No arbitrary shell execution.
 
 ![chatgpt-native-bridge usage preview](docs/assets/marketing/hero.svg)
 
-> Public beta: the MCP-first Codex -> ChatGPT -> Codex workflow is usable, with Markdown handoff files retained as the fallback path.
+> Public beta: v0.5 adds a local GUI and GPT-5.5 Pro clipboard relay. MCP and Markdown handoff remain available.
 
 ![chatgpt-native-bridge flow](docs/assets/flow.svg)
 
@@ -18,6 +18,8 @@ Codex executes locally. ChatGPT thinks, critiques, researches, reviews screensho
 
 What works today:
 
+- `cgn start` opens a local sidecar GUI for GPT-5.5 Pro clipboard relay.
+- The GUI can generate a Pro planning pack, copy it to the clipboard, watch for a matching Pro reply, and write it into the Codex inbox.
 - Codex can install and use this project through MCP.
 - `cgn handoff` and `cgn done` work as the reliable manual fallback.
 - ChatGPT web can use the MCP server when the app is connected to the current HTTPS `/mcp` URL.
@@ -26,8 +28,30 @@ What works today:
 What is not one-click:
 
 - ChatGPT cannot use `localhost` directly; it needs HTTPS, either Secure MCP Tunnel or a public tunnel.
+- GPT-5.5 Pro does not directly use Apps/MCP in ChatGPT. Use the GUI clipboard relay for Pro planning.
 - The built-in Cloudflare quick tunnel is temporary. If you restart it, the Server URL changes, and the ChatGPT app must be updated or recreated.
 - This project cannot silently create the ChatGPT app for you without browser automation or private web calls.
+
+## Local GUI Quickstart
+
+Run this in the project you want Codex to work on:
+
+```bash
+npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn start
+```
+
+The GUI opens at `http://127.0.0.1:47833`.
+
+For a deep GPT-5.5 Pro pass:
+
+```text
+1. Click Deep Pro Plan / Copy Pro Prompt.
+2. Paste the prompt into GPT-5.5 Pro.
+3. Copy Pro's marked reply.
+4. The GUI imports it into .chatgpt-native/inbox for Codex.
+```
+
+The relay only accepts replies with the matching `CGN_BRIDGE_REPLY` id. Clipboard watch starts only after you click it and times out automatically.
 
 ## Why use this?
 
@@ -224,7 +248,7 @@ In Codex:
 Use chatgpt-native-bridge when this task needs planning, UX review, research, visual direction, or diff review.
 ```
 
-### 4. MCP-first local bridge
+### 4. MCP local bridge
 
 For Codex, `setup --mcp` installs this MCP server into `~/.codex/config.toml`:
 

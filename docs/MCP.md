@@ -1,6 +1,6 @@
 # MCP setup
 
-`chatgpt-native-bridge` is MCP-first as of `v0.2.0`.
+`chatgpt-native-bridge` now defaults to the local GUI for GPT-5.5 Pro clipboard relay. This page covers the optional MCP path for ChatGPT modes that can use Apps/tools.
 
 The bridge runs a local MCP server that lets ChatGPT inspect bounded project context, create handoff files, read the current diff, and submit final Markdown advice back to Codex.
 

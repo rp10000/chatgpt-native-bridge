@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1160" height="380" viewBox="0 0 1160 380" role="img" aria-labelledby="title desc">
-  <title id="title">chatgpt-native-bridge MCP-first 中文流程</title>
+  <title id="title">chatgpt-native-bridge GUI 和 MCP 中文流程</title>
   <desc id="desc">Codex 安装 MCP 配置，ChatGPT 通过 MCP 工具读取本地上下文，再把回复提交给 Codex。</desc>
   <defs>
     <style>

@@ -2,7 +2,7 @@
 
 [English](README.md) | 简体中文
 
-让 ChatGPT 网页端通过本地 MCP 读取受限项目上下文、生成 handoff、提交建议；让 Codex 继续在本地写代码、跑测试、改文件。
+让 ChatGPT 网页端和本地 GUI 帮 Codex 做规划、复核、视觉方向和上下文整理；让 Codex 继续在本地写代码、跑测试、改文件。
 
 不需要 OpenAI API key。
 不调用隐藏接口。
@@ -13,7 +13,7 @@
 
 ![chatgpt-native-bridge 使用效果图](docs/assets/marketing/hero.svg)
 
-> Public beta：v0.2.0 开始主路径是 MCP-first；原来的 Markdown handoff 继续作为备用路径。
+> Public beta：v0.5 新增本地 GUI 和 GPT-5.5 Pro 剪贴板接力；MCP 和 Markdown handoff 继续保留。
 
 ![chatgpt-native-bridge 中文流程](docs/assets/flow.zh-CN.svg)
 
@@ -21,6 +21,8 @@
 
 现在能稳定工作的部分：
 
+- `cgn start` 可以打开本地 sidecar GUI。
+- GUI 可以生成给 GPT-5.5 Pro 的规划包、复制到剪贴板、监听带标记的 Pro 回复，并写入 Codex inbox。
 - Codex 可以通过 MCP 安装并使用这个项目。
 - `cgn handoff` 和 `cgn done` 是可靠的手动兜底路径。
 - ChatGPT 网页端可以在连接到当前 HTTPS `/mcp` URL 时使用本地 MCP server。
@@ -29,8 +31,34 @@
 现在还不是一键完成的部分：
 
 - ChatGPT 不能直接使用 `localhost`，必须走 HTTPS，可以用 Secure MCP Tunnel 或公开 tunnel。
+- GPT-5.5 Pro 在 ChatGPT 里不能直接用 Apps/MCP。需要用 GUI 剪贴板接力把 Pro 规划结果写回 Codex。
 - 内置 Cloudflare quick tunnel 是临时 URL。只要重启，Server URL 可能变化，ChatGPT 里的 app 必须更新或重建。
 - 这个项目不能在不使用浏览器自动化或隐藏网页接口的情况下，偷偷替你创建 ChatGPT app。
+
+## 本地 GUI 快速开始
+
+在你要让 Codex 处理的项目里运行：
+
+```bash
+npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn start
+```
+
+GUI 会打开在：
+
+```text
+http://127.0.0.1:47833
+```
+
+需要 GPT-5.5 Pro 深度规划时：
+
+```text
+1. 点 Deep Pro Plan / Copy Pro Prompt。
+2. 把复制好的 prompt 粘贴到 GPT-5.5 Pro。
+3. 复制 Pro 带标记的回复。
+4. GUI 自动导入到 .chatgpt-native/inbox，Codex 继续执行。
+```
+
+剪贴板监听只在你点击后启动，只接受当前 `CGN_BRIDGE_REPLY` id 匹配的回复，并会自动超时。
 
 ## 最简单用法：把这段复制给 Codex
 
@@ -562,7 +590,7 @@ MCP 用户优先记 `cgn setup --mcp`、`cgn mcp web`、`cgn mcp tunnel`。
 
 - GitHub 仓库已公开。
 - npm registry 可能还没有发布，发布前请用 `npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp` 或 `npm link`。
-- MCP 是 v0.2.0 主路径；Markdown handoff 仍是备用路径。
+- v0.5 默认推荐 `cgn start` 本地 GUI；MCP 和 Markdown handoff 仍是备用/高级路径。
 - 不提供任意 shell 执行。
 - 不提供浏览器 RPA。
 - 不抓 ChatGPT 网页输出。

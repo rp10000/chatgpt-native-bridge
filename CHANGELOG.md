@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.5.0
+
+- Add `cgn start` and `cgn app` for a local sidecar GUI at `http://127.0.0.1:47833`.
+- Add GPT-5.5 Pro clipboard relay: generate a Pro planning pack, copy it to the clipboard, watch for a matching marked reply, and import it into the Codex inbox.
+- Add id-bound `CGN_BRIDGE_REPLY` parsing so clipboard import only accepts the active relay reply.
+- Add GUI status APIs for Codex setup, MCP trace, latest inbox, and relay state.
+- Add the user-provided avatar style as a compact GUI asset.
+
 ## v0.4.2
 
 - Make the README and Chinese README honest about the current setup boundary: ChatGPT needs the current HTTPS `/mcp` URL, and Cloudflare quick tunnel URLs are temporary.

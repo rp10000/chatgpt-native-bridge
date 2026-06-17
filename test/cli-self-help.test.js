@@ -9,12 +9,14 @@ const { main } = require("../src/cli");
 const { importReply } = require("../src/import-reply");
 const { initProject } = require("../src/init");
 
-test("demo prints the MCP-first bridge workflow", async () => {
+test("demo prints the GUI-first bridge workflow", async () => {
   const io = createIo(await fs.mkdtemp(path.join(os.tmpdir(), "cgn-demo-")));
 
   await main(["demo"], io);
 
-  assert.match(io.output(), /30-second MCP-first bridge demo/);
+  assert.match(io.output(), /30-second chatgpt-native-bridge demo/);
+  assert.match(io.output(), /cgn start/);
+  assert.match(io.output(), /GPT-5\.5 Pro/);
   assert.match(io.output(), /cgn setup/);
   assert.match(io.output(), /cgn setup --mcp/);
   assert.match(io.output(), /cgn mcp install/);
@@ -31,6 +33,8 @@ test("help lists beginner guidance commands", async () => {
 
   await main(["--help"], io);
 
+  assert.match(io.output(), /cgn start/);
+  assert.match(io.output(), /cgn app/);
   assert.match(io.output(), /cgn setup/);
   assert.match(io.output(), /cgn setup --mcp/);
   assert.match(io.output(), /cgn mcp install/);
@@ -48,6 +52,21 @@ test("help lists beginner guidance commands", async () => {
   assert.match(io.output(), /cgn guide codex/);
   assert.match(io.output(), /--mode manual/);
   assert.match(io.output(), /--mode auto/);
+});
+
+test("start dry-run explains the local GUI and clipboard relay", async () => {
+  const io = createIo(await fs.mkdtemp(path.join(os.tmpdir(), "cgn-start-dry-run-")));
+
+  await main(["start", "--dry-run"], io);
+
+  assert.match(io.output(), /local GUI/);
+  assert.match(io.output(), /http:\/\/127\.0\.0\.1:47833/);
+  assert.match(io.output(), /GPT-5\.5 Pro planning pack/);
+  assert.match(io.output(), /Clipboard watch is opt-in/);
+
+  const aliasIo = createIo(await fs.mkdtemp(path.join(os.tmpdir(), "cgn-app-dry-run-")));
+  await main(["app", "--dry-run"], aliasIo);
+  assert.match(aliasIo.output(), /local GUI/);
 });
 
 test("agent start creates a local agent run and Codex inbox reply", async () => {

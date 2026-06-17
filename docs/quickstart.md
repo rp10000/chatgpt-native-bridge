@@ -1,8 +1,23 @@
 # Quickstart tutorial
 
-This tutorial shows the MCP-first loop, then the Markdown fallback loop. It uses simple diagrams instead of private account screenshots.
+This tutorial starts with the local GUI and GPT-5.5 Pro clipboard relay, then shows the MCP and Markdown fallback loops.
 
-## 1. Initialize and install the Codex MCP bridge
+## 1. Open the local GUI
+
+```bash
+npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn start
+```
+
+The GUI opens at `http://127.0.0.1:47833`.
+
+Use `Deep Pro Plan` when you want GPT-5.5 Pro to plan or review without API cost:
+
+1. Click `Copy Pro Prompt`.
+2. Paste it into GPT-5.5 Pro.
+3. Copy Pro's marked reply.
+4. Let the GUI import it into `.chatgpt-native/inbox`.
+
+## 2. Initialize and install the Codex MCP bridge
 
 ![Run cgn setup --mcp](assets/quickstart/01-init.svg)
 
@@ -14,7 +29,7 @@ This creates the Codex Skill, the `.chatgpt-native` workspace, and the Codex MCP
 
 If `cgn` is not installed globally, run later commands as `npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn <command>`.
 
-## 2. Create a ChatGPT Project
+## 3. Create a ChatGPT Project
 
 ![Paste Project instructions](assets/quickstart/02-project-instructions.svg)
 
@@ -26,7 +41,7 @@ Create a ChatGPT Project named `Codex Native Advisor`, then paste:
 
 into the Project instructions.
 
-## 3. Connect ChatGPT web
+## 4. Connect ChatGPT web through MCP
 
 Run:
 
@@ -48,7 +63,7 @@ Manual HTTP server fallback:
 cgn mcp serve --host 127.0.0.1 --port 47832
 ```
 
-## 4. Let ChatGPT inspect and reply through MCP
+## 5. Let ChatGPT Thinking inspect and reply through MCP
 
 Ask ChatGPT naturally:
 
@@ -74,7 +89,7 @@ ChatGPT should inspect the project and write its final advice back to:
 
 Codex can then read `CODEX_READ_THIS.md` and continue locally.
 
-## 5. Fallback: create and open a handoff
+## 6. Fallback: create and open a handoff
 
 ![Create handoff](assets/quickstart/03-create-handoff.svg)
 
