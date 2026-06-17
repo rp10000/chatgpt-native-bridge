@@ -14,6 +14,7 @@ const {
   formatMcpWebGuide,
   formatTunnelDryRun,
   getProjectCloudflaredPath,
+  readWebConnectionStatus,
   runCloudflareTunnel
 } = require("../src/mcp-web");
 
@@ -30,8 +31,8 @@ test("formatMcpWebGuide explains the ChatGPT web connector path", () => {
   assert.match(guide, /Name: chatgpt-native-bridge/);
   assert.match(guide, /Authentication: No authentication/);
   assert.match(guide, /\/action\/openapi\.json/);
-  assert.match(guide, /not available in Pro mode/);
-  assert.match(guide, /Pro accounts may scan/);
+  assert.match(guide, /Developer Mode supports MCP read and write tools/);
+  assert.match(guide, /quick tunnel URL is temporary/);
   assert.match(guide, /http:\/\/127\.0\.0\.1:47832\/mcp/);
 });
 
@@ -47,8 +48,8 @@ test("formatConnectDryRun explains the one-command path", () => {
   assert.match(guide, /Copy and print the HTTPS \/mcp URL/);
   assert.match(guide, /https:\/\/chatgpt\.com\/#settings\/Connectors/);
   assert.match(guide, /GPT Actions write-back fallback/);
-  assert.match(guide, /not available in Pro mode/);
-  assert.match(guide, /Full automatic write-back/);
+  assert.match(guide, /Developer Mode supports MCP read and write tools/);
+  assert.match(guide, /quick tunnel URL is temporary/);
   assert.match(guide, /Final step: click Create in ChatGPT/);
 });
 
@@ -92,12 +93,41 @@ test("runCloudflareTunnel copies the Server URL and opens ChatGPT when requested
   assert.match(output, /Name: chatgpt-native-bridge/);
   assert.match(output, /https:\/\/abc-def\.trycloudflare\.com\/action\/openapi\.json/);
   assert.match(output, /paste the schema JSON manually/);
-  assert.match(output, /not available in Pro mode/);
-  assert.match(output, /Pro accounts may scan/);
+  assert.match(output, /Developer Mode supports MCP read and write tools/);
+  assert.match(output, /quick tunnel URL is temporary/);
   assert.match(output, /Final step: click Create in ChatGPT/);
   const schema = JSON.parse(await fs.readFile(path.join(cwd, ".chatgpt-native", "actions", "openapi.json"), "utf8"));
   assert.equal(schema.openapi, "3.0.3");
   assert.equal(schema.servers[0].url, "https://abc-def.trycloudflare.com");
+  const status = await readWebConnectionStatus({ cwd });
+  assert.equal(status.serverUrl, "https://abc-def.trycloudflare.com/mcp");
+  assert.equal(status.temporary, true);
+});
+
+test("runCloudflareTunnel repeats the Server URL after cloudflared precheck logs", async () => {
+  let output = "";
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-tunnel-reminder-"));
+
+  const result = await runCloudflareTunnel({
+    cwd,
+    stdout: { write: (text) => { output += text; } },
+    stderr: { write: (text) => { output += text; } },
+    copyToClipboardImpl: () => {},
+    spawnImpl: fakeCloudflaredSpawn([
+      "Your quick Tunnel has been created! https://abc-def.trycloudflare.com",
+      "precheck complete hard_fail=false suggested_protocol=quic"
+    ])
+  });
+
+  assert.equal(result.started, true);
+  assert.equal(result.printedUrl, true);
+  assert.match(output, /Tunnel ready\. Keep this terminal open\./);
+  assert.match(output, /Server URL: https:\/\/abc-def\.trycloudflare\.com\/mcp/);
+  assert.ok(
+    output.lastIndexOf("Server URL: https://abc-def.trycloudflare.com/mcp") >
+      output.lastIndexOf("precheck complete"),
+    "Server URL should be repeated after noisy precheck logs"
+  );
 });
 
 test("downloadCloudflared writes a project-local executable", async () => {
@@ -132,7 +162,9 @@ function fakeCloudflaredSpawn(text) {
     child.stdout = new EventEmitter();
     child.stderr = new EventEmitter();
     process.nextTick(() => {
-      child.stderr.emit("data", text);
+      for (const chunk of Array.isArray(text) ? text : [text]) {
+        child.stderr.emit("data", chunk);
+      }
       child.emit("close", 0);
     });
     return child;

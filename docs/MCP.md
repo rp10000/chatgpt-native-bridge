@@ -75,20 +75,25 @@ cgn mcp trace
 
 The ChatGPT UI can show the app as selected before any tool call happens. `cgn mcp wait` watches the local audit log and confirms whether a real MCP call arrived.
 
-## Account support
+## Connection reality
 
-Full automatic MCP write-back uses `write_to_codex`, a write action.
+ChatGPT Developer Mode supports MCP read and write tools. If ChatGPT says bridge tools are unavailable, first check the connection, not the account tier:
 
-OpenAI currently documents full MCP, including write/modify actions, as rolling out for ChatGPT Business, Enterprise, and Edu. Pro accounts may connect MCP apps with read/fetch permissions, but `write_to_codex` may not be exposed in chat.
+1. The tunnel command is still running.
+2. The ChatGPT app uses the exact latest `https://.../mcp` Server URL.
+3. The app is selected in a Developer Mode chat.
+4. The app metadata/tools were refreshed after code changes.
 
-If ChatGPT scans the app but says bridge tools are unavailable on Pro, use the Markdown fallback:
+Cloudflare quick tunnel URLs are temporary. If you restart `cgn mcp connect`, update or recreate the ChatGPT app with the new Server URL. For a long-lived setup, prefer OpenAI Secure MCP Tunnel or another stable HTTPS endpoint.
+
+If the app still does not expose tools, use the Markdown fallback while debugging:
 
 ```bash
 cgn handoff --task "Review this project" --type diff-review
 cgn done
 ```
 
-or use the GPT Actions fallback:
+You can also use the GPT Actions fallback:
 
 ```text
 When cgn mcp connect prints:
@@ -106,9 +111,7 @@ Then tell the Custom GPT:
   Finally call write_to_codex with your final Markdown advice for Codex.
 ```
 
-This fallback uses ChatGPT's official GPT Actions/OpenAPI route instead of MCP write actions. GPT Actions are not available in Pro mode; use an action-capable Custom GPT model for this fallback. It writes only to `.chatgpt-native/inbox`.
-
-You can also test from a workspace with full MCP support.
+This fallback uses ChatGPT's official GPT Actions/OpenAPI route instead of MCP write actions. It writes only to `.chatgpt-native/inbox`.
 
 If ChatGPT says `review_current_project` or `write_to_codex` is unavailable, refresh the app tools in ChatGPT settings or recreate the draft app with the latest `https://.../mcp` URL and `No authentication`. Use `0.4.1` or newer.
 

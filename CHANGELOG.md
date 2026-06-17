@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.4.2
+
+- Make the README and Chinese README honest about the current setup boundary: ChatGPT needs the current HTTPS `/mcp` URL, and Cloudflare quick tunnel URLs are temporary.
+- Record the latest ChatGPT Server URL in `.chatgpt-native/runs/mcp-web-connection.json` when `cgn mcp connect` prints a tunnel URL.
+- Show the latest Server URL in `cgn mcp trace` and `cgn mcp wait` timeout output so stale ChatGPT app URLs are easier to diagnose.
+- Return truncated text from `read_repo_file` and `read_handoff_file` instead of failing on large ordinary text files.
+- Remove outdated Pro/read-only MCP wording from user-facing docs.
+
 ## v0.4.1
 
 - Fix GitHub npx command examples and generated Codex MCP config to include the required `--` command separator.

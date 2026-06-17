@@ -17,6 +17,21 @@
 
 ![chatgpt-native-bridge 中文流程](docs/assets/flow.zh-CN.svg)
 
+## 当前真实状态
+
+现在能稳定工作的部分：
+
+- Codex 可以通过 MCP 安装并使用这个项目。
+- `cgn handoff` 和 `cgn done` 是可靠的手动兜底路径。
+- ChatGPT 网页端可以在连接到当前 HTTPS `/mcp` URL 时使用本地 MCP server。
+- `cgn mcp trace` 能告诉你 ChatGPT 有没有真的打到本地服务。
+
+现在还不是一键完成的部分：
+
+- ChatGPT 不能直接使用 `localhost`，必须走 HTTPS，可以用 Secure MCP Tunnel 或公开 tunnel。
+- 内置 Cloudflare quick tunnel 是临时 URL。只要重启，Server URL 可能变化，ChatGPT 里的 app 必须更新或重建。
+- 这个项目不能在不使用浏览器自动化或隐藏网页接口的情况下，偷偷替你创建 ChatGPT app。
+
 ## 最简单用法：把这段复制给 Codex
 
 第一次安装时，不要先背 npm 或 `cgn` 命令。把下面这段直接复制给 Codex：
@@ -72,102 +87,42 @@ $chatgpt-native-bridge
 
 ## ChatGPT 网页怎么连接？
 
-ChatGPT 网页不能直接填写 `localhost` MCP 地址。直接运行：
-
-```bash
-cgn mcp web
-```
-
-最快路径：
+ChatGPT 网页需要 HTTPS MCP URL。最简单的本地路径是：
 
 ```bash
 cgn mcp connect --yes --open
 ```
 
-这条命令会启动本地 MCP server；缺少 `cloudflared` 时会自动安装；然后启动临时 HTTPS 隧道，把 `https://.../mcp` Server URL 复制到剪贴板，并打开 ChatGPT。Windows 上会先试 `winget`；如果 `winget` 下载失败，会把 `cloudflared.exe` 下载到当前项目的 `.chatgpt-native/bin/`。
+这会启动本地 server，打开临时 HTTPS tunnel，复制 `https://.../mcp` Server URL，并打开 ChatGPT 设置页。
 
-在 ChatGPT 里选中应用以后，用这个命令确认它真的调用了 MCP：
+重要：内置 Cloudflare quick tunnel 是临时 URL。命令窗口要保持运行。只要重启，ChatGPT app 里的 Server URL 就可能需要更新或重建。
+
+在 ChatGPT 里填写：
+
+```text
+Settings -> Apps & Connectors -> Create
+名称: chatgpt-native-bridge
+连接: Server URL
+Server URL: 粘贴复制好的 https://.../mcp
+身份验证: No authentication
+```
+
+然后确认 ChatGPT 真的打到了本地：
 
 ```bash
 cgn mcp wait
 cgn mcp trace
 ```
 
-ChatGPT 界面里出现勾选，只表示应用被选中；`cgn mcp wait` 才能确认是否真的有工具调用到达本地。
+如果 `trace` 没有请求，说明 ChatGPT 没有访问当前 Server URL。用 `trace` 打印的最新 URL 刷新或重建 ChatGPT app。
 
-账号支持边界：
-
-- 自动写回依赖 `write_to_codex`，这是写入动作。
-- OpenAI 当前文档把包含写入/修改动作的完整 MCP 标为面向 ChatGPT Business、Enterprise、Edu 逐步开放。
-- Pro 账号可能可以创建和扫描 MCP app，但聊天里可能只暴露 read/fetch 权限，不暴露 `write_to_codex`。
-- 如果 Pro 上 ChatGPT 说 bridge 工具不可用，请使用下面的 GPT Actions 写回备用路径、Markdown 备用路径：`cgn handoff` 然后 `cgn done`，或者在支持完整 MCP 的 workspace 里测试。
-
-GPT Actions 写回备用路径：
+在 ChatGPT 里直接说：
 
 ```text
-cgn mcp connect 打印隧道 URL 后，把同一个 host 改成：
-  https://.../action/openapi.json
-
-创建一个 Custom GPT -> Configure -> Actions -> Import from URL。
-粘贴上面的 OpenAPI URL。
-如果 ChatGPT 显示 `Something went wrong`，就不要继续点 URL 导入，直接把这个文件里的 schema JSON 粘贴进去：
-  .chatgpt-native/actions/openapi.json
-
-然后对这个 GPT 说：
-  先调用 review_current_project。
-  只在需要时读取相关文件。
-  最后调用 write_to_codex，把最终 Markdown 建议写回 Codex。
+请使用 chatgpt-native-bridge 复核这个项目，并把最终建议写回 Codex。
 ```
 
-这条路使用 ChatGPT 官方 GPT Actions/OpenAPI，不依赖 MCP write action。GPT Actions 不适用于 Pro mode；这条备用路径需要使用支持 Actions 的 Custom GPT 模型。
-
-如果 ChatGPT 说 `review_current_project` 或 `write_to_codex` 不可用，请在 ChatGPT 设置里刷新 app 工具；仍然不行就用最新 `https://.../mcp` URL 和 `No authentication` 重新创建草稿 app。请使用 `0.4.1` 或更新版本。
-
-运行 `cgn mcp trace` 可以看到 ChatGPT 是否真的访问了 `/mcp`、是否列出工具、是否调用了工具。
-
-本地 CLI 不能在不使用浏览器自动化或隐藏接口的情况下替你创建 ChatGPT 应用。最后一步仍然要在 ChatGPT 页面里手动点一次创建：
-
-```text
-直达链接：
-  https://chatgpt.com/#settings/Connectors
-
-如果直达链接只打开了 ChatGPT 首页：
-  Settings -> Apps & Connectors -> Create
-
-如果没有 Create 按钮：
-  Settings -> Apps & Connectors -> Advanced settings -> 打开 Developer Mode
-
-新应用字段：
-  名称: chatgpt-native-bridge
-  描述: Local Codex bridge. Automatically inspect bounded project context and diffs when useful, then submit final ChatGPT advice back to Codex.
-  连接: Server URL
-  Server URL: 粘贴已经复制好的 https://.../mcp
-  身份验证: No authentication
-  最后一步: 点击 Create
-```
-
-创建连接器以后，用户不需要记工具名。直接在 ChatGPT 里用自然语言：
-
-```text
-请使用 chatgpt-native-bridge 复核这个项目。
-自动检查当前项目状态和 diff，需要上下文就读取相关文件，
-最后把你的建议写回本地 Codex。
-```
-
-ChatGPT 应该自动通过 MCP 检查项目，并在结束前写回本地。然后回到 Codex 说：
-
-```text
-读取最新 ChatGPT 回复，然后继续。
-```
-
-如果 ChatGPT 没有开始调用连接器，就在 ChatGPT 里直接发：
-
-```text
-现在使用 chatgpt-native-bridge。
-先调用 review_current_project。
-只在需要时读取相关文件。
-最后调用 submit_reply_to_codex，把最终建议写回 Codex。
-```
+完整设置和备用路径见：[MCP 文档](docs/MCP.md)、[故障排查](docs/zh-CN/故障排查.md)。
 
 ## 我需要记哪些命令？
 

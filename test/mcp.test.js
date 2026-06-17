@@ -94,6 +94,14 @@ test("read_repo_file blocks traversal and sensitive local files", async () => {
   assert.equal(safe.path, "src/app.js");
   assert.match(safe.text, /bridge/);
 
+  await fs.writeFile(path.join(cwd, "src", "large.js"), `${"x".repeat(200)}\n`);
+  const large = await runMcpTool("read_repo_file", { path: "src/large.js", maxBytes: 32 }, { cwd });
+  assert.equal(large.path, "src/large.js");
+  assert.equal(large.truncated, true);
+  assert.equal(large.bytes, 32);
+  assert.equal(large.totalBytes, 201);
+  assert.equal(Buffer.byteLength(large.text, "utf8"), 32);
+
   await assert.rejects(
     () => runMcpTool("read_repo_file", { path: "../outside.txt" }, { cwd }),
     /Path traversal/

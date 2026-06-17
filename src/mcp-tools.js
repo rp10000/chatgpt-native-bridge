@@ -249,6 +249,8 @@ function createMcpToolRegistry(options = {}) {
           id,
           file: toPosix(read.relativePath),
           bytes: read.bytes,
+          totalBytes: read.totalBytes,
+          truncated: read.truncated,
           text: read.text
         };
       })
@@ -278,6 +280,8 @@ function createMcpToolRegistry(options = {}) {
         return {
           path: toPosix(read.relativePath),
           bytes: read.bytes,
+          totalBytes: read.totalBytes,
+          truncated: read.truncated,
           text: read.text
         };
       })
@@ -495,11 +499,7 @@ async function readSafeTextFile(options) {
   if (!stat.isFile()) throw new Error(`Not a file: ${relativePath}`);
 
   const maxBytes = clampMaxBytes(options.maxBytes);
-  if (stat.size > maxBytes) {
-    throw new Error(`File is too large to read safely: ${relativePath} (${stat.size} bytes).`);
-  }
-
-  const text = await fs.readFile(targetReal, "utf8");
+  const { text, bytes, truncated } = await readTextPrefix(targetReal, stat.size, maxBytes);
   if (text.includes("\u0000")) throw new Error(`Binary file blocked: ${relativePath}`);
 
   const inspection = inspectCandidate({ relativePath, content: text });
@@ -507,9 +507,36 @@ async function readSafeTextFile(options) {
 
   return {
     relativePath,
-    bytes: Buffer.byteLength(text, "utf8"),
+    bytes,
+    totalBytes: stat.size,
+    truncated,
     text
   };
+}
+
+async function readTextPrefix(filePath, totalBytes, maxBytes) {
+  if (totalBytes <= maxBytes) {
+    const text = await fs.readFile(filePath, "utf8");
+    return {
+      text,
+      bytes: Buffer.byteLength(text, "utf8"),
+      truncated: false
+    };
+  }
+
+  const file = await fs.open(filePath, "r");
+  try {
+    const buffer = Buffer.alloc(maxBytes);
+    const { bytesRead } = await file.read(buffer, 0, maxBytes, 0);
+    const slice = buffer.subarray(0, bytesRead);
+    return {
+      text: slice.toString("utf8"),
+      bytes: bytesRead,
+      truncated: true
+    };
+  } finally {
+    await file.close();
+  }
 }
 
 async function listFiles(rootDir, currentDir, result = []) {

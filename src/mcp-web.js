@@ -14,6 +14,7 @@ const CHATGPT_CONNECTORS_URL = "https://chatgpt.com/#settings/Connectors";
 const CONNECTOR_NAME = "chatgpt-native-bridge";
 const CONNECTOR_DESCRIPTION = "Local Codex bridge. Automatically inspect bounded project context and diffs when useful, then submit final ChatGPT advice back to Codex.";
 const CLOUDFLARED_WINDOWS_DOWNLOAD_URL = "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe";
+const WEB_CONNECTION_FILE = "mcp-web-connection.json";
 
 function formatMcpWebGuide({ host = DEFAULT_TUNNEL_HOST, port = DEFAULT_TUNNEL_PORT } = {}) {
   const localBase = `http://${host}:${port}`;
@@ -42,8 +43,7 @@ Then copy the printed HTTPS /mcp URL into ChatGPT:
   Authentication: No authentication
 
 GPT Actions write-back fallback:
-  If MCP does not expose write_to_codex, create a Custom GPT Action with an action-capable model.
-  GPT Actions are not available in Pro mode.
+  Use only if your ChatGPT app cannot expose MCP tools in this chat.
   Import OpenAPI schema URL:
     https://.../action/openapi.json
   Use the same tunnel host as the printed https://.../mcp URL.
@@ -52,12 +52,15 @@ After selecting the app in ChatGPT:
   cgn mcp wait
 
 Account support:
-  Full automatic write-back needs ChatGPT full MCP support.
-  Pro accounts may scan the MCP app but expose only read/fetch actions.
-  If write_to_codex is unavailable, use Business/Enterprise/Edu full MCP support or the Markdown fallback.
+  ChatGPT Developer Mode supports MCP read and write tools.
+  If ChatGPT cannot call tools, the usual causes are: wrong chat mode, app not selected, expired tunnel URL, or stale metadata.
 
 If ChatGPT says review_current_project or write_to_codex is unavailable:
-  Refresh tools in ChatGPT app settings, or recreate the draft app with the latest https://.../mcp URL and No authentication.
+  Refresh tools in ChatGPT app settings, or recreate the app with the latest https://.../mcp URL and No authentication.
+
+Important:
+  The Cloudflare quick tunnel URL is temporary.
+  If you close this command or run connect again, update/recreate the ChatGPT app with the new Server URL.
 
 Local MCP URL:
   ${localBase}/mcp
@@ -95,8 +98,7 @@ ChatGPT fields:
   Final step: click Create in ChatGPT
 
 GPT Actions write-back fallback:
-  If MCP does not expose write_to_codex, create a Custom GPT Action with an action-capable model.
-  GPT Actions are not available in Pro mode.
+  Use only if your ChatGPT app cannot expose MCP tools in this chat.
   Import OpenAPI schema URL:
     https://.../action/openapi.json
   Use the same tunnel host as the printed https://.../mcp URL.
@@ -105,12 +107,15 @@ After selecting the app in ChatGPT:
   cgn mcp wait
 
 Account support:
-  Full automatic write-back needs ChatGPT full MCP support.
-  Pro accounts may scan the MCP app but expose only read/fetch actions.
-  If write_to_codex is unavailable, use Business/Enterprise/Edu full MCP support or the Markdown fallback.
+  ChatGPT Developer Mode supports MCP read and write tools.
+  If ChatGPT cannot call tools, the usual causes are: wrong chat mode, app not selected, expired tunnel URL, or stale metadata.
 
 If ChatGPT says review_current_project or write_to_codex is unavailable:
-  Refresh tools in ChatGPT app settings, or recreate the draft app with the latest https://.../mcp URL and No authentication.
+  Refresh tools in ChatGPT app settings, or recreate the app with the latest https://.../mcp URL and No authentication.
+
+Important:
+  The Cloudflare quick tunnel URL is temporary.
+  If you close this command or run connect again, update/recreate the ChatGPT app with the new Server URL.
 `;
 }
 
@@ -210,13 +215,15 @@ async function runCloudflareTunnel({
 
   let printedUrl = false;
   let openedChatgpt = false;
+  let repeatedReady = false;
+  let serverUrl = "";
   const pendingWrites = [];
 
   const onData = (chunk) => {
     const text = String(chunk);
     const tunnelUrl = findTryCloudflareUrl(text);
     if (tunnelUrl && !printedUrl) {
-      const serverUrl = `${tunnelUrl}/mcp`;
+      serverUrl = `${tunnelUrl}/mcp`;
       printedUrl = true;
       try {
         copyToClipboardImpl(serverUrl);
@@ -239,8 +246,7 @@ async function runCloudflareTunnel({
       stdout.write("  Authentication: No authentication\n");
       stdout.write("  Final step: click Create in ChatGPT\n\n");
       stdout.write("GPT Actions write-back fallback:\n");
-      stdout.write("  If MCP does not expose write_to_codex, create a Custom GPT Action with an action-capable model.\n");
-      stdout.write("  GPT Actions are not available in Pro mode.\n");
+      stdout.write("  Use only if your ChatGPT app cannot expose MCP tools in this chat.\n");
       stdout.write(`  Import OpenAPI schema URL: ${tunnelUrl}/action/openapi.json\n`);
       stdout.write("  If Import from URL says Something went wrong, paste the schema JSON manually from:\n");
       stdout.write(`    ${getActionOpenApiPath(cwd)}\n`);
@@ -250,16 +256,30 @@ async function runCloudflareTunnel({
           stderr.write(`Could not write GPT Actions schema file: ${error.message}\n`);
         })
       );
+      pendingWrites.push(
+        writeWebConnectionStatus({ cwd, tunnelUrl, serverUrl }).catch((error) => {
+          stderr.write(`Could not write MCP web connection status: ${error.message}\n`);
+        })
+      );
       stdout.write("After selecting the app in ChatGPT:\n");
       stdout.write("  cgn mcp wait\n\n");
       stdout.write("Account support:\n");
-      stdout.write("  Full automatic write-back needs ChatGPT full MCP support.\n");
-      stdout.write("  Pro accounts may scan the MCP app but expose only read/fetch actions.\n");
-      stdout.write("  If write_to_codex is unavailable, use Business/Enterprise/Edu full MCP support or the Markdown fallback.\n\n");
+      stdout.write("  ChatGPT Developer Mode supports MCP read and write tools.\n");
+      stdout.write("  If ChatGPT cannot call tools, the usual causes are: wrong chat mode, app not selected, expired tunnel URL, or stale metadata.\n\n");
+      stdout.write("Important:\n");
+      stdout.write("  This Cloudflare quick tunnel URL is temporary.\n");
+      stdout.write("  If you close this command or run connect again, update/recreate the ChatGPT app with the new Server URL.\n\n");
       stdout.write("If ChatGPT says review_current_project or write_to_codex is unavailable:\n");
-      stdout.write("  Refresh tools in ChatGPT app settings, or recreate the draft app with this latest Server URL and No authentication.\n\n");
+      stdout.write("  Refresh tools in ChatGPT app settings, or recreate the app with this latest Server URL and No authentication.\n\n");
     }
     stdout.write(text);
+    if (serverUrl && !repeatedReady && /precheck complete/i.test(text)) {
+      repeatedReady = true;
+      stdout.write("\n\nTunnel ready. Keep this terminal open.\n");
+      stdout.write(`Server URL: ${serverUrl}\n`);
+      stdout.write("The Server URL was also copied to your clipboard.\n");
+      stdout.write("If ChatGPT opened in the wrong browser or account, ignore that tab and paste this URL into your normal ChatGPT browser.\n\n");
+    }
   };
 
   child.stdout.on("data", onData);
@@ -309,6 +329,36 @@ async function writeActionOpenApiFile({ cwd, tunnelUrl }) {
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   await fs.writeFile(filePath, `${JSON.stringify(buildActionOpenApi(tunnelUrl), null, 2)}\n`, "utf8");
   return filePath;
+}
+
+async function writeWebConnectionStatus({ cwd, tunnelUrl, serverUrl }) {
+  const filePath = getWebConnectionStatusPath(cwd);
+  await fs.mkdir(path.dirname(filePath), { recursive: true });
+  const status = {
+    createdAt: new Date().toISOString(),
+    type: "cloudflare-quick-tunnel",
+    temporary: true,
+    tunnelUrl,
+    serverUrl,
+    actionOpenApiUrl: `${tunnelUrl}/action/openapi.json`,
+    note: "Cloudflare quick tunnel URLs are temporary. If this command is restarted, update or recreate the ChatGPT app with the latest serverUrl."
+  };
+  await fs.writeFile(filePath, `${JSON.stringify(status, null, 2)}\n`, "utf8");
+  return filePath;
+}
+
+async function readWebConnectionStatus({ cwd = process.cwd() } = {}) {
+  const filePath = getWebConnectionStatusPath(cwd);
+  try {
+    return JSON.parse(await fs.readFile(filePath, "utf8"));
+  } catch (error) {
+    if (error.code === "ENOENT") return null;
+    throw error;
+  }
+}
+
+function getWebConnectionStatusPath(cwd) {
+  return path.join(path.resolve(cwd), ".chatgpt-native", "runs", WEB_CONNECTION_FILE);
 }
 
 function getActionOpenApiPath(cwd) {
@@ -483,8 +533,11 @@ module.exports = {
   formatMcpWebGuide,
   formatTunnelDryRun,
   getProjectCloudflaredPath,
+  getWebConnectionStatusPath,
   installCloudflared,
+  readWebConnectionStatus,
   resolveCloudflaredCommand,
   runWebConnect,
-  runCloudflareTunnel
+  runCloudflareTunnel,
+  writeWebConnectionStatus
 };

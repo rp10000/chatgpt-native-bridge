@@ -1,6 +1,8 @@
 const fs = require("node:fs/promises");
 const path = require("node:path");
 
+const { readWebConnectionStatus } = require("./mcp-web");
+
 const DEFAULT_TRACE_LIMIT = 10;
 
 async function getMcpTrace({ cwd = process.cwd(), limit = DEFAULT_TRACE_LIMIT } = {}) {
@@ -12,6 +14,7 @@ async function getMcpTrace({ cwd = process.cwd(), limit = DEFAULT_TRACE_LIMIT } 
     root,
     requestPath,
     toolPath,
+    webConnection: await readWebConnectionStatus({ cwd: root }),
     requests: await readJsonlTail(requestPath, limit),
     toolCalls: (await readJsonlTail(toolPath, limit)).filter((event) => event.toolName)
   };
@@ -29,6 +32,9 @@ Request log:
 Tool-call log:
   ${trace.toolPath}
 
+Latest ChatGPT Server URL:
+${formatWebConnection(trace.webConnection)}
+
 Latest MCP requests:
 ${formatEvents(trace.requests, formatRequestEvent)}
 
@@ -36,11 +42,25 @@ Latest tool calls:
 ${formatEvents(trace.toolCalls, formatToolEvent)}
 
 Meaning:
-  - No MCP requests: ChatGPT is not reaching this Server URL.
+  - No MCP requests: ChatGPT is not reaching the current Server URL.
+    If you use Cloudflare quick tunnel, the URL changes when connect restarts. Recreate or refresh the ChatGPT app with the latest Server URL above.
   - Requests but no tool calls: ChatGPT reached the MCP server but did not expose/call tools in that chat.
-    On Pro accounts, ChatGPT may scan the app but expose only read/fetch MCP actions; automatic write-back needs full MCP support.
+    Check Developer Mode, selected app, app metadata refresh, and the exact chat mode.
   - Tool calls present: ChatGPT used the bridge; let it finish, then tell Codex to read the latest reply.
 `;
+}
+
+function formatWebConnection(connection) {
+  if (!connection) {
+    return "  none recorded. Run cgn mcp connect --yes --open or cgn mcp tunnel first.";
+  }
+  const temporary = connection.temporary ? "yes" : "no";
+  return [
+    `  Server URL: ${connection.serverUrl || "unknown"}`,
+    `  Created: ${connection.createdAt || "unknown"}`,
+    `  Temporary URL: ${temporary}`,
+    "  Important: ChatGPT must use this exact Server URL while the tunnel command stays open."
+  ].join("\n");
 }
 
 function formatEvents(events, formatter) {
@@ -94,6 +114,7 @@ function getToolAuditPath(cwd) {
 module.exports = {
   DEFAULT_TRACE_LIMIT,
   formatMcpTrace,
+  formatWebConnection,
   getMcpTrace,
   getRequestAuditPath,
   getToolAuditPath,

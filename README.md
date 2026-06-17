@@ -14,6 +14,21 @@ Codex executes locally. ChatGPT thinks, critiques, researches, reviews screensho
 
 ![chatgpt-native-bridge flow](docs/assets/flow.svg)
 
+## Current reality
+
+What works today:
+
+- Codex can install and use this project through MCP.
+- `cgn handoff` and `cgn done` work as the reliable manual fallback.
+- ChatGPT web can use the MCP server when the app is connected to the current HTTPS `/mcp` URL.
+- `cgn mcp trace` shows whether ChatGPT actually reached the local server.
+
+What is not one-click:
+
+- ChatGPT cannot use `localhost` directly; it needs HTTPS, either Secure MCP Tunnel or a public tunnel.
+- The built-in Cloudflare quick tunnel is temporary. If you restart it, the Server URL changes, and the ChatGPT app must be updated or recreated.
+- This project cannot silently create the ChatGPT app for you without browser automation or private web calls.
+
 ## Why use this?
 
 Codex is strong at local repo work: editing files, reading diffs, running tests, and carrying implementation through. ChatGPT's web app is useful for native workflows that are awkward to force through a local CLI:
@@ -58,107 +73,42 @@ Do not use `/chatgpt-native-bridge`; custom Skills are selected through `/skills
 
 ## ChatGPT Web Connection
 
-ChatGPT web does not accept `localhost` MCP URLs directly. Use the guide:
-
-```bash
-cgn mcp web
-```
-
-Fast path:
+ChatGPT web needs an HTTPS MCP URL. The simple local path is:
 
 ```bash
 cgn mcp connect --yes --open
 ```
 
-This starts the local MCP server, installs `cloudflared` if needed, starts a temporary HTTPS tunnel, copies the `https://.../mcp` Server URL to your clipboard, and opens ChatGPT. On Windows it tries `winget` first; if `winget` fails, it downloads `cloudflared.exe` into `.chatgpt-native/bin/` for this project.
+This starts the local server, opens a temporary HTTPS tunnel, copies the `https://.../mcp` Server URL, and opens ChatGPT settings.
 
-After you select the app in ChatGPT, verify that ChatGPT really called it:
+Important: the built-in Cloudflare quick tunnel is temporary. Keep the command running. If you restart it, update or recreate the ChatGPT app with the new Server URL.
+
+In ChatGPT:
+
+```text
+Settings -> Apps & Connectors -> Create
+Name: chatgpt-native-bridge
+Connection: Server URL
+Server URL: paste the copied https://.../mcp URL
+Authentication: No authentication
+```
+
+Then verify that ChatGPT really called the local server:
 
 ```bash
 cgn mcp wait
+cgn mcp trace
 ```
 
-Seeing the app checked in the ChatGPT UI only means it is selected. `cgn mcp wait` confirms a real MCP tool call.
+If `trace` shows no requests, ChatGPT is not reaching the current Server URL. Refresh or recreate the ChatGPT app with the latest URL printed by `trace`.
 
-Account support:
-
-- Full automatic MCP write-back uses `write_to_codex`, a write action.
-- OpenAI currently documents full MCP, including write/modify actions, as rolling out for ChatGPT Business, Enterprise, and Edu.
-- Pro accounts may connect MCP apps with read/fetch permissions, but `write_to_codex` may not be exposed in chat.
-- If ChatGPT says the bridge tools are unavailable on Pro, use the GPT Actions fallback below, the Markdown fallback (`cgn handoff`, then `cgn done`), or test from a workspace with full MCP support.
-
-GPT Actions write-back fallback:
+Use natural language in ChatGPT:
 
 ```text
-When cgn mcp connect prints the tunnel URL, use the same host with:
-  https://.../action/openapi.json
-
-Create a Custom GPT -> Configure -> Actions -> Import from URL.
-Paste the OpenAPI URL above.
-If ChatGPT shows "Something went wrong", paste the schema JSON manually from:
-  .chatgpt-native/actions/openapi.json
-
-Tell that GPT:
-  First call review_current_project.
-  Read relevant files only if needed.
-  Finally call write_to_codex with your final Markdown advice for Codex.
+Use chatgpt-native-bridge to review this project and send the final advice back to Codex.
 ```
 
-This uses ChatGPT's official GPT Actions/OpenAPI route instead of MCP write actions. GPT Actions are not available in Pro mode; use an action-capable Custom GPT model for this fallback.
-
-MCP local agent path:
-
-```text
-ChatGPT calls agent_start_task.
-The local MCP connector creates .chatgpt-native/agent/runs/{id}.
-The local agent captures bounded project status and diff.
-The result is written to .chatgpt-native/inbox/{id} for Codex.
-Codex continues local implementation and testing.
-```
-
-ChatGPT cannot be created by a local CLI without using browser automation or hidden web calls. The final ChatGPT step is still visible and manual:
-
-```text
-Direct link:
-  https://chatgpt.com/#settings/Connectors
-
-If the direct link only opens ChatGPT:
-  Settings -> Apps & Connectors -> Create
-
-If there is no Create button:
-  Settings -> Apps & Connectors -> Advanced settings -> turn on Developer Mode
-
-New app fields:
-  Name: chatgpt-native-bridge
-  Description: Local Codex bridge. Automatically inspect bounded project context and diffs when useful, then submit final ChatGPT advice back to Codex.
-  Connection: Server URL
-  Server URL: paste the copied https://.../mcp URL
-  Authentication: No authentication
-  Final step: click Create
-```
-
-After the connector is created, do not ask the user to remember tool names. In ChatGPT, use natural language:
-
-```text
-Use chatgpt-native-bridge to review this project.
-Check the current project state and diff, read relevant files if needed,
-then send your final advice back to Codex.
-```
-
-If ChatGPT does not start using the connector, send this stronger prompt:
-
-```text
-Use chatgpt-native-bridge now.
-First call review_current_project.
-Read relevant files only if needed.
-Then call submit_reply_to_codex with your final advice for Codex.
-```
-
-ChatGPT should automatically inspect the project through MCP and call `submit_reply_to_codex` before it finishes. Then return to Codex and say:
-
-```text
-Read the latest ChatGPT reply and continue.
-```
+Full details and fallbacks: [MCP setup](docs/MCP.md), [troubleshooting](docs/troubleshooting.md).
 
 ## User Does Not Memorize Commands
 

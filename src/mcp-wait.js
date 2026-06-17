@@ -1,6 +1,8 @@
 const fs = require("node:fs/promises");
 const path = require("node:path");
 
+const { readWebConnectionStatus } = require("./mcp-web");
+
 const DEFAULT_WAIT_SECONDS = 120;
 
 async function waitForMcpCall({
@@ -29,6 +31,7 @@ async function waitForMcpCall({
       return {
         observed: false,
         auditPath,
+        webConnection: await readWebConnectionStatus({ cwd: root }),
         timeoutSeconds: timeoutMs / 1000
       };
     }
@@ -89,15 +92,26 @@ Audit log:
   ${result.auditPath}
 
 Important:
-  Full automatic write-back requires ChatGPT full MCP support.
-  If ChatGPT says write_to_codex is unavailable, your plan or chat mode may expose only read/fetch actions.
-  Use a Business/Enterprise/Edu workspace with full MCP support, or use the Markdown fallback: cgn handoff, then cgn done.
+  ChatGPT must use the latest Server URL while the tunnel command stays open.
+${formatWaitConnection(result.webConnection)}
+  If this URL is missing, stale, or different from the ChatGPT app settings, recreate or refresh the app.
 
 In ChatGPT, select chatgpt-native-bridge and send:
   Use chatgpt-native-bridge to review this project.
   First call review_current_project, read relevant files only if needed,
   then call submit_reply_to_codex with your final advice for Codex.
 `;
+}
+
+function formatWaitConnection(connection) {
+  if (!connection) {
+    return "  Latest Server URL: none recorded. Run cgn mcp connect --yes --open first.";
+  }
+  return [
+    `  Latest Server URL: ${connection.serverUrl || "unknown"}`,
+    `  Created: ${connection.createdAt || "unknown"}`,
+    "  Cloudflare quick tunnel URLs are temporary and change after restart."
+  ].join("\n");
 }
 
 function getAuditPath(cwd) {
@@ -111,6 +125,7 @@ function sleep(ms) {
 module.exports = {
   DEFAULT_WAIT_SECONDS,
   formatMcpWaitResult,
+  formatWaitConnection,
   getAuditPath,
   readLatestAuditEventSince,
   waitForMcpCall
