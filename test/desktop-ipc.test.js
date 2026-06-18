@@ -83,6 +83,24 @@ test("desktop IPC can copy the Codex continue prompt", async () => {
   assert.equal(clipboard.text, CONTINUE_PROMPT);
 });
 
+test("desktop IPC can generate a handoff report for Codex review", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-desktop-report-"));
+  const clipboard = fakeClipboard();
+  const handlers = createDesktopHandlers({ cwd, clipboard });
+
+  const result = await invokeDesktopHandler(handlers, "handoff:create-report", {
+    task: "Review current MCP work",
+    markdown: "ChatGPT changed files and ran checks."
+  });
+
+  assert.equal(result.ok, true);
+  assert.match(result.data.id, /handoff-report/);
+  assert.equal(await exists(result.data.reportPath), true);
+  assert.equal(await exists(result.data.replyPath), true);
+  assert.equal(await exists(result.data.codexReadThisPath), true);
+  assert.match(clipboard.text, /交接报告/);
+});
+
 test("desktop IPC can copy the ChatGPT review prompt", async () => {
   const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-desktop-chatgpt-prompt-"));
   const clipboard = fakeClipboard();
@@ -416,7 +434,7 @@ test("desktop bridge state maps the beginner flow", () => {
   }), {
     key: "connected",
     label: "已连接",
-    kind: "warn"
+    kind: "ok"
   });
   assert.deepEqual(computeBridgeState({
     mcp: {
@@ -425,7 +443,7 @@ test("desktop bridge state maps the beginner flow", () => {
     }
   }), {
     key: "called",
-    label: "ChatGPT 已调用",
+    label: "ChatGPT 正在操作",
     kind: "ok"
   });
   assert.deepEqual(computeBridgeState({
@@ -436,16 +454,16 @@ test("desktop bridge state maps the beginner flow", () => {
   }), {
     key: "accessed",
     label: "ChatGPT 已访问",
-    kind: "ok"
+    kind: "warn"
   });
   assert.deepEqual(computeBridgeState({
     handoff: {
       latestReady: { id: "reply-id" }
     }
   }), {
-    key: "written",
-    label: "已写回",
-    kind: "ok"
+    key: "reported",
+    label: "已生成交接报告",
+    kind: "report"
   });
 });
 
@@ -763,6 +781,7 @@ test("desktop preload allows the ChatGPT review prompt channel", async () => {
   for (const channel of [
     "chatgpt:copy-review-prompt",
     "pro:copy-latest-pack",
+    "handoff:create-report",
     "project:list",
     "project:add",
     "mcp:connect-or-refresh",
@@ -787,6 +806,7 @@ test("desktop main registers the ChatGPT review prompt channel", async () => {
   for (const channel of [
     "chatgpt:copy-review-prompt",
     "pro:copy-latest-pack",
+    "handoff:create-report",
     "project:list",
     "project:add",
     "mcp:connect-or-refresh",

@@ -13,23 +13,23 @@ npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn start
 The client flow is:
 
 ```text
-Select project -> Connect ChatGPT -> Start work -> View results -> Hand to Codex
+Select project -> Connect ChatGPT -> Work in ChatGPT web -> Create handoff report
 ```
 
 ## 2. Main path: Thinking / MCP
 
 1. Click `Connect ChatGPT`.
 2. Create or refresh the ChatGPT tool with the copied connection address.
-3. Click `Start work`.
-4. Paste the copied sentence into ChatGPT.
-5. Wait for ChatGPT to use the tool and write back.
-6. Click `View results` to inspect command output, file changes, and the latest reply.
-7. Click `Hand to Codex`, then paste the copied sentence into Codex.
+3. In ChatGPT, send: `Use chatgpt-native-bridge to open the current connected project.`
+4. Describe the task you want ChatGPT to handle.
+5. Let ChatGPT read, edit, write, run useful checks, and call `show_changes`.
+6. Ask ChatGPT to call `create_handoff_report`, or click `Generate handoff report` in the client.
+7. Ask Codex to review the generated report and actual diff.
 
-The copied Codex sentence is:
+The Codex review sentence is:
 
 ```text
-读取最新 Bridge 回复，检查变更摘要，然后继续执行、测试和总结。
+读取最新 Bridge 交接报告，检查真实 diff，然后复核、测试、提交和总结。
 ```
 
 ## 3. Pro helper path
@@ -43,13 +43,9 @@ Pro cannot directly read your local project.
 It only sees the context copied by the client.
 ```
 
-## 4. Project allow-list
+## 4. Project boundary
 
-The current project can be opened by the running bridge. To let ChatGPT switch to another project, add it first:
-
-```bash
-cgn projects add D:\path\to\project
-```
+ChatGPT can only work in the current project selected by the client. To work on another project, switch it in the client and reconnect.
 
 ## 5. First-time Codex setup
 

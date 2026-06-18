@@ -47,9 +47,10 @@ test("ChatGPT project instructions define the automatic MCP loop", async () => {
 
   assert.match(instructions, /Use the local MCP bridge automatically/);
   assert.match(instructions, /The user should not need to name MCP tools/);
-  assert.match(instructions, /Call `review_current_project` first/);
-  assert.match(instructions, /Before your final answer, call `submit_reply_to_codex`/);
-  assert.match(instructions, /Submit the final advice back to Codex yourself/);
+  assert.match(instructions, /Call `open_workspace` for the current connected project/);
+  assert.match(instructions, /Call `create_handoff_report`/);
+  assert.match(instructions, /current project selected in the desktop client/);
+  assert.match(instructions, /Create the handoff report yourself/);
 });
 
 test("primary user-facing docs keep readable line breaks", async () => {

@@ -35,7 +35,7 @@ function createBridgeMcpServer(options = {}) {
     },
     {
       instructions:
-        "Use these tools to inspect and work in a local Codex project, create bounded ChatGPT handoffs, and submit final Markdown advice back to Codex. Do not request secrets; use workspace write, edit, and bash tools only for the active local task."
+        "Use these tools to work in the current connected local project. Open the workspace, read/edit/write files, run bounded commands when needed, show changes, and create a handoff report for Codex review. Do not request secrets or global filesystem access."
     }
   );
 
@@ -338,7 +338,7 @@ function buildActionOpenApi(baseUrl) {
       title: "chatgpt-native-bridge Actions",
       version: require("../package.json").version,
       description:
-        "Fallback REST actions for ChatGPT Custom GPTs when MCP write tools are unavailable. Reads are bounded; write-back is limited to .chatgpt-native/inbox."
+        "Fallback REST actions for ChatGPT Custom GPTs when MCP workspace tools are unavailable. Reads are bounded; report creation is limited to .chatgpt-native."
     },
     servers: [{ url: baseUrl }],
     paths: {
@@ -347,7 +347,7 @@ function buildActionOpenApi(baseUrl) {
           operationId: "review_current_project",
           summary: "Review the current local project",
           description:
-            "Call first. Returns project status, git status, a bounded diff, safety notes, and the next write-back step for Codex.",
+            "Call first. Returns project status, git status, a bounded diff, safety notes, and the next handoff-report step for Codex.",
           requestBody: jsonRequest({
             type: "object",
             properties: {
@@ -393,15 +393,15 @@ function buildActionOpenApi(baseUrl) {
       "/action/write-to-codex": {
         post: {
           operationId: "write_to_codex",
-          summary: "Write final advice back to Codex",
+          summary: "Create a Codex handoff report",
           description:
-            "Call last. Writes ChatGPT's final Markdown advice into the local Codex inbox so Codex can continue local implementation and testing.",
+            "Call last in the REST fallback. Creates a handoff report and Codex review note under .chatgpt-native.",
           requestBody: jsonRequest({
             type: "object",
             required: ["markdown"],
             properties: {
-              id: { type: "string", description: "Optional run id. Omit to create a new MCP reply run." },
-              markdown: { type: "string", description: "Final Markdown advice for Codex." }
+              id: { type: "string", description: "Optional report id. Omit to create a new handoff report." },
+              markdown: { type: "string", description: "Final Markdown notes for Codex review." }
             }
           }),
           responses: jsonResponses()

@@ -4,55 +4,81 @@
 
 English | [简体中文](README.zh-CN.md)
 
-**ChatGPT Native Bridge is a desktop bridge between ChatGPT, Codex, and your local project.**
+**Connect MCP once, then work directly in ChatGPT web on the current local project.**
 
-It gives ChatGPT a visible MCP workspace so it can inspect files, run commands, edit the connected project, show result cards in ChatGPT, and write the final answer back for Codex to continue locally.
+ChatGPT Native Bridge gives ChatGPT a visible MCP workspace for one selected project. ChatGPT can read files, edit files, run commands, show result cards, and create a handoff report for Codex review.
 
 ![ChatGPT Native Bridge workflow](docs/assets/readme/hero-workflow.svg)
 
 ## Quick Start
 
-Run this inside the project you want to work on:
+Run this inside the project you want ChatGPT to work on:
 
 ```bash
 npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn start
 ```
 
-Then use the desktop client:
+Use the desktop client:
 
 ```text
-Select project -> Connect ChatGPT -> Start work -> View results -> Hand to Codex
+Select project -> Connect ChatGPT -> Work in ChatGPT web -> Generate handoff report
 ```
 
-The desktop client is the beginner path. The CLI is still available for setup, diagnostics, automation, and advanced users.
+The desktop client is intentionally small. It only handles project selection, connection state, and local evidence. ChatGPT web is the main workspace.
 
-## What You See
+## Main Flow
 
-The client is not just a launcher. It shows whether ChatGPT really reached the bridge, which tools it called, what shell commands ran, what files changed, and what was written back to Codex.
+1. Select the local project in the desktop client.
+2. Click `Connect ChatGPT`.
+3. Refresh or select the `chatgpt-native-bridge` tool in ChatGPT.
+4. Ask ChatGPT to inspect, edit, and test the current project.
+5. Ask ChatGPT to create a handoff report.
+6. Let Codex review the diff, run tests, commit, and push.
+
+The copied ChatGPT prompt says:
+
+```text
+Use chatgpt-native-bridge to open the current connected project. You may read files, edit files, and run required checks. When finished, create a handoff report describing what changed, what ran, and what Codex should review.
+```
+
+## Desktop Client
+
+The client shows a single project and one large status light:
 
 ![Desktop live status](docs/assets/readme/desktop-status.svg)
 
-Status is based on local evidence:
+Status meanings:
 
-- MCP request log
-- MCP tool-call audit log
-- command history
-- git status and diff
-- Codex inbox replies
+- Gray: not connected.
+- Blue: connected.
+- Yellow: ChatGPT reached the tool list.
+- Green: ChatGPT is operating on the current project.
+- Purple: handoff report generated.
+- Red: connection failed or project mismatch.
+
+The main buttons are:
+
+```text
+Select project
+Connect ChatGPT
+Generate handoff report
+```
+
+Advanced details are still available behind collapsed panels: tool calls, shell commands, file changes, diagnostics, and fallback helpers.
 
 ## ChatGPT Web Cards
 
-When your ChatGPT mode supports MCP Apps UI, bridge results appear as compact cards in the ChatGPT conversation.
+When your ChatGPT mode supports MCP Apps UI, tool results appear as compact cards in the ChatGPT conversation.
 
 ![ChatGPT web cards](docs/assets/readme/chatgpt-cards.svg)
 
-Cards are attached to the main workspace tools:
+Cards are attached to the main workspace actions:
 
 - open workspace
 - run command
 - write or edit file
 - show changes
-- write back to Codex
+- create handoff report
 
 If cards are not supported by your current ChatGPT account or mode, the tools still return normal structured results.
 
@@ -72,14 +98,35 @@ edit
 bash
 command_history
 show_changes
+create_handoff_report
 write_to_codex
 ```
 
-The current project can be opened directly. Other projects must be allowed first:
+The current connection is project-scoped. ChatGPT cannot browse your whole computer by default.
 
-```bash
-cgn projects add D:\path\to\project
+`open_workspace` opens the current connected project. If ChatGPT asks for a different path, the bridge rejects it and tells you to switch projects in the desktop client.
+
+## Handoff Report
+
+`create_handoff_report` creates:
+
+```text
+.chatgpt-native/reports/{id}/HANDOFF_REPORT.md
+.chatgpt-native/inbox/{id}/reply.md
+.chatgpt-native/inbox/{id}/CODEX_READ_THIS.md
 ```
+
+The report includes:
+
+- git status
+- diff summary
+- recent MCP tool calls
+- recent shell commands
+- changed files
+- ChatGPT notes
+- Codex review checklist
+
+`write_to_codex` remains as a compatibility alias, but the preferred action is now `create_handoff_report`.
 
 ## Safety Boundary
 
@@ -91,8 +138,9 @@ The bridge is local-first and visible:
 - No browser extension.
 - No ChatGPT web scraping.
 - No hidden ChatGPT endpoints.
+- No global filesystem access by default.
 - No automatic commit or push.
-- Shell commands and file changes are shown in the desktop client.
+- Shell commands and file changes are visible in the desktop client.
 - Codex still does the final local review, tests, commit, and push.
 
 Treat the temporary MCP tunnel URL as a sensitive local capability URL.
@@ -101,28 +149,28 @@ Treat the temporary MCP tunnel URL as a sensitive local capability URL.
 
 ```bash
 cgn start
-cgn setup --mcp
+cgn desktop
 cgn projects add .
 cgn projects list
-cgn auth rotate
-cgn sessions list
 cgn mcp connect --yes --open
 cgn mcp trace
 cgn mcp doctor
 cgn doctor
 ```
 
+Use CLI for setup, diagnostics, automation, and advanced workflows. Use the desktop client for normal work.
+
 ## Pro Helper
 
-ChatGPT Pro does not directly read your local project through this bridge unless it can call the MCP app in that chat.
+ChatGPT Pro is a fallback planning path when the current ChatGPT chat cannot call MCP tools.
 
-Use the desktop client's Pro helper only for packaged-context planning:
+The Pro helper only uses packaged context:
 
 ```text
-Client copies a project summary -> You paste it into Pro -> Client imports the marked reply
+Client copies project context -> You paste it into Pro -> Client imports the marked reply
 ```
 
-For real local file access, use the Thinking/MCP path.
+For real local file access, use the MCP workspace path.
 
 ## Fallback
 
@@ -150,11 +198,12 @@ The npm package keeps the CLI lightweight. Desktop installers are intended for G
 
 ## Current Status
 
-`v1.0.0` includes:
+`v1.2` focuses on:
 
-- Desktop client
-- MCP workspace tools
-- shell and file-change audit visibility
+- Web-first MCP workflow
+- current-project-only workspace access
+- minimal desktop connector UI
 - ChatGPT web cards
-- Codex inbox write-back
-- Markdown handoff fallback
+- local shell and file-change audit visibility
+- handoff reports for Codex review
+- Pro and Markdown fallbacks

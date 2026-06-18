@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1320" height="640" viewBox="0 0 1320 640" role="img" aria-labelledby="title desc">
   <title id="title">ChatGPT web cards</title>
-  <desc id="desc">ChatGPT web can display tool result cards for workspace, commands, changes, and Codex write-back.</desc>
+  <desc id="desc">ChatGPT web can display tool result cards for workspace, commands, changes, and handoff reports.</desc>
   <defs>
     <style>
       .bg { fill: #f7f7f4; }
@@ -25,7 +25,7 @@
   <rect x="250" y="150" width="820" height="64" rx="22" fill="#fff"/>
   <text class="text" x="600" y="190">ChatGPT</text>
   <rect class="bubble" x="310" y="250" width="690" height="56" rx="14"/>
-  <text class="text" x="340" y="285">Use chatgpt-native-bridge to review this project.</text>
+  <text class="text" x="340" y="285">Use chatgpt-native-bridge to open this project.</text>
   <rect class="card" x="310" y="340" width="205" height="130" rx="14"/>
   <circle class="ok" cx="342" cy="374" r="12"/>
   <text class="dark" x="366" y="382">Workspace</text>
@@ -38,7 +38,7 @@
   <text class="code" x="588" y="448">npm test</text>
   <rect class="card" x="810" y="340" width="205" height="130" rx="14"/>
   <circle class="pink" cx="842" cy="374" r="12"/>
-  <text class="dark" x="866" y="382">Codex</text>
-  <text class="muted" x="838" y="422">Reply written</text>
-  <text class="code" x="838" y="448">inbox/reply.md</text>
+  <text class="dark" x="866" y="382">Report</text>
+  <text class="muted" x="838" y="422">Handoff ready</text>
+  <text class="code" x="838" y="448">HANDOFF.md</text>
 </svg>

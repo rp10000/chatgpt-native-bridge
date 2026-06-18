@@ -12,12 +12,9 @@ test("openWorkspace binds one workspaceId to a canonical root", async () => {
   const otherRoot = await makeTempRoot("cgn-workspace-other-");
   const engine = createWorkspaceEngine({ cwd: root });
 
-  assert.deepEqual(engine.status(), {
-    open: false,
-    workspaceId: null,
-    root: null,
-    canonicalRoot: null
-  });
+  assert.equal(engine.status().open, false);
+  assert.equal(engine.status().root, null);
+  assert.equal(engine.status().activeProjectRoot, path.resolve(root));
 
   const opened = await engine.openWorkspace({ root: path.join(root, ".") });
   const reopened = await engine.openWorkspace({ root });
@@ -25,19 +22,18 @@ test("openWorkspace binds one workspaceId to a canonical root", async () => {
   assert.match(opened.workspaceId, /^workspace_[a-f0-9]{16}$/);
   assert.equal(reopened.workspaceId, opened.workspaceId);
   assert.equal(opened.canonicalRoot, await fs.realpath(root));
-  assert.deepEqual(engine.status(), {
-    open: true,
-    workspaceId: opened.workspaceId,
-    root: path.resolve(root),
-    canonicalRoot: opened.canonicalRoot
-  });
+  assert.equal(engine.status().open, true);
+  assert.equal(engine.status().workspaceId, opened.workspaceId);
+  assert.equal(engine.status().root, path.resolve(root));
+  assert.equal(engine.status().canonicalRoot, opened.canonicalRoot);
+  assert.equal(engine.status().activeProjectRoot, path.resolve(root));
   await assert.rejects(
     () => engine.openWorkspace({ root: otherRoot }),
-    /workspace is already open/i
+    /not the current connected project/i
   );
 });
 
-test("openWorkspace allows the runtime project and blocks other roots until authorized", async () => {
+test("openWorkspace allows only the current runtime project even when other roots are authorized", async () => {
   const configDir = await makeTempRoot("cgn-config-");
   const runtimeRoot = await makeTempRoot("cgn-workspace-runtime-");
   const otherRoot = await makeTempRoot("cgn-workspace-allowed-");
@@ -49,12 +45,14 @@ test("openWorkspace allows the runtime project and blocks other roots until auth
   const fresh = createWorkspaceEngine({ cwd: runtimeRoot, configDir });
   await assert.rejects(
     () => fresh.openWorkspace({ root: otherRoot }),
-    /Project is not allowed/
+    /not the current connected project/
   );
 
   await addAllowedRoot(otherRoot, { configDir });
-  const allowed = await createWorkspaceEngine({ cwd: runtimeRoot, configDir }).openWorkspace({ root: otherRoot });
-  assert.equal(allowed.root, path.resolve(otherRoot));
+  await assert.rejects(
+    () => createWorkspaceEngine({ cwd: runtimeRoot, configDir }).openWorkspace({ root: otherRoot }),
+    /not the current connected project/
+  );
 });
 
 test("workspace discovery lists directories, searches text, and reads project instructions", async () => {

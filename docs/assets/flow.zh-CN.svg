@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1160" height="380" viewBox="0 0 1160 380" role="img" aria-labelledby="title desc">
   <title id="title">chatgpt-native-bridge 桌面客户端和 MCP 流程</title>
-  <desc id="desc">Codex 本地执行，桌面客户端接力 Pro 规划，ChatGPT Thinking 可通过 MCP 读取上下文并写回 Codex。</desc>
+  <desc id="desc">桌面客户端连接当前项目，ChatGPT 网页端通过 MCP 直接读写和运行命令，最后生成交接报告给 Codex 复核。</desc>
   <defs>
     <style>
       .bg { fill: #f8fafc; }
@@ -32,29 +32,29 @@
   <rect class="accent" x="250" y="86" width="210" height="130" />
   <text class="text" x="295" y="126">桌面客户端</text>
   <text class="code" x="292" y="155">cgn start</text>
-  <text class="sub" x="286" y="182">Pro 接力 / 写回 Codex</text>
+  <text class="sub" x="286" y="182">选项目 / 连接 ChatGPT</text>
 
   <line class="arrow" x1="460" y1="151" x2="525" y2="151" />
   <rect class="box" x="525" y="70" width="220" height="165" />
   <text class="text" x="575" y="111">MCP 工具</text>
-  <text class="sub" x="560" y="142">bridge_status</text>
-  <text class="sub" x="560" y="164">read_repo_file</text>
-  <text class="sub" x="560" y="186">read_git_diff</text>
-  <text class="sub" x="560" y="208">write_to_codex</text>
+  <text class="sub" x="560" y="142">open_workspace</text>
+  <text class="sub" x="560" y="164">read / write / edit</text>
+  <text class="sub" x="560" y="186">bash / show_changes</text>
+  <text class="sub" x="560" y="208">create_handoff_report</text>
 
   <line class="arrow" x1="745" y1="151" x2="810" y2="151" />
   <rect class="box" x="810" y="70" width="240" height="165" />
   <text class="text" x="858" y="111">ChatGPT</text>
-  <text class="sub" x="845" y="142">Thinking/MCP 主路径</text>
-  <text class="sub" x="845" y="164">Pro 辅助规划</text>
-  <text class="sub" x="845" y="186">研究 / 图片 / UX</text>
+  <text class="sub" x="845" y="142">网页端主工作区</text>
+  <text class="sub" x="845" y="164">直接改文件</text>
+  <text class="sub" x="845" y="186">运行检查</text>
   <text class="sub" x="845" y="208">用户可见控制</text>
 
   <line class="arrow" x1="930" y1="235" x2="930" y2="280" />
   <rect class="accent" x="790" y="280" width="280" height="52" />
-  <text class="text" x="840" y="313">写回 Codex inbox</text>
+  <text class="text" x="850" y="313">生成交接报告</text>
   <line class="arrow" x1="790" y1="306" x2="186" y2="206" />
-  <text class="sub" x="350" y="302">Codex 读取 reply.md 后继续本地执行</text>
+  <text class="sub" x="350" y="302">Codex 复核报告、diff 和测试</text>
 
   <rect class="soft" x="120" y="328" width="920" height="38" />
   <text class="sub" x="345" y="352">备用路径：cgn handoff -> 可见 ChatGPT -> cgn done</text>

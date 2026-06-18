@@ -79,8 +79,8 @@ Audit log:
   ${result.auditPath}
 
 Next:
-  Let ChatGPT finish. It should call submit_reply_to_codex before its final answer.
-  Then return to Codex and say: Read the latest ChatGPT reply and continue.
+  Let ChatGPT finish. It should call create_handoff_report before its final answer.
+  Then return to Codex and say: Read the latest Bridge handoff report and review the changes.
 `;
   }
 
@@ -97,9 +97,10 @@ ${formatWaitConnection(result.webConnection)}
   If this URL is missing, stale, or different from the ChatGPT app settings, recreate or refresh the app.
 
 In ChatGPT, select chatgpt-native-bridge and send:
-  Use chatgpt-native-bridge to review this project.
-  First call review_current_project, read relevant files only if needed,
-  then call submit_reply_to_codex with your final advice for Codex.
+  Use chatgpt-native-bridge to open the current connected project.
+  First call open_workspace.
+  Read, edit, write, and run checks as needed.
+  Then call show_changes and create_handoff_report.
 `;
 }
 

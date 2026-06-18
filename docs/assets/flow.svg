@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1160" height="380" viewBox="0 0 1160 380" role="img" aria-labelledby="title desc">
   <title id="title">chatgpt-native-bridge desktop and MCP workflow</title>
-  <desc id="desc">Codex installs MCP config, ChatGPT reads local context through MCP tools, then submits a reply for Codex.</desc>
+  <desc id="desc">Codex starts the bridge, ChatGPT works in the current project through MCP tools, then creates a handoff report for Codex review.</desc>
   <defs>
     <style>
       .bg { fill: #f8fafc; }
@@ -30,31 +30,31 @@
 
   <line class="arrow" x1="186" y1="151" x2="250" y2="151" />
   <rect class="accent" x="250" y="86" width="210" height="130" />
-  <text class="text" x="294" y="126">setup --mcp</text>
-  <text class="code" x="278" y="155">npx github:rp10000/...</text>
-  <text class="sub" x="292" y="182">writes Codex MCP config</text>
+  <text class="text" x="298" y="126">desktop client</text>
+  <text class="code" x="304" y="155">cgn start</text>
+  <text class="sub" x="292" y="182">select project + connect</text>
 
   <line class="arrow" x1="460" y1="151" x2="525" y2="151" />
   <rect class="box" x="525" y="70" width="220" height="165" />
   <text class="text" x="575" y="111">MCP tools</text>
-  <text class="sub" x="560" y="142">bridge_status</text>
-  <text class="sub" x="560" y="164">read_repo_file</text>
-  <text class="sub" x="560" y="186">read_git_diff</text>
-  <text class="sub" x="560" y="208">create_handoff</text>
+  <text class="sub" x="560" y="142">open_workspace</text>
+  <text class="sub" x="560" y="164">read / write / edit</text>
+  <text class="sub" x="560" y="186">bash / show_changes</text>
+  <text class="sub" x="560" y="208">create_handoff_report</text>
 
   <line class="arrow" x1="745" y1="151" x2="810" y2="151" />
   <rect class="box" x="810" y="70" width="240" height="165" />
   <text class="text" x="858" y="111">ChatGPT</text>
-  <text class="sub" x="845" y="142">planning + critique</text>
-  <text class="sub" x="845" y="164">research</text>
-  <text class="sub" x="845" y="186">file/image analysis</text>
+  <text class="sub" x="845" y="142">web workspace</text>
+  <text class="sub" x="845" y="164">edit files</text>
+  <text class="sub" x="845" y="186">run checks</text>
   <text class="sub" x="845" y="208">visible user control</text>
 
   <line class="arrow" x1="930" y1="235" x2="930" y2="280" />
   <rect class="accent" x="790" y="280" width="280" height="52" />
-  <text class="text" x="820" y="313">submit_reply_to_codex</text>
+  <text class="text" x="815" y="313">handoff report</text>
   <line class="arrow" x1="790" y1="306" x2="186" y2="206" />
-  <text class="sub" x="360" y="302">Codex reads inbox/reply.md and continues locally</text>
+  <text class="sub" x="345" y="302">Codex reviews report, diff, and tests</text>
 
   <rect class="soft" x="120" y="328" width="920" height="38" />
   <text class="sub" x="310" y="352">Fallback: cgn handoff -> visible ChatGPT -> cgn done</text>

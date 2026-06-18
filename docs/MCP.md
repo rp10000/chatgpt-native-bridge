@@ -2,7 +2,7 @@
 
 `chatgpt-native-bridge` uses MCP as the main path for ChatGPT modes that can use Apps/tools. The desktop client is the beginner entry point; this page documents the lower-level MCP commands.
 
-The bridge runs a local MCP server that lets ChatGPT inspect bounded project context, search and list the workspace, read project instructions, read the current diff, use workspace read/write/edit/bash tools, and submit final Markdown advice back to Codex.
+The bridge runs a local MCP server that lets ChatGPT work inside the current project selected by the desktop client. ChatGPT can search and list the workspace, read project instructions, read the current diff, use workspace read/write/edit/bash tools, show changes, and create a handoff report for Codex review.
 
 Codex still owns final review, tests, commit, and push. The REST Actions fallback does not expose shell or source-file write tools.
 
@@ -85,11 +85,12 @@ bash
 write
 edit
 show_changes
+create_handoff_report
 write_to_codex
 submit_reply_to_codex
 ```
 
-The cards summarize the project, command exit code, changed files, and Codex write-back id. They are display-only. They do not add browser automation, hidden ChatGPT calls, or extra local permissions.
+The cards summarize the project, command exit code, changed files, and handoff report id. They are display-only. They do not add browser automation, hidden ChatGPT calls, or extra local permissions.
 
 If you do not see cards, the tools can still work. The most common causes are account/workspace rollout, Developer Mode support, stale app metadata, or a ChatGPT mode that can call tools but does not render MCP Apps UI. Refresh the app tools or recreate the app with the latest `https://.../mcp` URL, then test again.
 
@@ -126,12 +127,12 @@ If ChatGPT shows "Something went wrong", paste the schema JSON manually from:
 Then tell the Custom GPT:
   First call review_current_project.
   Read relevant files only if needed.
-  Finally call write_to_codex with your final Markdown advice for Codex.
+  Finally call write_to_codex with your final Markdown notes for Codex review.
 ```
 
 This fallback uses ChatGPT's official GPT Actions/OpenAPI route instead of MCP write actions. It writes only to `.chatgpt-native/inbox`.
 
-If ChatGPT says `review_current_project` or `write_to_codex` is unavailable, refresh the app tools in ChatGPT settings or recreate the draft app with the latest `https://.../mcp` URL and `No authentication`. Use `0.4.1` or newer.
+If ChatGPT says `open_workspace` or `create_handoff_report` is unavailable, refresh the app tools in ChatGPT settings or recreate the draft app with the latest `https://.../mcp` URL and `No authentication`.
 
 Run `cgn mcp trace` to see whether ChatGPT reached `/mcp`, listed tools, or actually called a tool.
 
@@ -149,7 +150,7 @@ If there is no Create button:
 
 Fields:
   Name: chatgpt-native-bridge
-  Description: Local Codex bridge. Automatically inspect bounded project context and diffs when useful, then submit final ChatGPT advice back to Codex.
+  Description: Local project bridge. Work in the currently connected project, show changes, then create a handoff report for Codex review.
   Connection: Server URL
   Server URL: paste the copied https://.../mcp URL
   Authentication: No authentication
@@ -170,23 +171,23 @@ After the connector is created, users should not name individual tools. In ChatG
 
 ```text
 Use chatgpt-native-bridge to review this project.
-Check the current project state and diff, read relevant files if needed,
-then send your final advice back to Codex.
+Open the current connected project, make the needed changes,
+run useful checks, show the changes, then create a handoff report.
 ```
 
-ChatGPT should call the bridge tools automatically and use `submit_reply_to_codex` before it finishes. Then return to Codex and say:
+ChatGPT should call the bridge tools automatically and use `create_handoff_report` before it finishes. Then return to Codex and say:
 
 ```text
-Read the latest ChatGPT reply and continue.
+Read the latest Bridge handoff report and review the changes.
 ```
 
 If ChatGPT does not call the connector, send:
 
 ```text
 Use chatgpt-native-bridge now.
-First call review_current_project.
-Read relevant files only if needed.
-Then call submit_reply_to_codex with your final advice for Codex.
+First call open_workspace for the current connected project.
+Use read/search/edit/write/bash as needed.
+Then call show_changes and create_handoff_report.
 ```
 
 Official OpenAI references:
@@ -201,7 +202,7 @@ Do not use hidden ChatGPT endpoints, browser scraping, localStorage extraction, 
 
 | Tool | Purpose |
 | --- | --- |
-| `review_current_project` | One-call project review entry: status, git state, safe diff, and next write-back step. |
+| `review_current_project` | One-call project review entry: status, git state, safe diff, and next report step. |
 | `bridge_status` | Read local bridge, git, handoff, and reply status. |
 | `create_handoff` | Create a self-explaining handoff pack for a task. |
 | `list_handoff_files` | List generated handoff files and upload candidates. |
@@ -213,10 +214,11 @@ Do not use hidden ChatGPT endpoints, browser scraping, localStorage extraction, 
 | `agent_read_log` | Read a bounded local agent log. |
 | `agent_read_result` | Read the local agent result Markdown. |
 | `agent_stop` | Cancel a running local agent task. |
-| `submit_reply_to_codex` | Save ChatGPT's final Markdown advice into the local inbox. |
-| `write_to_codex` | Alias for `submit_reply_to_codex` when ChatGPT looks for a write-back action. |
+| `create_handoff_report` | Create a final report for Codex review after ChatGPT worked in the project. |
+| `submit_reply_to_codex` | Compatibility alias that creates the same handoff report. |
+| `write_to_codex` | Compatibility alias that creates the same handoff report. |
 | `list_workspaces` | List allowed project roots and the runtime project. |
-| `open_workspace` | Open the current project or an allowed project workspace. |
+| `open_workspace` | Open the current connected project. Other paths are rejected until the desktop client switches projects. |
 | `workspace_status` | Return the open workspace state. |
 | `list_directory` | List files and folders in the open workspace. |
 | `search_workspace` | Search safe text files in the open workspace. |
@@ -235,10 +237,11 @@ Do not use hidden ChatGPT endpoints, browser scraping, localStorage extraction, 
 2. Restart Codex, or open a new Codex thread, so MCP config reloads.
 3. Ask ChatGPT/Codex to inspect the project through the bridge MCP tools.
 4. Optionally run `cgn mcp wait` to confirm ChatGPT really called the connector.
-5. ChatGPT calls `review_current_project`, or starts the local agent with `agent_start_task`.
-6. ChatGPT calls `submit_reply_to_codex` with final advice, or Codex reads the local agent inbox result.
-7. Codex reads .chatgpt-native/inbox/{id}/CODEX_READ_THIS.md and reply.md.
-8. Codex continues local implementation and runs tests.
+5. ChatGPT calls `open_workspace`, then uses read/write/edit/bash as needed.
+6. ChatGPT calls `show_changes`.
+7. ChatGPT calls `create_handoff_report`.
+8. Codex reads `.chatgpt-native/reports/{id}/HANDOFF_REPORT.md` and `.chatgpt-native/inbox/{id}/CODEX_READ_THIS.md`.
+9. Codex reviews the diff, runs tests, then commits or pushes if appropriate.
 ```
 
 ## Stdio mode

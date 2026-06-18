@@ -10,6 +10,7 @@ const CARD_TOOL_NAMES = new Set([
   "edit",
   "bash",
   "show_changes",
+  "create_handoff_report",
   "submit_reply_to_codex",
   "write_to_codex"
 ]);
@@ -23,7 +24,7 @@ const RESOURCE_META = {
     },
     prefersBorder: true
   },
-  "openai/widgetDescription": "Shows local workspace, command, file-change, and Codex write-back status.",
+  "openai/widgetDescription": "Shows local workspace, command, file-change, and handoff report status.",
   "openai/widgetPrefersBorder": true,
   "openai/widgetCSP": {
     connect_domains: [],
@@ -38,7 +39,7 @@ function registerChatGptCardResource(server) {
     CHATGPT_CARD_RESOURCE_URI,
     {
       title: "ChatGPT Native Bridge workspace card",
-      description: "Inline ChatGPT card for workspace commands, file changes, and Codex write-back.",
+      description: "Inline ChatGPT card for workspace commands, file changes, and handoff reports.",
       mimeType: CHATGPT_CARD_MIME_TYPE,
       _meta: RESOURCE_META
     },
@@ -152,12 +153,17 @@ function buildCard(toolName, result, args, context) {
 
   return baseCard({
     kind: "codex",
-    title: "Written back to Codex",
+    title: result.reportPath ? "Handoff report ready" : "Written back to Codex",
     status: "ok",
     projectName,
-    summary: "The final ChatGPT reply is ready for Codex.",
+    summary: result.reportPath
+      ? "Codex can now review the report, diff, commands, and remaining work."
+      : "The final ChatGPT reply is ready for Codex.",
     inboxId: result.id || args.id || "",
-    items: [result.id ? `inbox: ${result.id}` : "Codex inbox updated"]
+    items: [
+      result.id ? `report: ${result.id}` : "Codex inbox updated",
+      result.reportPath ? "handoff report created" : ""
+    ]
   });
 }
 

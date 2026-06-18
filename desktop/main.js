@@ -23,6 +23,7 @@ const CHANNELS = [
   "pro:copy-latest-pack",
   "pro:start-watch",
   "pro:manual-import",
+  "handoff:create-report",
   "chatgpt:open",
   "chatgpt:copy-review-prompt",
   "mcp:connect-or-refresh",
