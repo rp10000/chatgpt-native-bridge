@@ -12,6 +12,7 @@
       <img class="chrome-avatar" src="../assets/avatar.png" alt="">
       <span>ChatGPT Native Bridge</span>
     </div>
+    <button id="languageToggle" class="language-toggle" type="button" aria-label="Switch language">EN</button>
     <div class="window-controls">
       <button id="windowMinimize" class="window-control" type="button" aria-label="最小化">-</button>
       <button id="windowMaximize" class="window-control" type="button" aria-label="最大化">□</button>
@@ -24,12 +25,12 @@
       <div class="brand">
         <img class="avatar" src="../assets/avatar.png" alt="">
         <div>
-          <p class="eyebrow">当前项目</p>
+          <p class="eyebrow" data-i18n="currentProject">当前项目</p>
           <h1 id="projectName">正在读取项目</h1>
           <p id="projectPath" class="project-path">请稍等</p>
         </div>
       </div>
-      <button id="selectProject" class="small-button" type="button">选择项目</button>
+      <button id="selectProject" class="small-button" type="button" data-i18n="selectProject">选择项目</button>
     </section>
 
     <section id="statusLamp" class="status-lamp status-disconnected" aria-live="polite">
@@ -41,69 +42,69 @@
     </section>
 
     <section class="actions" aria-label="主操作">
-      <button id="connectChatGPT" type="button">连接 ChatGPT</button>
-      <button id="createHandoffReport" class="ghost" type="button">生成交接报告</button>
+      <button id="connectChatGPT" class="primary-action" type="button" data-i18n="connectChatGPT">连接 ChatGPT</button>
+      <button id="createHandoffReport" class="report-action" type="button" data-i18n="createReport">生成交接报告</button>
     </section>
 
     <section class="summary-strip" aria-label="状态摘要">
       <div>
-        <span>调用</span>
+        <span data-i18n="calls">调用</span>
         <strong id="toolCallCount">0</strong>
       </div>
       <div>
-        <span>命令</span>
+        <span data-i18n="commands">命令</span>
         <strong id="commandCount">0</strong>
       </div>
       <div>
-        <span>变更</span>
+        <span data-i18n="changes">变更</span>
         <strong id="changeCount">0</strong>
       </div>
       <div>
-        <span>报告</span>
+        <span data-i18n="report">报告</span>
         <strong id="reportState">暂无</strong>
       </div>
     </section>
 
     <details class="details-panel" id="activityDetails">
-      <summary>查看过程</summary>
+      <summary data-i18n="activity">查看过程</summary>
       <section class="diagnostic-grid">
         <article>
-          <h2>调用记录</h2>
+          <h2 data-i18n="toolCalls">调用记录</h2>
           <pre id="toolCalls">暂无调用。</pre>
         </article>
         <article>
-          <h2>命令输出</h2>
+          <h2 data-i18n="commandOutput">命令输出</h2>
           <pre id="commandOutput">暂无命令。</pre>
         </article>
         <article>
-          <h2>文件变更</h2>
+          <h2 data-i18n="fileChanges">文件变更</h2>
           <pre id="changeSummary">暂无变更。</pre>
         </article>
         <article>
-          <h2>交接报告</h2>
+          <h2 data-i18n="handoffReport">交接报告</h2>
           <pre id="replyPreview">暂无报告。</pre>
         </article>
       </section>
     </details>
 
     <details class="details-panel">
-      <summary>备用方式</summary>
-      <p class="hint">仅在当前 ChatGPT 无法调用工具时使用。</p>
-      <label for="taskInput">Pro 辅助规划任务</label>
+      <summary data-i18n="fallback">备用方式</summary>
+      <p class="hint" data-i18n="fallbackHint">仅在当前 ChatGPT 无法调用工具时使用。</p>
+      <label for="taskInput" data-i18n="proTask">Pro 辅助规划任务</label>
       <textarea id="taskInput">基于打包上下文给 Codex 一个简洁的复核建议。上下文不足时请明确说明。</textarea>
       <p id="proSummary" class="hint">尚未打包备用上下文。</p>
       <div class="fallback-actions">
-        <button id="proPlan" class="secondary" type="button">打包上下文</button>
-        <button id="copyLatestProPack" class="ghost" type="button">重新复制</button>
-        <button id="startProWatch" class="ghost" type="button">等待回复</button>
+        <button id="proPlan" class="secondary" type="button" data-i18n="packContext">打包上下文</button>
+        <button id="copyLatestProPack" class="ghost" type="button" data-i18n="copyAgain">重新复制</button>
+        <button id="startProWatch" class="ghost" type="button" data-i18n="waitReply">等待回复</button>
       </div>
-      <label for="manualReply">手动导入回复</label>
+      <label for="manualReply" data-i18n="manualImportLabel">手动导入回复</label>
       <textarea id="manualReply"></textarea>
-      <button id="manualImport" class="ghost full-width" type="button">导入回复</button>
+      <button id="manualImport" class="ghost full-width" type="button" data-i18n="importReply">导入回复</button>
     </details>
 
     <details class="details-panel">
-      <summary>诊断</summary>
+      <summary data-i18n="diagnostics">诊断</summary>
       <pre id="diagnostics">准备就绪。</pre>
     </details>
   </main>

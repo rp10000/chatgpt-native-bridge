@@ -43,6 +43,8 @@ test("desktop renderer keeps the main client surface minimal", async () => {
   assert.match(html, /id="statusLamp"/);
   assert.match(html, /id="statusTitle"/);
   assert.match(html, /id="statusText"/);
+  assert.match(html, /id="languageToggle"/);
+  assert.match(html, /data-i18n="connectChatGPT"/);
   assert.match(html, /选择项目/);
   assert.match(html, /连接 ChatGPT/);
   assert.match(html, /生成交接报告/);
@@ -58,7 +60,14 @@ test("desktop renderer keeps the main client surface minimal", async () => {
   assert.match(css, /\.status-reported/);
   assert.match(css, /\.status-error/);
   assert.match(css, /\.lamp-orb/);
+  assert.match(css, /\.language-toggle/);
+  assert.match(css, /\.primary-action/);
+  assert.match(css, /\.report-action/);
+  assert.match(css, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
   assert.match(css, /@keyframes lampPulse/);
+  assert.match(css, /@keyframes orbRing/);
+  assert.match(css, /@keyframes auraDrift/);
+  assert.match(css, /@keyframes panelGlow/);
   assert.match(css, /\.window-chrome/);
   assert.match(css, /-webkit-app-region: drag/);
   assert.match(css, /prefers-reduced-motion/);
@@ -67,6 +76,14 @@ test("desktop renderer keeps the main client surface minimal", async () => {
   assert.match(app, /已生成交接报告/);
   assert.match(app, /暂无调用/);
   assert.match(app, /发送任务后这里会显示操作记录/);
+  assert.match(app, /"zh-CN"/);
+  assert.match(app, /currentProject: "当前项目"/);
+  assert.match(app, /connectChatGPT: "连接 ChatGPT"/);
+  assert.match(app, /languageToggle: "EN"/);
+  assert.match(app, /currentProject: "Current Project"/);
+  assert.match(app, /connectChatGPT: "Connect ChatGPT"/);
+  assert.match(app, /reportedTitle: "Handoff Report Created"/);
+  assert.match(app, /languageToggle: "中文"/);
   assert.match(app, /mcp:connect-or-refresh/);
   assert.match(app, /handoff:create-report/);
   assert.match(app, /command:list/);
