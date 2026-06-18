@@ -47,6 +47,10 @@ test("help lists beginner guidance commands", async () => {
   assert.match(io.output(), /cgn mcp tunnel/);
   assert.match(io.output(), /cgn mcp serve/);
   assert.match(io.output(), /cgn mcp config/);
+  assert.match(io.output(), /cgn projects add <path>/);
+  assert.match(io.output(), /cgn projects list/);
+  assert.match(io.output(), /cgn auth rotate/);
+  assert.match(io.output(), /cgn sessions revoke/);
   assert.match(io.output(), /cgn agent start/);
   assert.match(io.output(), /cgn handoff/);
   assert.match(io.output(), /cgn done/);
@@ -57,6 +61,39 @@ test("help lists beginner guidance commands", async () => {
   assert.match(io.output(), /--mode auto/);
 });
 
+test("projects auth and sessions commands use the global config", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-projects-cli-"));
+  const configDir = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-projects-config-"));
+  const previous = process.env.CGN_CONFIG_HOME;
+  process.env.CGN_CONFIG_HOME = configDir;
+  try {
+    const addIo = createIo(cwd);
+    await main(["projects", "add", "."], addIo);
+    assert.match(addIo.output(), /Project added:/);
+    assert.match(addIo.output(), new RegExp(escapeRegExp(cwd)));
+
+    const listIo = createIo(cwd);
+    await main(["projects", "list"], listIo);
+    assert.match(listIo.output(), /Allowed projects:/);
+    assert.match(listIo.output(), new RegExp(escapeRegExp(cwd)));
+
+    const authIo = createIo(cwd);
+    await main(["auth", "rotate"], authIo);
+    assert.match(authIo.output(), /Auth token rotated/);
+    assert.match(authIo.output(), /cgn_/);
+
+    const revokeIo = createIo(cwd);
+    await main(["sessions", "revoke"], revokeIo);
+    assert.match(revokeIo.output(), /Bridge sessions revoked/);
+  } finally {
+    if (previous === undefined) {
+      delete process.env.CGN_CONFIG_HOME;
+    } else {
+      process.env.CGN_CONFIG_HOME = previous;
+    }
+  }
+});
+
 test("start dry-run explains the desktop client", async () => {
   const io = createIo(await fs.mkdtemp(path.join(os.tmpdir(), "cgn-start-dry-run-")));
 
@@ -64,7 +101,7 @@ test("start dry-run explains the desktop client", async () => {
 
   assert.match(io.output(), /ChatGPT Native Bridge Desktop/);
   assert.match(io.output(), /连接 ChatGPT/);
-  assert.match(io.output(), /开始复核/);
+  assert.match(io.output(), /开始处理/);
   assert.match(io.output(), /交给 Codex/);
   assert.match(io.output(), /Pro 辅助规划/);
 

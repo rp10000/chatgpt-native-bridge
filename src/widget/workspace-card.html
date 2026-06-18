@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ChatGPT Native Bridge</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --yellow: #ffc400;
+      --ink: #171121;
+      --panel: #241a34;
+      --panel-2: #2f2443;
+      --cream: #fff8cf;
+      --muted: #c9bdd7;
+      --blue: #3d5afe;
+      --pink: #ff4fa3;
+      --green: #6ff7b2;
+      --red: #ff6b6b;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: transparent;
+      color: var(--cream);
+    }
+
+    .card {
+      border: 1px solid rgba(255, 196, 0, .34);
+      border-radius: 8px;
+      overflow: hidden;
+      background: linear-gradient(135deg, var(--ink), var(--panel) 60%, #422042);
+      box-shadow: 0 12px 28px rgba(23, 17, 33, .24);
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      background: rgba(255, 196, 0, .08);
+    }
+
+    .title {
+      min-width: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.25;
+    }
+
+    .project {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .status {
+      flex: 0 0 auto;
+      border-radius: 999px;
+      padding: 5px 9px;
+      color: var(--ink);
+      background: var(--green);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .status.warn {
+      background: var(--yellow);
+    }
+
+    .status.error {
+      color: #fff;
+      background: var(--red);
+    }
+
+    .body {
+      padding: 14px;
+    }
+
+    .summary {
+      margin: 0;
+      color: #fff;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .pill {
+      border-radius: 8px;
+      padding: 8px 10px;
+      background: rgba(255, 255, 255, .08);
+      color: var(--cream);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    ul {
+      display: grid;
+      gap: 6px;
+      margin: 12px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    li {
+      border-left: 3px solid var(--blue);
+      border-radius: 6px;
+      padding: 7px 9px;
+      background: rgba(255, 255, 255, .07);
+      color: var(--cream);
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .empty {
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <article class="card" id="card">
+    <div class="header">
+      <div class="title">
+        <h1 id="title">ChatGPT Native Bridge</h1>
+        <div class="project" id="project">Waiting for tool result</div>
+      </div>
+      <div class="status" id="status">ready</div>
+    </div>
+    <div class="body">
+      <p class="summary" id="summary">This card will update after ChatGPT calls a bridge tool.</p>
+      <div class="meta" id="meta"></div>
+      <ul id="items"></ul>
+    </div>
+  </article>
+
+  <script>
+    const titleEl = document.getElementById("title");
+    const projectEl = document.getElementById("project");
+    const statusEl = document.getElementById("status");
+    const summaryEl = document.getElementById("summary");
+    const metaEl = document.getElementById("meta");
+    const itemsEl = document.getElementById("items");
+
+    function renderFromStructuredContent(data) {
+      const card = data && data.card ? data.card : fallbackCard(data);
+      renderCard(card);
+    }
+
+    function fallbackCard(data) {
+      return {
+        title: "Bridge result",
+        status: "ok",
+        projectName: "",
+        summary: data ? "Tool result is available. The desktop client has the full details." : "Waiting for tool result.",
+        items: data ? Object.keys(data).slice(0, 6).map((key) => `${key}: ${shortValue(data[key])}`) : []
+      };
+    }
+
+    function renderCard(card) {
+      titleEl.textContent = card.title || "Bridge result";
+      projectEl.textContent = card.projectName || "Local workspace";
+      statusEl.textContent = card.status || "ok";
+      statusEl.className = `status ${card.status || ""}`;
+      summaryEl.textContent = card.summary || "Tool result is available.";
+
+      metaEl.textContent = "";
+      addMeta("kind", card.kind);
+      addMeta("command", card.command);
+      if (card.exitCode !== undefined && card.exitCode !== null) addMeta("exit", String(card.exitCode));
+      addMeta("inbox", card.inboxId);
+
+      itemsEl.textContent = "";
+      const list = [...(card.changedFiles || []), ...(card.items || [])].slice(0, 10);
+      if (!list.length) {
+        const item = document.createElement("li");
+        item.className = "empty";
+        item.textContent = "No extra details.";
+        itemsEl.append(item);
+      } else {
+        for (const text of list) {
+          const item = document.createElement("li");
+          item.textContent = String(text);
+          itemsEl.append(item);
+        }
+      }
+
+      if (window.openai && typeof window.openai.notifyIntrinsicHeight === "function") {
+        window.openai.notifyIntrinsicHeight();
+      }
+    }
+
+    function addMeta(label, value) {
+      if (!value) return;
+      const pill = document.createElement("div");
+      pill.className = "pill";
+      pill.textContent = `${label}: ${value}`;
+      metaEl.append(pill);
+    }
+
+    function shortValue(value) {
+      if (value === null || value === undefined) return "";
+      if (typeof value === "string") return value.slice(0, 80);
+      if (Array.isArray(value)) return `${value.length} item(s)`;
+      if (typeof value === "object") return "object";
+      return String(value);
+    }
+
+    window.addEventListener("message", (event) => {
+      if (event.source !== window.parent) return;
+      const message = event.data;
+      if (!message || message.jsonrpc !== "2.0") return;
+      if (message.method === "ui/notifications/tool-result") {
+        renderFromStructuredContent(message.params && message.params.structuredContent);
+      }
+    }, { passive: true });
+
+    renderFromStructuredContent(window.openai && window.openai.toolOutput);
+  </script>
+</body>
+</html>

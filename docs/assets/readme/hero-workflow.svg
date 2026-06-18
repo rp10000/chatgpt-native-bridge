@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">ChatGPT Native Bridge workflow</title>
+  <desc id="desc">A visual workflow showing Codex, the desktop client, ChatGPT with MCP cards, and Codex continuing from a written reply.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffc400"/>
+      <stop offset="58%" stop-color="#ffcf24"/>
+      <stop offset="100%" stop-color="#265cff"/>
+    </linearGradient>
+    <linearGradient id="dark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#241836"/>
+      <stop offset="100%" stop-color="#100d19"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="22" stdDeviation="22" flood-color="#120e1c" flood-opacity=".25"/>
+    </filter>
+    <filter id="greenGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feDropShadow dx="0" dy="0" stdDeviation="12" flood-color="#31d98b" flood-opacity=".9"/>
+    </filter>
+    <marker id="arrowBlue" markerWidth="18" markerHeight="18" refX="15" refY="9" orient="auto">
+      <path d="M3 3 L15 9 L3 15 Z" fill="#265cff"/>
+    </marker>
+    <style>
+      .title { font: 900 54px Arial, sans-serif; fill: #120e1c; }
+      .subtitle { font: 600 23px Arial, sans-serif; fill: rgba(18,14,28,.72); }
+      .h { font: 800 28px Arial, sans-serif; fill: #fff4ce; }
+      .h-dark { font: 900 28px Arial, sans-serif; fill: #120e1c; }
+      .small { font: 700 18px Arial, sans-serif; fill: rgba(255,244,206,.75); }
+      .small-dark { font: 700 18px Arial, sans-serif; fill: rgba(18,14,28,.74); }
+      .code { font: 500 18px Consolas, monospace; fill: #d8ffe9; }
+      .panel { fill: url(#dark); stroke: rgba(255,244,206,.18); stroke-width: 2; }
+      .white { fill: #fff9e6; stroke: rgba(18,14,28,.16); stroke-width: 2; }
+      .line { stroke: #265cff; stroke-width: 8; marker-end: url(#arrowBlue); }
+      .pill { fill: rgba(49,217,139,.14); stroke: #31d98b; stroke-width: 2; }
+      .pink { fill: #ff3d94; }
+      .blue { fill: #265cff; }
+      .yellow { fill: #ffc400; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <circle cx="1370" cy="120" r="210" fill="#ff3d94" opacity=".18"/>
+  <circle cx="122" cy="760" r="280" fill="#120e1c" opacity=".10"/>
+
+  <text class="title" x="92" y="105">ChatGPT Native Bridge</text>
+  <text class="subtitle" x="96" y="145">Desktop client + MCP workspace + ChatGPT cards + Codex hand-back</text>
+
+  <g filter="url(#shadow)">
+    <rect class="panel" x="82" y="220" width="345" height="470" rx="18"/>
+    <circle cx="116" cy="253" r="8" fill="#ff5c84"/>
+    <circle cx="142" cy="253" r="8" fill="#ffd36b"/>
+    <circle cx="168" cy="253" r="8" fill="#31d98b"/>
+    <text class="h" x="112" y="315">Codex local</text>
+    <text class="small" x="112" y="354">final local execution</text>
+    <rect x="112" y="396" width="260" height="58" rx="8" fill="rgba(255,255,255,.07)" stroke="rgba(255,255,255,.13)"/>
+    <text class="code" x="132" y="432">$ cgn start</text>
+    <rect class="pill" x="112" y="484" width="260" height="70" rx="10"/>
+    <text class="code" x="132" y="524">tests + commit + push</text>
+    <text class="small" x="112" y="607">Codex still owns the repo.</text>
+    <text class="small" x="112" y="635">No hidden ChatGPT session.</text>
+  </g>
+
+  <line class="line" x1="437" y1="455" x2="518" y2="455"/>
+
+  <g filter="url(#shadow)">
+    <rect class="panel" x="528" y="190" width="545" height="530" rx="22"/>
+    <text class="h" x="568" y="255">Desktop client</text>
+    <text class="small" x="568" y="290">beginner-friendly control room</text>
+    <rect x="568" y="330" width="460" height="100" rx="12" fill="rgba(49,217,139,.13)" stroke="#31d98b" stroke-width="2"/>
+    <circle cx="610" cy="380" r="19" fill="#31d98b" filter="url(#greenGlow)"/>
+    <text class="h" x="650" y="370">Connected and ready</text>
+    <text class="small" x="650" y="400">live status, calls, commands, changes</text>
+    <rect x="568" y="470" width="212" height="82" rx="10" fill="rgba(255,255,255,.08)"/>
+    <text class="small" x="596" y="505">Tool calls</text>
+    <text class="code" x="596" y="532">read, bash, write</text>
+    <rect x="816" y="470" width="212" height="82" rx="10" fill="rgba(255,255,255,.08)"/>
+    <text class="small" x="844" y="505">Codex inbox</text>
+    <text class="code" x="844" y="532">reply.md</text>
+    <rect x="568" y="590" width="460" height="64" rx="10" fill="#ffc400"/>
+    <text class="h-dark" x="651" y="631">Hand to Codex</text>
+  </g>
+
+  <line class="line" x1="1085" y1="455" x2="1164" y2="455"/>
+
+  <g filter="url(#shadow)">
+    <rect class="white" x="1175" y="220" width="345" height="470" rx="20"/>
+    <text class="h-dark" x="1215" y="300">ChatGPT web</text>
+    <text class="small-dark" x="1215" y="336">uses MCP tools visibly</text>
+    <rect x="1215" y="382" width="260" height="78" rx="12" fill="#ecfeff" stroke="#265cff" stroke-width="2"/>
+    <text class="small-dark" x="1240" y="416">Workspace card</text>
+    <text class="small-dark" x="1240" y="442">Project opened</text>
+    <rect x="1215" y="490" width="260" height="78" rx="12" fill="#fff0f8" stroke="#ff3d94" stroke-width="2"/>
+    <text class="small-dark" x="1240" y="524">Command card</text>
+    <text class="small-dark" x="1240" y="550">Output summarized</text>
+    <rect x="1215" y="598" width="260" height="58" rx="12" fill="#e9fff4" stroke="#31d98b" stroke-width="2"/>
+    <text class="small-dark" x="1240" y="634">Write back to Codex</text>
+  </g>
+</svg>

@@ -10,11 +10,24 @@ const { isInitializeRequest, ListToolsRequestSchema } = require("@modelcontextpr
 const z = require("zod/v4");
 
 const { createMcpToolRegistry, runMcpTool } = require("./mcp-tools");
+const {
+  registerChatGptCardResource,
+  withChatGptCardToolConfig
+} = require("./chatgpt-card");
+const { getProjectIdentity } = require("./project-identity");
+const { createWorkspaceEngine } = require("./workspace/engine");
 
 function createBridgeMcpServer(options = {}) {
   const cwd = options.cwd || process.cwd();
   const pkg = require("../package.json");
-  const tools = createMcpToolRegistry({ cwd });
+  const workspaceEngine = options.workspaceEngine || createWorkspaceEngine({ cwd });
+  const tools = createMcpToolRegistry({
+    cwd,
+    workspaceEngine
+  }).map((tool) => ({
+    ...tool,
+    config: withChatGptCardToolConfig(tool.name, tool.config)
+  }));
   const server = new McpServer(
     {
       name: "chatgpt-native-bridge",
@@ -22,10 +35,11 @@ function createBridgeMcpServer(options = {}) {
     },
     {
       instructions:
-        "Use these tools to inspect a local Codex project, create bounded ChatGPT handoffs, and submit final Markdown advice back to Codex. Do not request secrets or arbitrary shell execution."
+        "Use these tools to inspect and work in a local Codex project, create bounded ChatGPT handoffs, and submit final Markdown advice back to Codex. Do not request secrets; use workspace write, edit, and bash tools only for the active local task."
     }
   );
 
+  registerChatGptCardResource(server);
   for (const tool of tools) {
     server.registerTool(tool.name, tool.config, async (args) => toMcpResult(await tool.handler(args || {})));
   }
@@ -45,6 +59,9 @@ async function startMcpHttpServer(options = {}) {
   const cwd = options.cwd || process.cwd();
   const host = options.host || "127.0.0.1";
   const port = Number(options.port ?? 47832);
+  const pkg = require("../package.json");
+  const project = getProjectIdentity(cwd);
+  const workspaceEngine = options.workspaceEngine || createWorkspaceEngine({ cwd });
   const sessions = new Map();
 
   const httpServer = http.createServer(async (req, res) => {
@@ -63,6 +80,11 @@ async function startMcpHttpServer(options = {}) {
         JSON.stringify({
           ok: true,
           name: "chatgpt-native-bridge",
+          version: pkg.version,
+          packageVersion: pkg.version,
+          projectRoot: project.projectRoot,
+          projectName: project.projectName,
+          projectFingerprint: project.projectFingerprint,
           endpoint: "/mcp",
           actionOpenApi: "/action/openapi.json"
         })
@@ -161,7 +183,7 @@ async function startMcpHttpServer(options = {}) {
         return;
       }
 
-      const mcpServer = createBridgeMcpServer({ cwd });
+      const mcpServer = createBridgeMcpServer({ cwd, workspaceEngine });
       let transport;
       transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => randomUUID(),

@@ -5,6 +5,14 @@ const { demoText } = require("./demo");
 const { formatDoctorReport, getDoctorReport } = require("./doctor");
 const { codexGuideText } = require("./guide");
 const { launchDesktopClient } = require("./desktop-client");
+const {
+  addAllowedRoot,
+  listAllowedRoots,
+  listSessions,
+  removeAllowedRoot,
+  revokeSessions,
+  rotateAuthToken
+} = require("./global-config");
 const { formatHandoffSummary, getHandoffSummary } = require("./handoff-summary");
 const { importReply } = require("./import-reply");
 const { initProject } = require("./init");
@@ -121,6 +129,29 @@ async function main(argv, io = defaultIo()) {
       stdout: io.stdout,
       stderr: io.stderr
     });
+    return;
+  }
+
+  if (command === "projects") {
+    const [subcommand, ...projectRest] = rest;
+    await runProjectsCommand({
+      subcommand,
+      args: parseArgs(projectRest),
+      cwd: io.cwd,
+      stdout: io.stdout
+    });
+    return;
+  }
+
+  if (command === "auth") {
+    const [subcommand] = rest;
+    await runAuthCommand({ subcommand, stdout: io.stdout });
+    return;
+  }
+
+  if (command === "sessions") {
+    const [subcommand] = rest;
+    await runSessionsCommand({ subcommand, stdout: io.stdout });
     return;
   }
 
@@ -250,6 +281,81 @@ async function main(argv, io = defaultIo()) {
   throw new Error(`Unknown command "${command}". Run cgn --help.`);
 }
 
+async function runProjectsCommand({ subcommand, args, cwd, stdout }) {
+  if (subcommand === "add") {
+    const target = args.positionals[0] || ".";
+    const result = await addAllowedRoot(target, { cwd });
+    stdout.write("Project added:\n");
+    stdout.write(`  ${result.project.root}\n`);
+    stdout.write(`Config:\n  ${result.configPath}\n`);
+    return;
+  }
+
+  if (subcommand === "list" || !subcommand) {
+    const result = await listAllowedRoots();
+    stdout.write("Allowed projects:\n");
+    if (!result.roots.length) {
+      stdout.write("  none\n");
+    } else {
+      for (const root of result.roots) {
+        const marker = root.canonicalRoot === result.lastSelectedProject ? "*" : "-";
+        stdout.write(`  ${marker} ${root.name}  ${root.root}\n`);
+      }
+    }
+    stdout.write(`Config:\n  ${result.configPath}\n`);
+    return;
+  }
+
+  if (subcommand === "remove") {
+    const target = args.positionals[0];
+    if (!target) throw new Error("Usage: cgn projects remove <path>");
+    const result = await removeAllowedRoot(target, { cwd });
+    stdout.write(result.removed ? "Project removed:\n" : "Project was not in the allowed list:\n");
+    stdout.write(`  ${result.project.root}\n`);
+    stdout.write(`Config:\n  ${result.configPath}\n`);
+    return;
+  }
+
+  throw new Error('Unknown projects command. Run "cgn projects add <path>" or "cgn projects list".');
+}
+
+async function runAuthCommand({ subcommand, stdout }) {
+  if (subcommand !== "rotate") {
+    throw new Error('Unknown auth command. Run "cgn auth rotate".');
+  }
+  const result = await rotateAuthToken();
+  stdout.write("Auth token rotated.\n");
+  stdout.write("Copy this token now; it is not stored in plain text:\n");
+  stdout.write(`  ${result.token}\n`);
+  stdout.write(`Token id: ${result.tokenId}\n`);
+  stdout.write(`Config:\n  ${result.configPath}\n`);
+}
+
+async function runSessionsCommand({ subcommand, stdout }) {
+  if (subcommand === "list" || !subcommand) {
+    const result = await listSessions();
+    stdout.write("Bridge sessions:\n");
+    stdout.write(`  revokedAt: ${result.revokedAt || "never"}\n`);
+    if (!result.sessions.length) {
+      stdout.write("  active: none\n");
+    } else {
+      for (const session of result.sessions) stdout.write(`  - ${session.id || "unknown"}\n`);
+    }
+    stdout.write(`Config:\n  ${result.configPath}\n`);
+    return;
+  }
+
+  if (subcommand === "revoke") {
+    const result = await revokeSessions();
+    stdout.write("Bridge sessions revoked.\n");
+    stdout.write(`  revokedAt: ${result.revokedAt}\n`);
+    stdout.write(`Config:\n  ${result.configPath}\n`);
+    return;
+  }
+
+  throw new Error('Unknown sessions command. Run "cgn sessions list" or "cgn sessions revoke".');
+}
+
 function parseArgs(args) {
   const flags = {};
   const positionals = [];
@@ -373,6 +479,12 @@ Usage:
   cgn mcp tunnel
   cgn mcp serve --host 127.0.0.1 --port 47832
   cgn mcp config
+  cgn projects add <path>
+  cgn projects list
+  cgn projects remove <path>
+  cgn auth rotate
+  cgn sessions list
+  cgn sessions revoke
   cgn agent start --task "Review current project"
   cgn agent status
   cgn agent result
@@ -392,13 +504,16 @@ Request types:
   ${VALID_TYPES.join(", ")}
 
 Safety:
-  No OpenAI API key, no hidden endpoints, no ChatGPT scraping, no arbitrary shell execution.
+  No OpenAI API key, no hidden endpoints, no ChatGPT scraping.
+  MCP workspace tools can run shell commands and edit files in the connected project.
+  REST Actions fallback does not expose shell or source-file write tools.
 
 Desktop:
   cgn start    Open ChatGPT Native Bridge Desktop.
   cgn desktop  Alias for cgn start.
   cgn client   Alias for cgn start.
-  The desktop client has three main actions: connect ChatGPT, start review, and hand back to Codex.
+  The desktop client has four main actions: connect ChatGPT, start work, view results, and hand back to Codex.
+  Connect ChatGPT reuses a live project Server URL before creating a new one.
   GPT-5.5 Pro is a helper path that only uses packaged context.
 
 Fallback GUI:
@@ -415,6 +530,14 @@ MCP:
   cgn mcp serve   Start the local MCP server at http://127.0.0.1:47832/mcp.
   cgn mcp config  Print ChatGPT/Codex MCP connection hints.
   cgn mcp doctor  Check the local bridge and list MCP tools.
+
+Projects:
+  cgn projects add .        Allow ChatGPT to open this project workspace.
+  cgn projects list         Show allowed project roots.
+  cgn projects remove .     Remove a project from the allowed list.
+  cgn auth rotate           Rotate the local owner token metadata.
+  cgn sessions list         Show local bridge sessions.
+  cgn sessions revoke       Revoke local bridge sessions.
 
 Local agent:
   cgn agent start   Start a bounded local MCP agent run and write the result to Codex inbox.

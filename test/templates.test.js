@@ -70,13 +70,15 @@ test("readme files keep expected section breaks", async () => {
   const readme = await fs.readFile(path.join(__dirname, "..", "README.md"), "utf8");
   const readmeZh = await fs.readFile(path.join(__dirname, "..", "README.zh-CN.md"), "utf8");
 
-  assert.ok(readme.includes("\n## Main Path\n"));
-  assert.ok(readme.includes("\n## Paths\n"));
-  assert.ok(readme.includes("\n## First-Time Setup\n"));
+  assert.ok(readme.includes("\n## Quick Start\n"));
+  assert.ok(readme.includes("\n## CLI\n"));
+  assert.ok(readme.includes("\n## MCP Workspace\n"));
+  assert.ok(readme.includes("\n## Pro Helper\n"));
   assert.ok(readme.includes("\n## Fallback\n"));
-  assert.ok(readmeZh.includes("\n## 主路径\n"));
-  assert.ok(readmeZh.includes("\n## 三条路径\n"));
-  assert.ok(readmeZh.includes("\n## 第一次设置\n"));
+  assert.ok(readmeZh.includes("\n## 快速开始\n"));
+  assert.ok(readmeZh.includes("\n## 常用命令\n"));
+  assert.ok(readmeZh.includes("\n## MCP 工作区\n"));
+  assert.ok(readmeZh.includes("\n## Pro 辅助规划\n"));
   assert.ok(readmeZh.includes("\n## 备用方式\n"));
 });
 
@@ -88,7 +90,7 @@ test("ci workflow keeps valid nested YAML shape", async () => {
   assert.ok(ci.includes("\n  pull_request:\n"));
   assert.ok(ci.includes("\n    strategy:\n"));
   assert.ok(ci.includes("\n      matrix:\n"));
-  assert.ok(ci.includes("node-version: [18, 20, 22]"));
+  assert.ok(ci.includes("node-version: [20, 22, 24]"));
 });
 
 function countLines(text) {

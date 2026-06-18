@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="640" viewBox="0 0 1320 640" role="img" aria-labelledby="title desc">
+  <title id="title">Desktop live status</title>
+  <desc id="desc">The desktop client shows project connection, ChatGPT calls, commands, file changes, and Codex write-back.</desc>
+  <defs>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feDropShadow dx="0" dy="0" stdDeviation="14" flood-color="#31d98b" flood-opacity=".9"/>
+    </filter>
+    <style>
+      .bg { fill: #ffc400; }
+      .side { fill: #151021; }
+      .main { fill: #fff4ce; }
+      .card { fill: #211733; stroke: rgba(255,255,255,.15); stroke-width: 2; }
+      .text { font: 700 22px Arial, sans-serif; fill: #fff4ce; }
+      .muted { font: 600 17px Arial, sans-serif; fill: rgba(255,244,206,.72); }
+      .dark { font: 800 24px Arial, sans-serif; fill: #120e1c; }
+      .dark2 { font: 600 17px Arial, sans-serif; fill: rgba(18,14,28,.74); }
+      .code { font: 500 17px Consolas, monospace; fill: #d8ffe9; }
+      .ok { fill: #31d98b; }
+      .blue { fill: #265cff; }
+      .pink { fill: #ff3d94; }
+    </style>
+  </defs>
+  <rect class="bg" width="1320" height="640"/>
+  <rect class="side" x="50" y="50" width="420" height="540" rx="18"/>
+  <circle cx="92" cy="88" r="9" fill="#ff5c84"/>
+  <circle cx="122" cy="88" r="9" fill="#ffd36b"/>
+  <circle cx="152" cy="88" r="9" fill="#31d98b"/>
+  <text class="text" x="88" y="150">Project</text>
+  <rect x="88" y="180" width="315" height="70" rx="10" fill="rgba(255,255,255,.08)" stroke="#31d98b"/>
+  <circle class="ok" cx="118" cy="215" r="9" filter="url(#glow)"/>
+  <text class="muted" x="142" y="210">chatgpt-native-bridge</text>
+  <text class="code" x="142" y="236">Connected</text>
+  <rect x="88" y="292" width="315" height="70" rx="10" fill="rgba(255,255,255,.07)"/>
+  <text class="muted" x="116" y="322">Connection</text>
+  <text class="code" x="116" y="350">ChatGPT called tools</text>
+  <rect x="88" y="394" width="315" height="70" rx="10" fill="rgba(255,255,255,.07)"/>
+  <text class="muted" x="116" y="424">Result</text>
+  <text class="code" x="116" y="452">Ready for Codex</text>
+
+  <rect class="main" x="510" y="50" width="760" height="540" rx="18"/>
+  <text class="dark" x="560" y="120">Workspace live signal</text>
+  <rect x="560" y="155" width="650" height="92" rx="12" fill="#171122" stroke="#31d98b" stroke-width="2"/>
+  <circle class="ok" cx="606" cy="201" r="20" filter="url(#glow)"/>
+  <text class="text" x="646" y="192">ChatGPT is using local tools</text>
+  <text class="muted" x="646" y="223">Calls, commands, changes, and write-back appear below.</text>
+
+  <rect class="card" x="560" y="292" width="300" height="102" rx="12"/>
+  <text class="text" x="592" y="328">Tool calls</text>
+  <text class="code" x="592" y="360">read_repo_file  ok</text>
+  <rect class="card" x="910" y="292" width="300" height="102" rx="12"/>
+  <text class="text" x="942" y="328">Command output</text>
+  <text class="code" x="942" y="360">npm test  exit 0</text>
+  <rect class="card" x="560" y="430" width="300" height="102" rx="12"/>
+  <text class="text" x="592" y="466">File changes</text>
+  <text class="code" x="592" y="498">README.md  M</text>
+  <rect class="card" x="910" y="430" width="300" height="102" rx="12"/>
+  <text class="text" x="942" y="466">Codex write-back</text>
+  <text class="code" x="942" y="498">reply.md ready</text>
+</svg>

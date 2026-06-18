@@ -1,10 +1,10 @@
 # MCP setup
 
-`chatgpt-native-bridge` now defaults to the desktop client for GPT-5.5 Pro clipboard relay. This page covers the optional MCP path for ChatGPT modes that can use Apps/tools.
+`chatgpt-native-bridge` uses MCP as the main path for ChatGPT modes that can use Apps/tools. The desktop client is the beginner entry point; this page documents the lower-level MCP commands.
 
-The bridge runs a local MCP server that lets ChatGPT inspect bounded project context, create handoff files, read the current diff, and submit final Markdown advice back to Codex.
+The bridge runs a local MCP server that lets ChatGPT inspect bounded project context, search and list the workspace, read project instructions, read the current diff, use workspace read/write/edit/bash tools, and submit final Markdown advice back to Codex.
 
-Codex still executes locally. ChatGPT does not get arbitrary shell access.
+Codex still owns final review, tests, commit, and push. The REST Actions fallback does not expose shell or source-file write tools.
 
 ## One-command Codex install
 
@@ -74,6 +74,24 @@ cgn mcp trace
 ```
 
 The ChatGPT UI can show the app as selected before any tool call happens. `cgn mcp wait` watches the local audit log and confirms whether a real MCP call arrived.
+
+## ChatGPT web cards
+
+When ChatGPT supports MCP Apps UI for the current chat, these tools render compact cards in the ChatGPT web conversation:
+
+```text
+open_workspace
+bash
+write
+edit
+show_changes
+write_to_codex
+submit_reply_to_codex
+```
+
+The cards summarize the project, command exit code, changed files, and Codex write-back id. They are display-only. They do not add browser automation, hidden ChatGPT calls, or extra local permissions.
+
+If you do not see cards, the tools can still work. The most common causes are account/workspace rollout, Developer Mode support, stale app metadata, or a ChatGPT mode that can call tools but does not render MCP Apps UI. Refresh the app tools or recreate the app with the latest `https://.../mcp` URL, then test again.
 
 ## Connection reality
 
@@ -197,6 +215,18 @@ Do not use hidden ChatGPT endpoints, browser scraping, localStorage extraction, 
 | `agent_stop` | Cancel a running local agent task. |
 | `submit_reply_to_codex` | Save ChatGPT's final Markdown advice into the local inbox. |
 | `write_to_codex` | Alias for `submit_reply_to_codex` when ChatGPT looks for a write-back action. |
+| `list_workspaces` | List allowed project roots and the runtime project. |
+| `open_workspace` | Open the current project or an allowed project workspace. |
+| `workspace_status` | Return the open workspace state. |
+| `list_directory` | List files and folders in the open workspace. |
+| `search_workspace` | Search safe text files in the open workspace. |
+| `read_project_instructions` | Read `AGENTS.md`, `CLAUDE.md`, and `README.md` when available. |
+| `read` | Read a bounded text file inside the open workspace. |
+| `write` | Create or overwrite a text file inside the open workspace. |
+| `edit` | Apply hash-checked text edits inside the open workspace. |
+| `bash` | Run a shell command inside the open workspace. |
+| `command_history` | Read recent shell commands and truncated output previews. |
+| `show_changes` | Return git status, diff summary, recent operations, and command history. |
 
 ## Expected loop
 

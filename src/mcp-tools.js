@@ -4,6 +4,10 @@ const path = require("node:path");
 const z = require("zod/v4");
 
 const { createAsk, VALID_TYPES } = require("./ask");
+const {
+  withChatGptCardResult,
+  withChatGptCardToolConfig
+} = require("./chatgpt-card");
 const { ensureDir, toPosix } = require("./fs-utils");
 const { getGitDiff, getGitStatus } = require("./git");
 const { getHandoffSummary } = require("./handoff-summary");
@@ -18,9 +22,15 @@ const {
 const { resolveRunId } = require("./id");
 const { inspectCandidate, sensitivePathReason } = require("./secret-guard");
 const { getStatus } = require("./status");
+const {
+  WORKSPACE_TOOL_NAMES,
+  createWorkspaceMcpTools
+} = require("./workspace/mcp-tools");
+const { createWorkspaceEngine } = require("./workspace/engine");
 
 const DEFAULT_MAX_BYTES = 200 * 1024;
 const MAX_LISTED_FILES = 200;
+const WORKSPACE_ENGINES = new Map();
 const TOOL_NAMES = [
   "review_current_project",
   "bridge_status",
@@ -35,12 +45,13 @@ const TOOL_NAMES = [
   "agent_read_result",
   "agent_stop",
   "submit_reply_to_codex",
-  "write_to_codex"
+  "write_to_codex",
+  ...WORKSPACE_TOOL_NAMES
 ];
 
 function createMcpToolRegistry(options = {}) {
   const cwd = path.resolve(options.cwd || process.cwd());
-  return [
+  const bridgeTools = [
     {
       name: "review_current_project",
       config: {
@@ -455,6 +466,28 @@ function createMcpToolRegistry(options = {}) {
       handler: createSubmitReplyHandler(cwd, "write_to_codex")
     }
   ];
+
+  const workspaceEngine = resolveWorkspaceEngine(cwd, options);
+
+  return [
+    ...bridgeTools,
+    ...createWorkspaceMcpTools(workspaceEngine).map((tool) => ({
+      ...tool,
+      handler: withAudit(cwd, tool.name, tool.handler)
+    }))
+  ].map((tool) => ({
+    ...tool,
+    config: withChatGptCardToolConfig(tool.name, tool.config),
+    handler: async (args = {}) => withChatGptCardResult(tool.name, await tool.handler(args), args, { cwd })
+  }));
+}
+
+function resolveWorkspaceEngine(cwd, options) {
+  if (options.workspaceEngine) return options.workspaceEngine;
+  if (!WORKSPACE_ENGINES.has(cwd)) {
+    WORKSPACE_ENGINES.set(cwd, createWorkspaceEngine({ cwd }));
+  }
+  return WORKSPACE_ENGINES.get(cwd);
 }
 
 function createSubmitReplyHandler(cwd, toolName) {
@@ -657,8 +690,10 @@ function safetySummary() {
     noApiKeyRequired: true,
     noHiddenEndpoints: true,
     noChatgptScraping: true,
-    noArbitraryShell: true,
-    writesLimitedTo: ".chatgpt-native/outbox and .chatgpt-native/inbox"
+    noArbitraryShell: false,
+    shellAccess: "MCP workspace bash tool only; REST /action fallback does not expose bash.",
+    writesLimitedTo:
+      ".chatgpt-native/outbox, .chatgpt-native/inbox, and files explicitly written through MCP workspace tools"
   };
 }
 
@@ -693,8 +728,8 @@ async function appendAudit(cwd, event) {
 function summarizeArgs(args) {
   const summary = {};
   for (const [key, value] of Object.entries(args || {})) {
-    if (key === "markdown") {
-      summary.markdownBytes = Buffer.byteLength(String(value || ""), "utf8");
+    if (["markdown", "content", "oldText", "newText", "command"].includes(key)) {
+      summary[`${key}Bytes`] = Buffer.byteLength(String(value || ""), "utf8");
     } else {
       summary[key] = value;
     }

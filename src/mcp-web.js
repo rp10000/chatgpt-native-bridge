@@ -7,6 +7,7 @@ const { pipeline } = require("node:stream/promises");
 
 const { copyToClipboard } = require("./clipboard");
 const { buildActionOpenApi } = require("./mcp-server");
+const { getProjectIdentity } = require("./project-identity");
 
 const DEFAULT_TUNNEL_HOST = "127.0.0.1";
 const DEFAULT_TUNNEL_PORT = 47832;
@@ -334,6 +335,7 @@ async function writeActionOpenApiFile({ cwd, tunnelUrl }) {
 async function writeWebConnectionStatus({ cwd, tunnelUrl, serverUrl }) {
   const filePath = getWebConnectionStatusPath(cwd);
   await fs.mkdir(path.dirname(filePath), { recursive: true });
+  const project = getProjectIdentity(cwd);
   const status = {
     createdAt: new Date().toISOString(),
     type: "cloudflare-quick-tunnel",
@@ -341,6 +343,9 @@ async function writeWebConnectionStatus({ cwd, tunnelUrl, serverUrl }) {
     tunnelUrl,
     serverUrl,
     actionOpenApiUrl: `${tunnelUrl}/action/openapi.json`,
+    projectRoot: project.projectRoot,
+    projectName: project.projectName,
+    projectFingerprint: project.projectFingerprint,
     note: "Cloudflare quick tunnel URLs are temporary. If this command is restarted, update or recreate the ChatGPT app with the latest serverUrl."
   };
   await fs.writeFile(filePath, `${JSON.stringify(status, null, 2)}\n`, "utf8");

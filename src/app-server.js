@@ -13,6 +13,7 @@ const {
   getLatestProRelayState,
   importProReply
 } = require("./pro-relay");
+const pkg = require("../package.json");
 
 const DEFAULT_APP_HOST = "127.0.0.1";
 const DEFAULT_APP_PORT = 47833;
@@ -69,7 +70,13 @@ async function startAppServer(options = {}) {
       }
 
       if (req.method === "GET" && url.pathname === "/health") {
-        sendJson(res, { ok: true, name: "chatgpt-native-bridge", app: "clipboard-relay-gui" });
+        sendJson(res, {
+          ok: true,
+          name: "chatgpt-native-bridge",
+          app: "clipboard-relay-gui",
+          version: pkg.version,
+          packageVersion: pkg.version
+        });
         return;
       }
 
@@ -171,20 +178,32 @@ async function getAppStatus({ cwd, watcher }) {
     const rawTrace = await getMcpTrace({ cwd, limit: 5 });
     trace = {
       webConnection: rawTrace.webConnection,
-      requestCount: rawTrace.requests.length,
-      toolCallCount: rawTrace.toolCalls.length,
-      latestRequest: rawTrace.requests.at(-1) || null,
-      latestToolCall: rawTrace.toolCalls.at(-1) || null
+      requestCount: rawTrace.requestCount,
+      toolCallCount: rawTrace.toolCallCount,
+      latestRequest: rawTrace.latestRequest,
+      latestToolCall: rawTrace.latestToolCall,
+      latestSuccessfulToolCall: rawTrace.latestSuccessfulToolCall,
+      latestFailedToolCall: rawTrace.latestFailedToolCall,
+      hasHttpAccess: rawTrace.hasHttpAccess,
+      hasToolsCallRequest: rawTrace.hasToolsCallRequest,
+      lastError: rawTrace.lastError
     };
   } catch (error) {
     trace = { error: error.message };
   }
+  const requiredMissing = doctor.checks.filter((check) => check.required !== false && !check.ok);
 
   return {
     cwd,
+    packageVersion: pkg.version,
     doctor: {
-      ready: !doctor.checks.some((check) => check.required !== false && !check.ok),
+      ready: requiredMissing.length === 0,
       checks: doctor.checks
+    },
+    setupState: {
+      ready: requiredMissing.length === 0,
+      label: requiredMissing.length === 0 ? "本地设置就绪" : "本地设置待补全",
+      missingRequired: requiredMissing.map((check) => check.name || check.id || check.label || "unknown")
     },
     handoff: {
       pending: status.pending,

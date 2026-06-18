@@ -155,7 +155,9 @@ Tools:
 ${TOOL_NAMES.map((name) => `  - ${name}`).join("\n")}
 
 Security:
-  No API key. No hidden endpoints. No ChatGPT scraping. No arbitrary shell execution.
+  No API key. No hidden endpoints. No ChatGPT scraping.
+  MCP workspace tools can run shell commands and edit files in the connected project.
+  REST Actions fallback does not expose shell or source-file write tools.
   File reads are bounded and block .env, keys, cookies, sessions, .git, node_modules, and secret-like content.
 `;
 }

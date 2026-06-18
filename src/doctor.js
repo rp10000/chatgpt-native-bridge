@@ -53,7 +53,7 @@ function formatDoctorReport(report) {
 
 function isSupportedNode(version) {
   const major = Number(String(version).split(".")[0]);
-  return Number.isFinite(major) && major >= 18;
+  return Number.isFinite(major) && major >= 20;
 }
 
 async function fileCheck(label, filePath) {

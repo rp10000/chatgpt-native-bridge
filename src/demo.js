@@ -7,7 +7,7 @@ function demoText() {
 2. Main path:
    - click 连接 ChatGPT
    - create or refresh the ChatGPT tool when the connection is ready
-   - click 开始复核
+   - click 开始处理
    - paste the copied request into ChatGPT
    - wait for ChatGPT to write back
    - click 交给 Codex and paste the copied sentence into Codex

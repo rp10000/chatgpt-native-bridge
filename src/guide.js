@@ -13,7 +13,7 @@ research, image direction, or diff review:
 
 1. First check whether .chatgpt-native/inbox has a new reply. If yes, read reply.md and CODEX_READ_THIS.md and continue locally.
 2. Prefer the desktop main path. Run or ask me to run npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn start.
-3. In the client, use 连接 ChatGPT -> 开始复核 -> 交给 Codex.
+3. In the client, use 连接 ChatGPT -> 开始处理 -> 交给 Codex.
 4. Treat ChatGPT Thinking/MCP as the path that can read the local project and write back to Codex.
 5. Treat GPT-5.5 Pro only as packaged-context planning. Pro cannot directly read local files through this bridge.
 6. If MCP is missing in Codex, run or ask me to run npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp, then restart Codex or open a new thread.
@@ -35,7 +35,7 @@ function chineseCodexGuide() {
 
 1. 先检查 .chatgpt-native/inbox 是否有新回复。如果有，读取 reply.md 和 CODEX_READ_THIS.md，然后继续本地执行。
 2. 优先使用桌面客户端主路径。运行或提示我运行 npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn start。
-3. 在客户端里按：连接 ChatGPT -> 开始复核 -> 交给 Codex。
+3. 在客户端里按：连接 ChatGPT -> 开始处理 -> 交给 Codex。
 4. ChatGPT Thinking/MCP 才是真正读取本地项目并写回 Codex 的路径。
 5. GPT-5.5 Pro 只作为打包上下文后的辅助规划，不能直接读取本地文件。
 6. 如果 Codex 没有安装 MCP，运行或提示我运行 npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp，然后重启 Codex 或打开新线程。

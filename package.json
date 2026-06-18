@@ -1,6 +1,6 @@
 {
   "name": "chatgpt-native-bridge",
-  "version": "0.7.2",
+  "version": "1.0.0",
   "description": "A local desktop ChatGPT bridge for Codex.",
   "license": "MIT",
   "repository": {
@@ -43,9 +43,10 @@
     "handoff"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "dependencies": {
+    "@modelcontextprotocol/ext-apps": "^1.7.4",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "zod": "^4.4.3"
   },

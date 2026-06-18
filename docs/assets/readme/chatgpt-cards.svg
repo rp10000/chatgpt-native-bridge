@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="640" viewBox="0 0 1320 640" role="img" aria-labelledby="title desc">
+  <title id="title">ChatGPT web cards</title>
+  <desc id="desc">ChatGPT web can display tool result cards for workspace, commands, changes, and Codex write-back.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f7f7f4; }
+      .window { fill: #ffffff; stroke: #d8dee8; stroke-width: 2; }
+      .bubble { fill: #f1f5f9; }
+      .card { fill: #151021; stroke: rgba(18,14,28,.16); stroke-width: 2; }
+      .card2 { fill: #fff4ce; stroke: #265cff; stroke-width: 2; }
+      .title { font: 900 34px Arial, sans-serif; fill: #120e1c; }
+      .dark { font: 800 24px Arial, sans-serif; fill: #fff4ce; }
+      .muted { font: 600 17px Arial, sans-serif; fill: rgba(255,244,206,.72); }
+      .text { font: 650 18px Arial, sans-serif; fill: #120e1c; }
+      .code { font: 500 16px Consolas, monospace; fill: #d8ffe9; }
+      .ok { fill: #31d98b; }
+      .pink { fill: #ff3d94; }
+      .blue { fill: #265cff; }
+    </style>
+  </defs>
+  <rect class="bg" width="1320" height="640"/>
+  <text class="title" x="90" y="88">ChatGPT web cards</text>
+  <text class="text" x="92" y="122">Tool results stay visible in the ChatGPT conversation.</text>
+  <rect class="window" x="250" y="150" width="820" height="420" rx="22"/>
+  <rect x="250" y="150" width="820" height="64" rx="22" fill="#fff"/>
+  <text class="text" x="600" y="190">ChatGPT</text>
+  <rect class="bubble" x="310" y="250" width="690" height="56" rx="14"/>
+  <text class="text" x="340" y="285">Use chatgpt-native-bridge to review this project.</text>
+  <rect class="card" x="310" y="340" width="205" height="130" rx="14"/>
+  <circle class="ok" cx="342" cy="374" r="12"/>
+  <text class="dark" x="366" y="382">Workspace</text>
+  <text class="muted" x="338" y="422">Project opened</text>
+  <text class="code" x="338" y="448">README.md</text>
+  <rect class="card" x="560" y="340" width="205" height="130" rx="14"/>
+  <circle class="blue" cx="592" cy="374" r="12"/>
+  <text class="dark" x="616" y="382">Command</text>
+  <text class="muted" x="588" y="422">Exit code 0</text>
+  <text class="code" x="588" y="448">npm test</text>
+  <rect class="card" x="810" y="340" width="205" height="130" rx="14"/>
+  <circle class="pink" cx="842" cy="374" r="12"/>
+  <text class="dark" x="866" y="382">Codex</text>
+  <text class="muted" x="838" y="422">Reply written</text>
+  <text class="code" x="838" y="448">inbox/reply.md</text>
+</svg>

@@ -9,14 +9,29 @@ async function getMcpTrace({ cwd = process.cwd(), limit = DEFAULT_TRACE_LIMIT } 
   const root = path.resolve(cwd);
   const requestPath = getRequestAuditPath(root);
   const toolPath = getToolAuditPath(root);
+  const requests = await readJsonlTail(requestPath, limit);
+  const toolCalls = (await readJsonlTail(toolPath, limit)).filter((event) => event.toolName);
+  const latestRequest = requests.at(-1) || null;
+  const latestToolCall = toolCalls.at(-1) || null;
+  const latestSuccessfulToolCall = [...toolCalls].reverse().find((event) => event.ok !== false) || null;
+  const latestFailedToolCall = [...toolCalls].reverse().find((event) => event.ok === false) || null;
 
   return {
     root,
     requestPath,
     toolPath,
     webConnection: await readWebConnectionStatus({ cwd: root }),
-    requests: await readJsonlTail(requestPath, limit),
-    toolCalls: (await readJsonlTail(toolPath, limit)).filter((event) => event.toolName)
+    requests,
+    toolCalls,
+    requestCount: requests.length,
+    toolCallCount: toolCalls.length,
+    latestRequest,
+    latestToolCall,
+    latestSuccessfulToolCall,
+    latestFailedToolCall,
+    hasHttpAccess: Boolean(latestRequest),
+    hasToolsCallRequest: requests.some((event) => event.rpcMethod === "tools/call"),
+    lastError: latestFailedToolCall ? latestFailedToolCall.error || "Tool call failed" : ""
   };
 }
 

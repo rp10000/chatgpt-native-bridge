@@ -6,6 +6,7 @@ const test = require("node:test");
 
 const { formatAppDryRun, startAppServer } = require("../src/app-server");
 const { PRO_REPLY_END, PRO_REPLY_START } = require("../src/pro-relay");
+const pkg = require("../package.json");
 
 test("formatAppDryRun explains GUI URL and safety boundary", () => {
   const text = formatAppDryRun({ host: "127.0.0.1", port: 47833 });
@@ -33,9 +34,11 @@ test("GUI server health, status, pro-pack, and manual import work", async () => 
   try {
     const health = await getJson(`${server.url}/health`);
     assert.equal(health.ok, true);
+    assert.equal(health.packageVersion, pkg.version);
 
     const status = await getJson(`${server.url}/api/status`);
     assert.equal(status.cwd, cwd);
+    assert.equal(status.packageVersion, pkg.version);
     assert.equal(Array.isArray(status.doctor.checks), true);
     assert.equal(status.relay.latest, null);
 

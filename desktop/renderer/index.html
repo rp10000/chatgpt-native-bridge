@@ -7,74 +7,158 @@
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
+  <div class="window-chrome" aria-label="窗口控制">
+    <div class="window-drag"></div>
+    <div class="window-controls">
+      <button id="windowMinimize" class="window-control" type="button" aria-label="最小化">-</button>
+      <button id="windowMaximize" class="window-control" type="button" aria-label="最大化">□</button>
+      <button id="windowClose" class="window-control close" type="button" aria-label="关闭">×</button>
+    </div>
+  </div>
   <main class="shell">
-    <header class="topbar">
-      <img class="avatar" src="../assets/avatar.png" alt="">
-      <div class="title-block">
-        <h1>ChatGPT Native Bridge</h1>
-        <p id="projectPath">正在读取项目...</p>
-      </div>
-    </header>
-
-    <section class="status-grid" aria-label="当前状态">
-      <div class="tile">
-        <span>连接</span>
-        <strong id="bridgeState">未连接</strong>
-      </div>
-      <div class="tile">
-        <span>回复</span>
-        <strong id="replyState">暂无</strong>
-      </div>
-      <div class="tile">
-        <span>Codex</span>
-        <strong id="codexState">检查中</strong>
-      </div>
-      <div class="tile">
-        <span>Pro</span>
-        <strong id="proState">辅助</strong>
-      </div>
-    </section>
-
-    <section class="panel primary">
-      <p class="eyebrow">主流程</p>
-      <h2 id="nextActionTitle">连接 ChatGPT</h2>
-      <p id="nextActionText">先连接 ChatGPT 工具。连接后，让 ChatGPT 复核当前项目并写回 Codex。</p>
-
-      <div class="actions three-step">
-        <button id="connectChatGPT">连接 ChatGPT</button>
-        <button class="secondary" id="copyChatGPTPrompt">开始复核</button>
-        <button class="ghost" id="copyCodex">交给 Codex</button>
-      </div>
-    </section>
-
-    <section class="panel">
-      <details>
-        <summary>Pro 辅助规划</summary>
-        <p class="hint">Pro 不能直接读取本地项目，只能根据客户端复制过去的上下文做规划。</p>
-        <label for="taskInput">给 Pro 的任务</label>
-        <textarea id="taskInput">基于下面的项目上下文，给 Codex 一个简洁、可执行的下一步计划。如果上下文不足，请明确说上下文不足。</textarea>
-        <div class="actions">
-          <button class="secondary" id="proPlan">复制 Pro 上下文</button>
-          <button class="ghost" id="startProWatch">等待 Pro 回复</button>
+    <aside class="sidebar">
+      <header class="topbar">
+        <img class="avatar" src="../assets/avatar.png" alt="">
+        <div class="title-block">
+          <h1>ChatGPT Native Bridge</h1>
+          <p class="subtitle">本地工作区</p>
         </div>
+      </header>
 
-        <label for="manualReply">手动粘贴 Pro 回复</label>
-        <textarea id="manualReply"></textarea>
-        <div class="actions">
-          <button class="ghost" id="manualImport">导入 Pro 回复</button>
-          <button class="ghost" id="openChatGPT">打开 ChatGPT</button>
+      <section class="project-panel" aria-label="项目列表">
+        <div class="project-head">
+          <span>项目</span>
+          <button class="text-button" id="selectProject">选择项目</button>
         </div>
-      </details>
-    </section>
+        <div id="projectList" class="project-list">
+          <div class="project-row project-state-disconnected">
+            <span class="project-dot" aria-hidden="true"></span>
+            <div class="project-copy">
+              <strong>正在读取项目...</strong>
+              <span>请稍等</span>
+            </div>
+          </div>
+        </div>
+      </section>
 
-    <section class="panel">
-      <details>
-        <summary>诊断</summary>
-        <div class="actions">
-          <button class="ghost" id="selectProject">选择项目</button>
+      <section class="status-grid" aria-label="当前状态">
+        <div class="tile">
+          <span>连接</span>
+          <strong id="bridgeState">未连接</strong>
         </div>
-        <pre id="diagnostics">准备就绪。</pre>
-      </details>
+        <div class="tile">
+          <span>命令</span>
+          <strong id="commandState">暂无命令</strong>
+        </div>
+        <div class="tile">
+          <span>结果</span>
+          <strong id="replyState">暂无结果</strong>
+        </div>
+        <div class="tile">
+          <span>Codex</span>
+          <strong id="codexState">检查中</strong>
+        </div>
+      </section>
+
+      <section class="panel primary">
+        <p class="eyebrow">主流程</p>
+        <h2 id="nextActionTitle">连接 ChatGPT</h2>
+        <p id="nextActionText">连接当前项目后，在 ChatGPT 里选择这个工具开始处理。</p>
+        <div class="actions four-step">
+          <button id="connectChatGPT">连接 ChatGPT</button>
+          <button class="secondary" id="copyChatGPTPrompt">开始处理</button>
+          <button class="ghost" id="viewResults">查看结果</button>
+          <button class="ghost" id="copyCodex">交给 Codex</button>
+        </div>
+        <p class="hint">ChatGPT 网页端卡片已启用；不支持时会显示普通工具结果。</p>
+      </section>
+
+      <section class="panel">
+        <details>
+          <summary>备用规划</summary>
+          <p class="hint">Pro 只能读取这里打包的上下文，不能直接读取本地项目。</p>
+          <label for="taskInput">任务</label>
+          <textarea id="taskInput">基于下面的项目上下文，给 Codex 一个简洁、可执行的下一步计划。如果上下文不足，请明确说明。</textarea>
+          <p id="proSummary" class="hint">尚未打包备用上下文。</p>
+          <div class="actions">
+            <button class="secondary" id="proPlan">打包备用上下文</button>
+            <button class="ghost" id="copyLatestProPack">重新复制</button>
+            <button class="ghost" id="startProWatch">等待回复</button>
+          </div>
+          <label for="manualReply">手动导入回复</label>
+          <textarea id="manualReply"></textarea>
+          <div class="actions">
+            <button class="ghost" id="manualImport">导入回复</button>
+          </div>
+        </details>
+      </section>
+
+      <section class="panel">
+        <details>
+          <summary>诊断</summary>
+          <pre id="diagnostics">准备就绪。</pre>
+        </details>
+      </section>
+    </aside>
+
+    <section class="workspace" aria-label="工作区时间线">
+      <header class="workspace-head">
+        <div>
+          <p class="eyebrow">工作区</p>
+          <h2 id="workspaceTitle">等待连接</h2>
+        </div>
+        <span id="workspaceBadge" class="pill">未连接</span>
+      </header>
+
+      <section id="workspaceSignal" class="workspace-signal signal-disconnected" aria-live="polite">
+        <span class="signal-orb" aria-hidden="true"></span>
+        <div>
+          <strong id="signalTitle">还没有连接</strong>
+          <p id="signalText">先连接当前项目，ChatGPT 才能调用本地工具。</p>
+        </div>
+      </section>
+
+      <section class="timeline-panel">
+        <h3>当前任务</h3>
+        <ol id="timelineList" class="timeline">
+          <li class="timeline-idle">等待 ChatGPT 调用工具</li>
+        </ol>
+      </section>
+
+      <section class="result-grid">
+        <article class="result-panel is-empty" data-panel="tool-calls">
+          <h3>ChatGPT 调用记录</h3>
+          <div id="toolCallsEmpty" class="panel-empty">
+            <strong>等待 ChatGPT 调用工具</strong>
+            <p>连接就绪后，在 ChatGPT 里发起处理，这里会出现工具调用。</p>
+          </div>
+          <pre id="toolCalls">暂无调用。</pre>
+        </article>
+        <article class="result-panel is-empty" data-panel="commands">
+          <h3>命令输出</h3>
+          <div id="commandOutputEmpty" class="panel-empty">
+            <strong>还没有执行本地命令</strong>
+            <p>ChatGPT 只有调用 shell 工具时，这里才会出现命令输出。</p>
+          </div>
+          <pre id="commandOutput">暂无命令。</pre>
+        </article>
+        <article class="result-panel is-empty" data-panel="changes">
+          <h3>文件变更</h3>
+          <div id="changeSummaryEmpty" class="panel-empty">
+            <strong>还没有文件变更</strong>
+            <p>这不代表连接失败，只是当前还没有产生改动。</p>
+          </div>
+          <pre id="changeSummary">暂无变更。</pre>
+        </article>
+        <article class="result-panel is-empty" data-panel="reply">
+          <h3>写回 Codex</h3>
+          <div id="replyPreviewEmpty" class="panel-empty">
+            <strong>还没有写回结果</strong>
+            <p>ChatGPT 完成后，这里会显示给 Codex 继续执行的内容。</p>
+          </div>
+          <pre id="replyPreview">暂无写回。</pre>
+        </article>
+      </section>
     </section>
   </main>
   <script src="./app.js"></script>

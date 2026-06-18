@@ -4,102 +4,157 @@
 
 English | [简体中文](README.zh-CN.md)
 
-ChatGPT Native Bridge is a local desktop bridge for Codex.
+**ChatGPT Native Bridge is a desktop bridge between ChatGPT, Codex, and your local project.**
 
-Codex edits files and runs tests locally. ChatGPT reviews, plans, and writes advice back through a bounded local bridge. GPT-5.5 Pro can still help with deeper planning, but only from the context the client packages for it.
+It gives ChatGPT a visible MCP workspace so it can inspect files, run commands, edit the connected project, show result cards in ChatGPT, and write the final answer back for Codex to continue locally.
 
-![chatgpt-native-bridge usage preview](docs/assets/marketing/hero.svg)
+![ChatGPT Native Bridge workflow](docs/assets/readme/hero-workflow.svg)
 
-## Main Path
+## Quick Start
 
-Run this inside the project you want Codex to work on:
+Run this inside the project you want to work on:
 
 ```bash
 npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn start
 ```
 
-The desktop client shows three main actions:
+Then use the desktop client:
 
 ```text
-Connect ChatGPT -> Start Review -> Hand to Codex
+Select project -> Connect ChatGPT -> Start work -> View results -> Hand to Codex
 ```
 
-In the client:
+The desktop client is the beginner path. The CLI is still available for setup, diagnostics, automation, and advanced users.
 
-1. Click `连接 ChatGPT`.
-2. Create or refresh the ChatGPT tool when the connection is ready.
-3. Click `开始复核` and paste the copied request into ChatGPT.
-4. Wait for ChatGPT to write back.
-5. Click `交给 Codex` and paste the copied sentence into Codex.
+## What You See
 
-## Paths
+The client is not just a launcher. It shows whether ChatGPT really reached the bridge, which tools it called, what shell commands ran, what files changed, and what was written back to Codex.
 
-Main path:
+![Desktop live status](docs/assets/readme/desktop-status.svg)
+
+Status is based on local evidence:
+
+- MCP request log
+- MCP tool-call audit log
+- command history
+- git status and diff
+- Codex inbox replies
+
+## ChatGPT Web Cards
+
+When your ChatGPT mode supports MCP Apps UI, bridge results appear as compact cards in the ChatGPT conversation.
+
+![ChatGPT web cards](docs/assets/readme/chatgpt-cards.svg)
+
+Cards are attached to the main workspace tools:
+
+- open workspace
+- run command
+- write or edit file
+- show changes
+- write back to Codex
+
+If cards are not supported by your current ChatGPT account or mode, the tools still return normal structured results.
+
+## MCP Workspace
+
+After the project is connected, ChatGPT can use MCP workspace tools:
 
 ```text
-ChatGPT Thinking/MCP reads the project -> writes back to Codex
+list_workspaces
+open_workspace
+list_directory
+search_workspace
+read_project_instructions
+read
+write
+edit
+bash
+command_history
+show_changes
+write_to_codex
 ```
 
-Helper path:
+The current project can be opened directly. Other projects must be allowed first:
+
+```bash
+cgn projects add D:\path\to\project
+```
+
+## Safety Boundary
+
+![Safety boundary](docs/assets/readme/safety-boundary.svg)
+
+The bridge is local-first and visible:
+
+- No OpenAI API key required.
+- No browser extension.
+- No ChatGPT web scraping.
+- No hidden ChatGPT endpoints.
+- No automatic commit or push.
+- Shell commands and file changes are shown in the desktop client.
+- Codex still does the final local review, tests, commit, and push.
+
+Treat the temporary MCP tunnel URL as a sensitive local capability URL.
+
+## CLI
+
+```bash
+cgn start
+cgn setup --mcp
+cgn projects add .
+cgn projects list
+cgn auth rotate
+cgn sessions list
+cgn mcp connect --yes --open
+cgn mcp trace
+cgn mcp doctor
+cgn doctor
+```
+
+## Pro Helper
+
+ChatGPT Pro does not directly read your local project through this bridge unless it can call the MCP app in that chat.
+
+Use the desktop client's Pro helper only for packaged-context planning:
 
 ```text
-Pro 辅助规划 -> clipboard relay
+Client copies a project summary -> You paste it into Pro -> Client imports the marked reply
 ```
 
-Pro cannot directly read local files. It only sees the context copied by the desktop client.
+For real local file access, use the Thinking/MCP path.
 
 ## Fallback
 
-Fallback path:
+If MCP is unavailable:
 
 ```bash
 cgn handoff --task "Review this project"
 cgn done
 ```
 
-## First-Time Setup
+This creates a visible Markdown handoff and imports the ChatGPT reply back into `.chatgpt-native/inbox`.
 
-For Codex MCP setup in a project:
+## Development
 
-```bash
-npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn setup --mcp
-```
-
-Restart Codex if prompted.
-
-## Useful Commands
-
-```bash
-cgn start
-cgn desktop
-cgn client
-cgn setup --mcp
-cgn mcp connect --yes --open
-cgn mcp trace
-cgn handoff
-cgn done
-cgn doctor
-```
-
-## Safety
-
-- No OpenAI API key required.
-- No browser plugin.
-- No ChatGPT web scraping.
-- No hidden ChatGPT endpoints.
-- No arbitrary shell execution.
-- No automatic commit or push.
-
-## Desktop Development
+Requires Node.js 20 or newer.
 
 ```bash
 npm install
+npm test
 npm run desktop:dev
 npm run desktop:pack
 ```
 
 The npm package keeps the CLI lightweight. Desktop installers are intended for GitHub Releases.
 
-## Status
+## Current Status
 
-`v0.7.0` makes Thinking/MCP the main path for real local project review, and keeps GPT-5.5 Pro as packaged-context planning only.
+`v1.0.0` includes:
+
+- Desktop client
+- MCP workspace tools
+- shell and file-change audit visibility
+- ChatGPT web cards
+- Codex inbox write-back
+- Markdown handoff fallback

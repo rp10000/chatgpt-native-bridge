@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="560" viewBox="0 0 1320 560" role="img" aria-labelledby="title desc">
+  <title id="title">Safety boundary</title>
+  <desc id="desc">The bridge uses visible MCP tools, logs shell and file changes, and never uses hidden ChatGPT endpoints.</desc>
+  <defs>
+    <style>
+      .bg { fill: #120e1c; }
+      .safe { fill: rgba(49,217,139,.12); stroke: #31d98b; stroke-width: 3; }
+      .no { fill: rgba(255,61,148,.12); stroke: #ff3d94; stroke-width: 3; }
+      .title { font: 900 38px Arial, sans-serif; fill: #fff4ce; }
+      .h { font: 900 26px Arial, sans-serif; fill: #fff4ce; }
+      .text { font: 700 19px Arial, sans-serif; fill: rgba(255,244,206,.78); }
+      .code { font: 500 17px Consolas, monospace; fill: #d8ffe9; }
+      .bad { font: 500 17px Consolas, monospace; fill: #ffd4e6; }
+    </style>
+  </defs>
+  <rect class="bg" width="1320" height="560"/>
+  <text class="title" x="86" y="86">Clear local boundary</text>
+  <rect class="safe" x="86" y="130" width="520" height="340" rx="18"/>
+  <text class="h" x="130" y="190">Allowed through MCP</text>
+  <text class="code" x="132" y="244">read project files</text>
+  <text class="code" x="132" y="286">edit connected workspace</text>
+  <text class="code" x="132" y="328">run shell with audit log</text>
+  <text class="code" x="132" y="370">write reply.md for Codex</text>
+  <text class="text" x="132" y="424">The desktop client shows what happened.</text>
+
+  <rect class="no" x="714" y="130" width="520" height="340" rx="18"/>
+  <text class="h" x="758" y="190">Not used</text>
+  <text class="bad" x="760" y="244">no OpenAI API key required</text>
+  <text class="bad" x="760" y="286">no hidden ChatGPT endpoints</text>
+  <text class="bad" x="760" y="328">no browser scraping</text>
+  <text class="bad" x="760" y="370">no automatic commit or push</text>
+  <text class="text" x="760" y="424">Codex still reviews and finishes locally.</text>
+</svg>

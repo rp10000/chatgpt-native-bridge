@@ -8,9 +8,16 @@ const { Client } = require("@modelcontextprotocol/sdk/client/index.js");
 const { StreamableHTTPClientTransport } = require("@modelcontextprotocol/sdk/client/streamableHttp.js");
 
 const { initProject } = require("../src/init");
+const {
+  CHATGPT_CARD_MIME_TYPE,
+  CHATGPT_CARD_RESOURCE_URI,
+  readCardWidgetHtml
+} = require("../src/chatgpt-card");
 const { getMcpTrace } = require("../src/mcp-trace");
 const { TOOL_NAMES, createMcpToolRegistry, runMcpTool } = require("../src/mcp-tools");
 const { startMcpHttpServer } = require("../src/mcp-server");
+const { getProjectIdentity } = require("../src/project-identity");
+const pkg = require("../package.json");
 
 test("MCP tool list is the stable minimum bridge surface", () => {
   assert.deepEqual(TOOL_NAMES, [
@@ -27,7 +34,19 @@ test("MCP tool list is the stable minimum bridge surface", () => {
     "agent_read_result",
     "agent_stop",
     "submit_reply_to_codex",
-    "write_to_codex"
+    "write_to_codex",
+    "list_workspaces",
+    "open_workspace",
+    "workspace_status",
+    "search_workspace",
+    "list_directory",
+    "read_project_instructions",
+    "command_history",
+    "read",
+    "write",
+    "edit",
+    "bash",
+    "show_changes"
   ]);
 });
 
@@ -60,6 +79,21 @@ test("all MCP tools declare noauth for ChatGPT app discovery", () => {
     assert.deepEqual(tool.config._meta.securitySchemes, [{ type: "noauth" }], tool.name);
     assert.ok(tool.config.outputSchema, tool.name);
   }
+});
+
+test("ChatGPT card tools declare app UI metadata", () => {
+  const tools = createMcpToolRegistry({ cwd: process.cwd() });
+  const cardTools = ["open_workspace", "bash", "write", "edit", "show_changes", "submit_reply_to_codex", "write_to_codex"];
+
+  for (const name of cardTools) {
+    const tool = tools.find((item) => item.name === name);
+    assert.equal(tool.config._meta.ui.resourceUri, CHATGPT_CARD_RESOURCE_URI, name);
+    assert.equal(tool.config._meta["ui/resourceUri"], CHATGPT_CARD_RESOURCE_URI, name);
+    assert.equal(tool.config._meta["openai/outputTemplate"], CHATGPT_CARD_RESOURCE_URI, name);
+  }
+
+  const readTool = tools.find((item) => item.name === "read");
+  assert.equal(readTool.config._meta?.["openai/outputTemplate"], undefined);
 });
 
 test("review_current_project returns bounded project status and next action", async () => {
@@ -173,6 +207,9 @@ test("MCP writeback works without a prior handoff", async () => {
   );
 
   assert.match(reply.id, /mcp-reply/);
+  assert.equal(reply.card.kind, "codex");
+  assert.equal(reply.card.status, "ok");
+  assert.equal(reply.card.inboxId, reply.id);
   assert.equal(
     await fs.readFile(path.join(cwd, ".chatgpt-native", "inbox", reply.id, "reply.md"), "utf8"),
     "## Codex next actions\n- Continue from MCP review.\n"
@@ -235,6 +272,34 @@ test("HTTP MCP server can initialize and list bridge tools", async () => {
   }
 });
 
+test("HTTP MCP health exposes the current package version", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-mcp-health-"));
+  await initProject({ cwd });
+  const server = await startMcpHttpServer({ cwd, port: 0 });
+  const identity = getProjectIdentity(cwd);
+
+  try {
+    const response = await fetch(server.healthUrl);
+    assert.equal(response.status, 200);
+    const health = await response.json();
+    assert.equal(health.name, "chatgpt-native-bridge");
+    assert.equal(health.version, pkg.version);
+    assert.equal(health.packageVersion, pkg.version);
+    assert.equal(health.projectRoot, identity.projectRoot);
+    assert.equal(health.projectName, identity.projectName);
+    assert.equal(health.projectFingerprint, identity.projectFingerprint);
+  } finally {
+    await server.close();
+  }
+});
+
+test("project fingerprints differ by project root", async () => {
+  const one = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-fingerprint-one-"));
+  const two = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-fingerprint-two-"));
+
+  assert.notEqual(getProjectIdentity(one).projectFingerprint, getProjectIdentity(two).projectFingerprint);
+});
+
 test("HTTP MCP raw tools list includes ChatGPT app descriptor metadata", async () => {
   const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-mcp-http-raw-"));
   await initProject({ cwd });
@@ -249,9 +314,46 @@ test("HTTP MCP raw tools list includes ChatGPT app descriptor metadata", async (
     const reviewProject = listed.tools.find((tool) => tool.name === "review_current_project");
     assert.deepEqual(reviewProject.securitySchemes, [{ type: "noauth" }]);
     assert.deepEqual(reviewProject._meta.securitySchemes, [{ type: "noauth" }]);
+
+    const bash = listed.tools.find((tool) => tool.name === "bash");
+    assert.equal(bash._meta.ui.resourceUri, CHATGPT_CARD_RESOURCE_URI);
+    assert.equal(bash._meta["openai/outputTemplate"], CHATGPT_CARD_RESOURCE_URI);
   } finally {
     await server.close();
   }
+});
+
+test("HTTP MCP exposes the ChatGPT card UI resource", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-mcp-resource-"));
+  await initProject({ cwd });
+  const server = await startMcpHttpServer({ cwd, port: 0 });
+  const client = new Client({ name: "cgn-resource-test", version: "0.0.0" });
+  const transport = new StreamableHTTPClientTransport(new URL(server.url));
+
+  try {
+    await client.connect(transport);
+    const resources = await client.listResources();
+    const resource = resources.resources.find((item) => item.uri === CHATGPT_CARD_RESOURCE_URI);
+    assert.ok(resource);
+    assert.equal(resource.mimeType, CHATGPT_CARD_MIME_TYPE);
+
+    const read = await client.readResource({ uri: CHATGPT_CARD_RESOURCE_URI });
+    assert.equal(read.contents[0].mimeType, CHATGPT_CARD_MIME_TYPE);
+    assert.match(read.contents[0].text, /ui\/notifications\/tool-result/);
+    assert.match(read.contents[0].text, /window\.openai/);
+  } finally {
+    await transport.close();
+    await server.close();
+  }
+});
+
+test("ChatGPT card widget supports bridge notifications and OpenAI fallback", async () => {
+  const html = await readCardWidgetHtml();
+
+  assert.match(html, /ui\/notifications\/tool-result/);
+  assert.match(html, /window\.openai/);
+  assert.match(html, /toolOutput/);
+  assert.match(html, /No extra details/);
 });
 
 test("HTTP action OpenAPI exposes GPT Actions write-back fallback", async () => {

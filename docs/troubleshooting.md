@@ -2,7 +2,7 @@
 
 ## `npx` command not found
 
-Install Node.js and npm, then retry. The package requires Node 18 or newer.
+Install Node.js and npm, then retry. The package requires Node 20 or newer.
 
 ## Package not published yet
 

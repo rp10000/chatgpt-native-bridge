@@ -10,13 +10,15 @@ No. It does not read the ChatGPT page, DOM, cookies, localStorage, IndexedDB, to
 
 ## What is the main path now?
 
-Since `v0.7.0`, the main path is:
+Since `v1.0.0`, the main path is:
 
 ```text
-连接 ChatGPT -> 开始复核 -> 交给 Codex
+Connect ChatGPT -> Start Work -> Review Changes -> Hand to Codex
 ```
 
-ChatGPT Thinking/MCP is the path that can read the local project through bounded tools and write advice back to Codex.
+ChatGPT Thinking/MCP is the path that can read the local project through workspace tools, run commands, edit files, and write advice back to Codex.
+
+When the current ChatGPT mode supports MCP Apps UI, key tool calls also show project, command, file-change, and Codex write-back cards in the ChatGPT web conversation.
 
 ## What is GPT-5.5 Pro used for?
 
@@ -36,9 +38,9 @@ The client prepares the connection address and keeps the steps short.
 
 ## Does MCP give ChatGPT shell access?
 
-No. The MCP tools are bounded. They can read project status, safe files, diffs, handoff files, and write final advice into `.chatgpt-native/inbox`.
+Yes. The MCP workspace path exposes `bash` for the connected project. It also exposes `read`, `write`, `edit`, `list_directory`, `search_workspace`, `command_history`, and `show_changes`.
 
-They do not expose arbitrary shell, arbitrary file writes, commit, or push.
+It does not automatically commit or push. The REST Actions fallback does not expose shell or source-file write tools.
 
 ## Can I still use the manual mode?
 
