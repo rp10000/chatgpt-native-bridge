@@ -6,6 +6,7 @@ const {
   formatCodexMcpInstall,
   installCodexMcp
 } = require("./codex-mcp-install");
+const { getBridgePreferences } = require("./global-config");
 const { formatDoctorReport, getDoctorReport } = require("./doctor");
 const { TOOL_NAMES } = require("./mcp-tools");
 const { startMcpHttpServer, startMcpStdio } = require("./mcp-server");
@@ -28,7 +29,12 @@ async function runMcpCommand({ subcommand, args, cwd, stdout, stderr }) {
   const port = parsePort(parsed.flags.port || DEFAULT_MCP_PORT);
 
   if (subcommand === "config") {
-    stdout.write(formatMcpConfig({ cwd: root, host, port }));
+    stdout.write(formatMcpConfig({
+      cwd: root,
+      host,
+      port,
+      preferences: await getBridgePreferences()
+    }));
     return;
   }
 
@@ -123,7 +129,7 @@ async function runMcpCommand({ subcommand, args, cwd, stdout, stderr }) {
   throw new Error(`Unknown mcp command "${subcommand}". Run "cgn mcp --help".`);
 }
 
-function formatMcpConfig({ cwd, host = DEFAULT_MCP_HOST, port = DEFAULT_MCP_PORT }) {
+function formatMcpConfig({ cwd, host = DEFAULT_MCP_HOST, port = DEFAULT_MCP_PORT, preferences = {} }) {
   const endpoint = `http://${host}:${port}/mcp`;
   const stdioConfig = {
     mcpServers: {
@@ -153,6 +159,13 @@ ${JSON.stringify(stdioConfig, null, 2)}
 
 Tools:
 ${TOOL_NAMES.map((name) => `  - ${name}`).join("\n")}
+
+Modes:
+  tool-mode: ${preferences.toolMode || "standard"}
+  shell-mode: ${preferences.shellMode || "trusted"}
+  Change with:
+    cgn config set tool-mode standard|simple
+    cgn config set shell-mode trusted|safe|off
 
 Security:
   No API key. No hidden endpoints. No ChatGPT scraping.

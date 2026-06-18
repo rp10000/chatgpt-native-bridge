@@ -5,6 +5,8 @@ const path = require("node:path");
 
 const CONFIG_VERSION = 1;
 const CONFIG_FILE = "config.json";
+const SHELL_MODES = new Set(["trusted", "safe", "off"]);
+const TOOL_MODES = new Set(["standard", "simple"]);
 
 function getGlobalConfigDir(options = {}) {
   return path.resolve(
@@ -139,6 +141,34 @@ async function listSessions(options = {}) {
   };
 }
 
+async function getBridgePreferences(options = {}) {
+  const config = await loadGlobalConfig(options);
+  return {
+    configPath: config.__configPath,
+    preferredTunnelMode: config.preferredTunnelMode,
+    shellMode: config.shellMode,
+    toolMode: config.toolMode
+  };
+}
+
+async function setBridgePreference(key, value, options = {}) {
+  const config = await loadGlobalConfig(options);
+  const normalizedKey = normalizePreferenceKey(key);
+  const normalizedValue = normalizePreferenceValue(normalizedKey, value);
+  config[normalizedKey] = normalizedValue;
+  await saveGlobalConfig(config, options);
+  return {
+    configPath: config.__configPath,
+    key: normalizedKey,
+    value: normalizedValue,
+    preferences: {
+      preferredTunnelMode: config.preferredTunnelMode,
+      shellMode: config.shellMode,
+      toolMode: config.toolMode
+    }
+  };
+}
+
 async function revokeSessions(options = {}) {
   const config = await loadGlobalConfig(options);
   config.sessions.revokedAt = new Date().toISOString();
@@ -171,6 +201,8 @@ function normalizeConfig(value, configPath) {
     lastSelectedProject: null,
     auth: null,
     preferredTunnelMode: "quick",
+    shellMode: "trusted",
+    toolMode: "standard",
     sessions: {
       revokedAt: null,
       items: []
@@ -194,11 +226,41 @@ function normalizeConfig(value, configPath) {
     ? { revokedAt: config.sessions.revokedAt || null, items: Array.isArray(config.sessions.items) ? config.sessions.items : [] }
     : { revokedAt: null, items: [] };
   if (!["quick", "manual"].includes(config.preferredTunnelMode)) config.preferredTunnelMode = "quick";
+  if (!SHELL_MODES.has(config.shellMode)) config.shellMode = "trusted";
+  if (!TOOL_MODES.has(config.toolMode)) config.toolMode = "standard";
   Object.defineProperty(config, "__configPath", {
     value: configPath,
     enumerable: false
   });
   return config;
+}
+
+function normalizePreferenceKey(key) {
+  const normalized = String(key || "").trim().toLowerCase().replace(/_/g, "-");
+  return {
+    "preferred-tunnel-mode": "preferredTunnelMode",
+    "tunnel-mode": "preferredTunnelMode",
+    "shell-mode": "shellMode",
+    "tool-mode": "toolMode",
+    "tools-mode": "toolMode"
+  }[normalized] || normalized;
+}
+
+function normalizePreferenceValue(key, value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (key === "preferredTunnelMode") {
+    if (!["quick", "manual"].includes(normalized)) throw new Error("tunnel mode must be quick or manual.");
+    return normalized;
+  }
+  if (key === "shellMode") {
+    if (!SHELL_MODES.has(normalized)) throw new Error("shell mode must be trusted, safe, or off.");
+    return normalized;
+  }
+  if (key === "toolMode") {
+    if (!TOOL_MODES.has(normalized)) throw new Error("tool mode must be standard or simple.");
+    return normalized;
+  }
+  throw new Error("Unknown config key. Use shell-mode, tool-mode, or tunnel-mode.");
 }
 
 function publicRoot(entry) {
@@ -220,6 +282,7 @@ module.exports = {
   addAllowedRoot,
   getGlobalConfigDir,
   getGlobalConfigPath,
+  getBridgePreferences,
   isRootAllowed,
   listAllowedRoots,
   listSessions,
@@ -228,5 +291,6 @@ module.exports = {
   revokeSessions,
   rotateAuthToken,
   saveGlobalConfig,
+  setBridgePreference,
   setLastSelectedProject
 };

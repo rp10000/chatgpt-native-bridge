@@ -145,11 +145,37 @@ The bridge is local-first and visible:
 
 Treat the temporary MCP tunnel URL as a sensitive local capability URL.
 
+## Modes
+
+The default stays practical for project work:
+
+```text
+tool-mode: standard
+shell-mode: trusted
+```
+
+For a simpler ChatGPT tool list:
+
+```bash
+cgn config set tool-mode simple
+```
+
+For safer shell access:
+
+```bash
+cgn config set shell-mode safe
+```
+
+`safe` allows common test, build, lint, and git inspection commands. Use `trusted` for full project shell access, or `off` to disable the workspace shell tool.
+
 ## CLI
 
 ```bash
 cgn start
 cgn desktop
+cgn config show
+cgn config set shell-mode safe
+cgn config set tool-mode simple
 cgn projects add .
 cgn projects list
 cgn mcp connect --yes --open
@@ -205,5 +231,6 @@ The npm package keeps the CLI lightweight. Desktop installers are intended for G
 - minimal desktop connector UI
 - ChatGPT web cards
 - local shell and file-change audit visibility
+- configurable shell and tool modes
 - handoff reports for Codex review
 - Pro and Markdown fallbacks

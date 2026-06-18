@@ -47,6 +47,28 @@ The GPT Actions fallback exposes the same bounded read/write capability through 
 
 Shell commands are powerful. The server starts them in the workspace directory, but shell syntax itself can still reach outside that directory. Only connect projects and ChatGPT sessions you are willing to trust with local command execution.
 
+You can choose the shell mode:
+
+```bash
+cgn config set shell-mode trusted
+cgn config set shell-mode safe
+cgn config set shell-mode off
+```
+
+- `trusted` is the default and keeps the current project shell useful.
+- `safe` allows common test, build, lint, typecheck, and git inspection commands, and blocks shell chaining, pipes, redirects, and command substitution.
+- `off` disables the workspace shell tool.
+
+You can also choose the ChatGPT tool surface:
+
+```bash
+cgn config set tool-mode standard
+cgn config set tool-mode simple
+```
+
+- `standard` is the default full bridge surface.
+- `simple` keeps the workspace loop short: open workspace, search/list/read instructions, read/write/edit, bash, show changes, and create a handoff report.
+
 Non-current projects must be added to the allowed roots list before `open_workspace` can open them:
 
 ```bash

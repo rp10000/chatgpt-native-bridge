@@ -13,6 +13,7 @@ const {
   searchWorkspace
 } = require("./discovery");
 const { editWorkspaceFile, readWorkspaceFile, writeWorkspaceFile } = require("./files");
+const { getBridgePreferences } = require("../global-config");
 const { resolveWorkspacePath } = require("./paths");
 const { createWorkspaceRegistry } = require("./registry");
 const { runWorkspaceShell } = optionalRequire("./shell-runner", {
@@ -23,6 +24,8 @@ const { runWorkspaceShell } = optionalRequire("./shell-runner", {
 
 function createWorkspaceEngine(options = {}) {
   const cwd = path.resolve(options.cwd || process.cwd());
+  const configDir = options.configDir;
+  const configuredShellMode = options.shellMode;
   const registry = createWorkspaceRegistry({ cwd, configDir: options.configDir });
 
   async function openWorkspace(args = {}) {
@@ -74,10 +77,13 @@ function createWorkspaceEngine(options = {}) {
 
   async function bash(args = {}) {
     const workspace = registry.getWorkspace(args.workspaceId);
+    const preferences = configuredShellMode
+      ? { shellMode: configuredShellMode }
+      : await getBridgePreferences({ configDir });
     const workingDirectory = args.workingDirectory
       ? (await resolveWorkspacePath(workspace.root, args.workingDirectory)).targetRealPath
       : workspace.root;
-    const result = await runWorkspaceShell({ cwd: workingDirectory, ...args });
+    const result = await runWorkspaceShell({ cwd: workingDirectory, ...args, shellMode: preferences.shellMode });
     const changes = await getWorkspaceChanges(workspace.root, { includeDiff: false });
     registry.recordOperation(args.workspaceId, {
       type: "bash",

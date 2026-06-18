@@ -7,7 +7,7 @@ const test = require("node:test");
 const { appendShellRunAuditEvent } = require("../src/workspace/audit");
 const { getWorkspaceChangeSummary } = require("../src/workspace/change-tracker");
 const { createWorkspaceEngine } = require("../src/workspace/engine");
-const { runWorkspaceShell } = require("../src/workspace/shell-runner");
+const { assertCommandAllowed, runWorkspaceShell } = require("../src/workspace/shell-runner");
 
 test("workspace shell runs a successful command", async () => {
   const cwd = await tempDir("cgn-shell-ok-");
@@ -38,6 +38,29 @@ test("workspace shell returns non-zero exits without throwing", async () => {
   assert.equal(result.exitCode, 7);
   assert.equal(result.signal, null);
   assert.equal(result.timedOut, false);
+});
+
+test("workspace shell supports safe and off modes", async () => {
+  const cwd = await tempDir("cgn-shell-mode-");
+
+  assert.doesNotThrow(() => assertCommandAllowed("npm test", "safe"));
+  assert.doesNotThrow(() => assertCommandAllowed("git status --short", "safe"));
+  assert.throws(() => assertCommandAllowed(nodeCommand("process.stdout.write('x')"), "safe"), /Safe shell mode/);
+  assert.throws(() => assertCommandAllowed("npm test; rm -rf dist", "safe"), /blocks chained commands/);
+
+  const safeGit = await runWorkspaceShell({
+    cwd,
+    command: "git status --short",
+    shellMode: "safe",
+    timeoutMs: 5000
+  });
+  assert.equal(safeGit.shellMode, "safe");
+  assert.notEqual(safeGit.exitCode, undefined);
+
+  await assert.rejects(
+    () => runWorkspaceShell({ cwd, command: "git status --short", shellMode: "off" }),
+    /disabled/
+  );
 });
 
 test("workspace shell times out non-interactive commands", async () => {
@@ -132,6 +155,21 @@ test("workspace engine records command history for bash and show_changes", async
 
   const changes = await engine.showChanges({ workspaceId, includeDiff: false });
   assert.equal(changes.recentCommands[0].stdoutPreview, "history-ok");
+});
+
+test("workspace engine applies configured safe shell mode", async () => {
+  const cwd = await tempDir("cgn-engine-shell-mode-");
+  const engine = createWorkspaceEngine({ cwd, shellMode: "safe" });
+  const { workspaceId } = await engine.openWorkspace({ root: cwd });
+
+  await assert.rejects(
+    () => engine.bash({
+      workspaceId,
+      command: nodeCommand("process.stdout.write('blocked')"),
+      shellMode: "trusted"
+    }),
+    /Safe shell mode/
+  );
 });
 
 async function tempDir(prefix) {

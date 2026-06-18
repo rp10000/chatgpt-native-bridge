@@ -47,6 +47,9 @@ test("help lists beginner guidance commands", async () => {
   assert.match(io.output(), /cgn mcp tunnel/);
   assert.match(io.output(), /cgn mcp serve/);
   assert.match(io.output(), /cgn mcp config/);
+  assert.match(io.output(), /cgn config show/);
+  assert.match(io.output(), /cgn config set shell-mode safe/);
+  assert.match(io.output(), /cgn config set tool-mode simple/);
   assert.match(io.output(), /cgn projects add <path>/);
   assert.match(io.output(), /cgn projects list/);
   assert.match(io.output(), /cgn auth rotate/);
@@ -76,6 +79,16 @@ test("projects auth and sessions commands use the global config", async () => {
     await main(["projects", "list"], listIo);
     assert.match(listIo.output(), /Allowed projects:/);
     assert.match(listIo.output(), new RegExp(escapeRegExp(cwd)));
+
+    const configSetIo = createIo(cwd);
+    await main(["config", "set", "shell-mode", "safe"], configSetIo);
+    assert.match(configSetIo.output(), /Bridge config updated/);
+    assert.match(configSetIo.output(), /safe/);
+
+    const configShowIo = createIo(cwd);
+    await main(["config", "show"], configShowIo);
+    assert.match(configShowIo.output(), /shell-mode: safe/);
+    assert.match(configShowIo.output(), /tool-mode: standard/);
 
     const authIo = createIo(cwd);
     await main(["auth", "rotate"], authIo);

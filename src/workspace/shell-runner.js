@@ -8,6 +8,7 @@ const { summarizeCommand } = require("./audit");
 const DEFAULT_TIMEOUT_MS = 30000;
 const MAX_TIMEOUT_MS = 300000;
 const DEFAULT_MAX_OUTPUT_BYTES = 64 * 1024;
+const SHELL_MODES = new Set(["trusted", "safe", "off"]);
 
 async function runWorkspaceShell(options) {
   if (!options || typeof options !== "object") throw new Error("options are required.");
@@ -17,6 +18,8 @@ async function runWorkspaceShell(options) {
   const cwd = options.cwd;
   const command = String(options.command || "").trim();
   if (!command) throw new Error("command is required.");
+  const shellMode = normalizeShellMode(options.shellMode || process.env.CGN_SHELL_MODE || "trusted");
+  assertCommandAllowed(command, shellMode);
   const timeoutMs = Math.min(Math.max(Number(options.timeoutMs || DEFAULT_TIMEOUT_MS), 1), MAX_TIMEOUT_MS);
   const maxOutputBytes = Math.max(Number(options.maxOutputBytes || DEFAULT_MAX_OUTPUT_BYTES), 1);
   const shell = resolveShell(options.shell);
@@ -32,6 +35,7 @@ async function runWorkspaceShell(options) {
   return {
     commandId: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
     shell: shell.name,
+    shellMode,
     cwd,
     ...summarizeCommand(command),
     exitCode: result.exitCode,
@@ -46,6 +50,46 @@ async function runWorkspaceShell(options) {
     stdoutHash: result.stdoutHash,
     stderrHash: result.stderrHash
   };
+}
+
+function normalizeShellMode(value) {
+  const mode = String(value || "trusted").trim().toLowerCase();
+  if (!SHELL_MODES.has(mode)) throw new Error(`Invalid shell mode: ${value}`);
+  return mode;
+}
+
+function assertCommandAllowed(command, shellMode) {
+  if (shellMode === "trusted") return;
+  if (shellMode === "off") {
+    throw new Error("Workspace shell is disabled. Set shell mode to trusted or safe to run commands.");
+  }
+
+  const normalized = command.replace(/\s+/g, " ").trim();
+  if (/[;&|<>`]/.test(normalized) || normalized.includes("$(")) {
+    throw new Error("Safe shell mode blocks chained commands, pipes, redirects, and command substitution.");
+  }
+
+  const lower = normalized.toLowerCase();
+  const allowed = [
+    /^git (status|diff|log|show|branch|rev-parse|ls-files)(\b|$)/,
+    /^npm test(\b|$)/,
+    /^npm run (test|build|lint|typecheck|check|smoke|desktop:smoke)(\b|$)/,
+    /^pnpm test(\b|$)/,
+    /^pnpm run (test|build|lint|typecheck|check|smoke)(\b|$)/,
+    /^yarn test(\b|$)/,
+    /^yarn (test|build|lint|typecheck|check)(\b|$)/,
+    /^node --test(\b|$)/,
+    /^python -m (pytest|compileall|ruff check)(\b|$)/,
+    /^py -m (pytest|compileall|ruff check)(\b|$)/,
+    /^pytest(\b|$)/,
+    /^ruff check(\b|$)/
+  ].some((pattern) => pattern.test(lower));
+
+  if (!allowed) {
+    throw new Error(
+      "Safe shell mode allows only common test, build, lint, and git inspection commands. Use trusted mode for broader shell access."
+    );
+  }
 }
 
 function resolveShell(value) {
@@ -201,5 +245,7 @@ function minimalEnv(env) {
 module.exports = {
   DEFAULT_TIMEOUT_MS,
   MAX_TIMEOUT_MS,
+  assertCommandAllowed,
+  normalizeShellMode,
   runWorkspaceShell
 };

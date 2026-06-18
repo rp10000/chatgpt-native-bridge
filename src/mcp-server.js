@@ -14,16 +14,22 @@ const {
   registerChatGptCardResource,
   withChatGptCardToolConfig
 } = require("./chatgpt-card");
+const { getBridgePreferences } = require("./global-config");
 const { getProjectIdentity } = require("./project-identity");
 const { createWorkspaceEngine } = require("./workspace/engine");
 
 function createBridgeMcpServer(options = {}) {
   const cwd = options.cwd || process.cwd();
   const pkg = require("../package.json");
-  const workspaceEngine = options.workspaceEngine || createWorkspaceEngine({ cwd });
+  const workspaceEngine = options.workspaceEngine || createWorkspaceEngine({
+    cwd,
+    configDir: options.configDir,
+    shellMode: options.shellMode
+  });
   const tools = createMcpToolRegistry({
     cwd,
-    workspaceEngine
+    workspaceEngine,
+    toolMode: options.toolMode
   }).map((tool) => ({
     ...tool,
     config: withChatGptCardToolConfig(tool.name, tool.config)
@@ -49,7 +55,8 @@ function createBridgeMcpServer(options = {}) {
 }
 
 async function startMcpStdio(options = {}) {
-  const server = createBridgeMcpServer(options);
+  const preferences = await getBridgePreferences({ configDir: options.configDir });
+  const server = createBridgeMcpServer({ ...preferences, ...options });
   const transport = new StdioServerTransport();
   await server.connect(transport);
   return { server, transport };
@@ -61,7 +68,12 @@ async function startMcpHttpServer(options = {}) {
   const port = Number(options.port ?? 47832);
   const pkg = require("../package.json");
   const project = getProjectIdentity(cwd);
-  const workspaceEngine = options.workspaceEngine || createWorkspaceEngine({ cwd });
+  const preferences = await getBridgePreferences({ configDir: options.configDir });
+  const workspaceEngine = options.workspaceEngine || createWorkspaceEngine({
+    cwd,
+    configDir: options.configDir,
+    shellMode: options.shellMode || preferences.shellMode
+  });
   const sessions = new Map();
 
   const httpServer = http.createServer(async (req, res) => {
@@ -85,6 +97,8 @@ async function startMcpHttpServer(options = {}) {
           projectRoot: project.projectRoot,
           projectName: project.projectName,
           projectFingerprint: project.projectFingerprint,
+          shellMode: options.shellMode || preferences.shellMode,
+          toolMode: options.toolMode || preferences.toolMode,
           endpoint: "/mcp",
           actionOpenApi: "/action/openapi.json"
         })
@@ -183,7 +197,12 @@ async function startMcpHttpServer(options = {}) {
         return;
       }
 
-      const mcpServer = createBridgeMcpServer({ cwd, workspaceEngine });
+      const mcpServer = createBridgeMcpServer({
+        cwd,
+        workspaceEngine,
+        toolMode: options.toolMode || preferences.toolMode,
+        shellMode: options.shellMode || preferences.shellMode
+      });
       let transport;
       transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => randomUUID(),

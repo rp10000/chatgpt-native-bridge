@@ -74,6 +74,28 @@ test("MCP tool descriptions guide the automatic ChatGPT loop", () => {
   assert.match(writeToCodex.config.description, /Compatibility alias for create_handoff_report/);
 });
 
+test("MCP simple tool mode keeps the ChatGPT workspace surface short", () => {
+  const tools = createMcpToolRegistry({ cwd: process.cwd(), toolMode: "simple" });
+  const names = tools.map((tool) => tool.name);
+
+  assert.deepEqual(names, [
+    "review_current_project",
+    "create_handoff_report",
+    "open_workspace",
+    "workspace_status",
+    "search_workspace",
+    "list_directory",
+    "read_project_instructions",
+    "read",
+    "write",
+    "edit",
+    "bash",
+    "show_changes"
+  ]);
+  assert.ok(!names.includes("agent_start_task"));
+  assert.ok(!names.includes("create_handoff"));
+});
+
 test("all MCP tools declare noauth for ChatGPT app discovery", () => {
   const tools = createMcpToolRegistry({ cwd: process.cwd() });
 
@@ -293,7 +315,32 @@ test("HTTP MCP health exposes the current package version", async () => {
     assert.equal(health.projectRoot, identity.projectRoot);
     assert.equal(health.projectName, identity.projectName);
     assert.equal(health.projectFingerprint, identity.projectFingerprint);
+    assert.equal(health.shellMode, "trusted");
+    assert.equal(health.toolMode, "standard");
   } finally {
+    await server.close();
+  }
+});
+
+test("HTTP MCP server honors configured tool and shell modes", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-mcp-modes-"));
+  await initProject({ cwd });
+  const server = await startMcpHttpServer({ cwd, port: 0, toolMode: "simple", shellMode: "safe" });
+  const client = new Client({ name: "cgn-test", version: "0.0.0" });
+  const transport = new StreamableHTTPClientTransport(new URL(server.url));
+
+  try {
+    const healthResponse = await fetch(server.healthUrl);
+    const health = await healthResponse.json();
+    assert.equal(health.shellMode, "safe");
+    assert.equal(health.toolMode, "simple");
+
+    await client.connect(transport);
+    const tools = await client.listTools();
+    assert.ok(tools.tools.some((tool) => tool.name === "open_workspace"));
+    assert.ok(!tools.tools.some((tool) => tool.name === "agent_start_task"));
+  } finally {
+    await transport.close();
     await server.close();
   }
 });

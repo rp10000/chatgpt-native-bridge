@@ -56,6 +56,35 @@ Check the local bridge setup:
 cgn mcp doctor
 ```
 
+## Modes
+
+The bridge starts in practical defaults:
+
+```text
+tool-mode: standard
+shell-mode: trusted
+```
+
+Use a shorter ChatGPT tool list when the chat keeps choosing legacy or advanced tools:
+
+```bash
+cgn config set tool-mode simple
+```
+
+Use safer shell access when you want ChatGPT limited to common checks:
+
+```bash
+cgn config set shell-mode safe
+```
+
+`shell-mode safe` allows common test, build, lint, typecheck, and git inspection commands. `shell-mode trusted` allows broader project shell access. `shell-mode off` disables the workspace shell tool.
+
+Show the current config:
+
+```bash
+cgn config show
+```
+
 ## Connect ChatGPT
 
 For the shortest ChatGPT web setup, run:

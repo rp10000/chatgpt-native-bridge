@@ -31,6 +31,21 @@ const { createWorkspaceEngine } = require("./workspace/engine");
 const DEFAULT_MAX_BYTES = 200 * 1024;
 const MAX_LISTED_FILES = 200;
 const WORKSPACE_ENGINES = new Map();
+const TOOL_MODES = new Set(["standard", "simple"]);
+const SIMPLE_TOOL_NAMES = new Set([
+  "review_current_project",
+  "create_handoff_report",
+  "open_workspace",
+  "workspace_status",
+  "read_project_instructions",
+  "search_workspace",
+  "list_directory",
+  "read",
+  "write",
+  "edit",
+  "bash",
+  "show_changes"
+]);
 const TOOL_NAMES = [
   "review_current_project",
   "bridge_status",
@@ -52,6 +67,7 @@ const TOOL_NAMES = [
 
 function createMcpToolRegistry(options = {}) {
   const cwd = path.resolve(options.cwd || process.cwd());
+  const toolMode = resolveToolMode(options.toolMode || process.env.CGN_TOOL_MODE || "standard");
   const bridgeTools = [
     {
       name: "review_current_project",
@@ -493,17 +509,28 @@ function createMcpToolRegistry(options = {}) {
 
   const workspaceEngine = resolveWorkspaceEngine(cwd, options);
 
-  return [
+  return filterToolsByMode([
     ...bridgeTools,
     ...createWorkspaceMcpTools(workspaceEngine).map((tool) => ({
       ...tool,
       handler: withAudit(cwd, tool.name, tool.handler)
     }))
-  ].map((tool) => ({
+  ], toolMode).map((tool) => ({
     ...tool,
     config: withChatGptCardToolConfig(tool.name, tool.config),
     handler: async (args = {}) => withChatGptCardResult(tool.name, await tool.handler(args), args, { cwd })
   }));
+}
+
+function resolveToolMode(value) {
+  const mode = String(value || "standard").trim().toLowerCase();
+  if (!TOOL_MODES.has(mode)) throw new Error(`Invalid tool mode: ${value}`);
+  return mode;
+}
+
+function filterToolsByMode(tools, toolMode) {
+  if (toolMode === "standard") return tools;
+  return tools.filter((tool) => SIMPLE_TOOL_NAMES.has(tool.name));
 }
 
 function resolveWorkspaceEngine(cwd, options) {
@@ -767,6 +794,8 @@ function summarizeArgs(args) {
 module.exports = {
   TOOL_NAMES,
   createMcpToolRegistry,
+  filterToolsByMode,
   readSafeTextFile,
+  resolveToolMode,
   runMcpTool
 };

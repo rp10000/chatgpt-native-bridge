@@ -7,11 +7,13 @@ const { codexGuideText } = require("./guide");
 const { launchDesktopClient } = require("./desktop-client");
 const {
   addAllowedRoot,
+  getBridgePreferences,
   listAllowedRoots,
   listSessions,
   removeAllowedRoot,
   revokeSessions,
-  rotateAuthToken
+  rotateAuthToken,
+  setBridgePreference
 } = require("./global-config");
 const { formatHandoffSummary, getHandoffSummary } = require("./handoff-summary");
 const { importReply } = require("./import-reply");
@@ -138,6 +140,16 @@ async function main(argv, io = defaultIo()) {
       subcommand,
       args: parseArgs(projectRest),
       cwd: io.cwd,
+      stdout: io.stdout
+    });
+    return;
+  }
+
+  if (command === "config") {
+    const [subcommand, ...configRest] = rest;
+    await runConfigCommand({
+      subcommand,
+      args: parseArgs(configRest),
       stdout: io.stdout
     });
     return;
@@ -279,6 +291,31 @@ async function main(argv, io = defaultIo()) {
   }
 
   throw new Error(`Unknown command "${command}". Run cgn --help.`);
+}
+
+async function runConfigCommand({ subcommand, args, stdout }) {
+  if (!subcommand || subcommand === "show" || subcommand === "list") {
+    const preferences = await getBridgePreferences();
+    stdout.write("Bridge config:\n");
+    stdout.write(`  shell-mode: ${preferences.shellMode}\n`);
+    stdout.write(`  tool-mode: ${preferences.toolMode}\n`);
+    stdout.write(`  tunnel-mode: ${preferences.preferredTunnelMode}\n`);
+    stdout.write(`Config:\n  ${preferences.configPath}\n`);
+    return;
+  }
+
+  if (subcommand === "set") {
+    const key = args.positionals[0];
+    const value = args.positionals[1];
+    if (!key || !value) throw new Error("Usage: cgn config set <shell-mode|tool-mode|tunnel-mode> <value>");
+    const result = await setBridgePreference(key, value);
+    stdout.write("Bridge config updated:\n");
+    stdout.write(`  ${key}: ${result.value}\n`);
+    stdout.write(`Config:\n  ${result.configPath}\n`);
+    return;
+  }
+
+  throw new Error('Unknown config command. Run "cgn config show" or "cgn config set shell-mode safe".');
 }
 
 async function runProjectsCommand({ subcommand, args, cwd, stdout }) {
@@ -479,6 +516,9 @@ Usage:
   cgn mcp tunnel
   cgn mcp serve --host 127.0.0.1 --port 47832
   cgn mcp config
+  cgn config show
+  cgn config set shell-mode safe
+  cgn config set tool-mode simple
   cgn projects add <path>
   cgn projects list
   cgn projects remove <path>
@@ -507,6 +547,7 @@ Safety:
   No OpenAI API key, no hidden endpoints, no ChatGPT scraping.
   MCP workspace tools can run shell commands and edit files in the connected project.
   REST Actions fallback does not expose shell or source-file write tools.
+  Configure shell/tool exposure with cgn config set shell-mode safe and cgn config set tool-mode simple.
 
 Desktop:
   cgn start    Open ChatGPT Native Bridge Desktop.
@@ -532,6 +573,9 @@ MCP:
   cgn mcp doctor  Check the local bridge and list MCP tools.
 
 Projects:
+  cgn config show          Show shell/tool/tunnel preferences.
+  cgn config set shell-mode trusted|safe|off
+  cgn config set tool-mode standard|simple
   cgn projects add .        Add a project to the desktop project list.
   cgn projects list         Show allowed project roots.
   cgn projects remove .     Remove a project from the allowed list.

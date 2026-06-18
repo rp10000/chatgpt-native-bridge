@@ -6,12 +6,14 @@ const test = require("node:test");
 
 const {
   addAllowedRoot,
+  getBridgePreferences,
   getGlobalConfigPath,
   isRootAllowed,
   listAllowedRoots,
   removeAllowedRoot,
   revokeSessions,
-  rotateAuthToken
+  rotateAuthToken,
+  setBridgePreference
 } = require("../src/global-config");
 
 test("global config stores allowed project roots without plain-text auth tokens", async () => {
@@ -49,4 +51,25 @@ test("global config removes roots and revokes sessions", async () => {
   const revoked = await revokeSessions({ configDir });
   assert.equal(revoked.revoked, true);
   assert.match(revoked.revokedAt, /^\d{4}-\d{2}-\d{2}T/);
+});
+
+test("global config stores bridge modes", async () => {
+  const configDir = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-config-modes-"));
+
+  const defaults = await getBridgePreferences({ configDir });
+  assert.equal(defaults.shellMode, "trusted");
+  assert.equal(defaults.toolMode, "standard");
+
+  const shell = await setBridgePreference("shell-mode", "safe", { configDir });
+  assert.equal(shell.value, "safe");
+
+  const tools = await setBridgePreference("tool-mode", "simple", { configDir });
+  assert.equal(tools.value, "simple");
+
+  const updated = await getBridgePreferences({ configDir });
+  assert.equal(updated.shellMode, "safe");
+  assert.equal(updated.toolMode, "simple");
+
+  await assert.rejects(() => setBridgePreference("shell-mode", "danger", { configDir }), /trusted, safe, or off/);
+  await assert.rejects(() => setBridgePreference("tool-mode", "huge", { configDir }), /standard or simple/);
 });
