@@ -17,6 +17,14 @@ Aliases:
 What it opens:
   A desktop client window.
 
+First-run flow:
+  1. 选择项目
+  2. 连接 ChatGPT
+  3. 在 ChatGPT 里开始改项目
+
+Connected message:
+  已连接。去 ChatGPT 刷新工具，然后发送这句话。
+
 Project connections:
   Each project has its own MCP connection slot. ChatGPT can only work on the
   currently selected project.

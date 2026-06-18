@@ -4,11 +4,11 @@
 
 [English](README.md) | 简体中文
 
-**连接一次 MCP，然后直接在 ChatGPT 网页端操作当前本地项目。**
+**连接一次。在 ChatGPT 网页端工作。最后交给 Codex 复核。**
 
-ChatGPT Native Bridge 会给 ChatGPT 一个可见的 MCP 工作区。ChatGPT 可以读取当前项目、修改文件、运行命令、显示网页端卡片，并生成交接报告给 Codex 最后复核。
+ChatGPT Native Bridge 通过 MCP 把当前本地项目变成 ChatGPT 网页端的工作区。你在桌面客户端选择一个项目并连接后，ChatGPT 就可以读取文件、修改文件、运行命令、显示更完整的结果卡片，并生成交接报告给 Codex 最后复核。
 
-![ChatGPT Native Bridge 工作流](docs/assets/readme/hero-workflow.svg)
+![ChatGPT Native Bridge 工作流](docs/assets/readme/v13-workflow.svg)
 
 ## 快速开始
 
@@ -18,13 +18,15 @@ ChatGPT Native Bridge 会给 ChatGPT 一个可见的 MCP 工作区。ChatGPT 可
 npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn start
 ```
 
-桌面客户端主流程：
+第一次只需要三步：
 
 ```text
-选择项目 -> 连接 ChatGPT -> 在 ChatGPT 网页端处理 -> 生成交接报告
+1. 选择项目
+2. 连接 ChatGPT
+3. 在 ChatGPT 里开始改项目
 ```
 
-桌面客户端只负责入口、连接状态和安全记录。真正的工作界面是 ChatGPT 网页端。
+桌面客户端只负责入口、连接状态、本地记录和交接报告。真正的工作界面是 ChatGPT 网页端。
 
 ## 主流程
 
@@ -75,9 +77,13 @@ npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn start
 卡片会显示：
 
 - 当前项目
+- 文件读取、目录和搜索结果
 - 命令结果
 - 文件变更
+- 变更摘要
 - 交接报告
+
+卡片会显示状态、关键数字、简短详情和下一步。它只是展示 MCP 工具结果，不增加新的执行权限。
 
 如果当前账号或模式不显示卡片，工具仍然会返回普通结构化结果，主流程不受影响。
 
@@ -137,13 +143,16 @@ cgn config set shell-mode safe
 
 报告包含：
 
-- git status
-- diff 摘要
-- 最近 MCP 工具调用
-- 最近 shell 命令
-- 修改过的文件
-- ChatGPT 说明
-- Codex 复核清单
+- 本次目标
+- ChatGPT 实际做了什么
+- 修改文件
+- 关键 diff 摘要
+- 命令和结果
+- 测试结果
+- 风险和未完成事项
+- 建议提交信息
+- ChatGPT 备注
+- Codex 复核步骤
 
 `write_to_codex` 继续保留为兼容别名，但推荐使用 `create_handoff_report`。
 

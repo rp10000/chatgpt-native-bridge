@@ -22,6 +22,10 @@ test("desktop dry-run explains the final client entry", () => {
   assert.match(text, /选择项目/);
   assert.match(text, /连接 ChatGPT/);
   assert.match(text, /生成交接报告/);
+  assert.match(text, /1\. 选择项目/);
+  assert.match(text, /2\. 连接 ChatGPT/);
+  assert.match(text, /3\. 在 ChatGPT 里开始改项目/);
+  assert.match(text, /已连接。去 ChatGPT 刷新工具，然后发送这句话。/);
   assert.match(text, /work in ChatGPT web/);
   assert.match(text, /handoff report for Codex review/);
   assert.match(text, /Each project has its own MCP connection slot/);

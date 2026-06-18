@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="760" viewBox="0 0 1600 760" role="img" aria-labelledby="title desc">
+  <title id="title">ChatGPT Native Bridge v1.3 workflow</title>
+  <desc id="desc">A simple flow showing the desktop connector, ChatGPT web cards, local file changes, handoff report, and Codex review.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffc400"/>
+      <stop offset="1" stop-color="#f8d84a"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#171121"/>
+      <stop offset="1" stop-color="#332246"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="18" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <style>
+      .title { fill: #171121; font: 800 54px Inter, Segoe UI, sans-serif; }
+      .sub { fill: #332246; font: 500 25px Inter, Segoe UI, sans-serif; }
+      .panel { fill: url(#panel); stroke: rgba(255,255,255,.18); stroke-width: 2; }
+      .label { fill: #fff8cf; font: 800 26px Inter, Segoe UI, sans-serif; }
+      .text { fill: #d8cbe8; font: 500 18px Inter, Segoe UI, sans-serif; }
+      .code { fill: #fff8cf; font: 700 18px Consolas, monospace; }
+      .chip { fill: rgba(255,255,255,.08); stroke: rgba(255,255,255,.12); }
+      .blue { fill: #3d5afe; }
+      .pink { fill: #ff4fa3; }
+      .green { fill: #6ff7b2; }
+      .arrow { stroke: #171121; stroke-width: 6; fill: none; marker-end: url(#arrow); }
+      .small { fill: #fff8cf; font: 800 15px Inter, Segoe UI, sans-serif; }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="8" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#171121"/>
+    </marker>
+  </defs>
+  <rect width="1600" height="760" rx="0" fill="url(#bg)"/>
+  <text class="title" x="90" y="94">Connect once. Work in ChatGPT web. Let Codex review.</text>
+  <text class="sub" x="92" y="138">The desktop client only connects the current project. ChatGPT reads, edits, runs checks, and shows compact result cards.</text>
+
+  <rect class="panel" x="96" y="218" width="300" height="300" rx="18"/>
+  <circle class="blue" cx="138" cy="266" r="14" filter="url(#glow)"/>
+  <text class="label" x="166" y="276">Desktop connector</text>
+  <rect class="chip" x="128" y="318" width="236" height="44" rx="10"/>
+  <text class="code" x="146" y="346">cgn start</text>
+  <text class="text" x="128" y="404">Select one local project.</text>
+  <text class="text" x="128" y="434">Connect ChatGPT.</text>
+  <text class="text" x="128" y="464">Keep status visible.</text>
+
+  <path class="arrow" d="M420 366 C470 366 500 366 546 366"/>
+
+  <rect class="panel" x="568" y="188" width="430" height="360" rx="20"/>
+  <circle class="pink" cx="612" cy="238" r="14" filter="url(#glow)"/>
+  <text class="label" x="640" y="248">ChatGPT web cards</text>
+  <rect class="chip" x="608" y="292" width="350" height="58" rx="12"/>
+  <text class="small" x="630" y="318">Workspace</text>
+  <text class="text" x="630" y="342">branch, git state, next step</text>
+  <rect class="chip" x="608" y="372" width="350" height="58" rx="12"/>
+  <text class="small" x="630" y="398">Command</text>
+  <text class="text" x="630" y="422">exit code, duration, output preview</text>
+  <rect class="chip" x="608" y="452" width="350" height="58" rx="12"/>
+  <text class="small" x="630" y="478">Changes</text>
+  <text class="text" x="630" y="502">files, diff stats, recent tool calls</text>
+
+  <path class="arrow" d="M1022 366 C1072 366 1104 366 1150 366"/>
+
+  <rect class="panel" x="1172" y="218" width="332" height="300" rx="18"/>
+  <circle class="green" cx="1216" cy="266" r="14" filter="url(#glow)"/>
+  <text class="label" x="1244" y="276">Local project</text>
+  <text class="text" x="1208" y="332">Read files</text>
+  <text class="text" x="1208" y="368">Write or edit files</text>
+  <text class="text" x="1208" y="404">Run checks</text>
+  <text class="text" x="1208" y="440">Create handoff report</text>
+
+  <rect class="panel" x="320" y="590" width="960" height="92" rx="18"/>
+  <text class="label" x="356" y="630">Handoff report for Codex</text>
+  <text class="text" x="356" y="660">Goal, actual work, modified files, commands, test results, risks, and suggested commit message.</text>
+</svg>

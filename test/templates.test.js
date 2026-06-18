@@ -76,11 +76,15 @@ test("readme files keep expected section breaks", async () => {
   assert.ok(readme.includes("\n## MCP Workspace\n"));
   assert.ok(readme.includes("\n## Pro Helper\n"));
   assert.ok(readme.includes("\n## Fallback\n"));
+  assert.ok(readme.includes("docs/assets/readme/v13-workflow.svg"));
+  assert.ok(readme.includes("Connect once. Work in ChatGPT web. Let Codex review."));
   assert.ok(readmeZh.includes("\n## 快速开始\n"));
   assert.ok(readmeZh.includes("\n## 常用命令\n"));
   assert.ok(readmeZh.includes("\n## MCP 工作区\n"));
   assert.ok(readmeZh.includes("\n## Pro 辅助规划\n"));
   assert.ok(readmeZh.includes("\n## 备用方式\n"));
+  assert.ok(readmeZh.includes("docs/assets/readme/v13-workflow.svg"));
+  assert.ok(readmeZh.includes("连接一次。在 ChatGPT 网页端工作。最后交给 Codex 复核。"));
 });
 
 test("ci workflow keeps valid nested YAML shape", async () => {

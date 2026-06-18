@@ -11,6 +11,8 @@ const { initProject } = require("../src/init");
 const {
   CHATGPT_CARD_MIME_TYPE,
   CHATGPT_CARD_RESOURCE_URI,
+  buildCardV2,
+  downgradeCardV2,
   readCardWidgetHtml
 } = require("../src/chatgpt-card");
 const { getMcpTrace } = require("../src/mcp-trace");
@@ -108,7 +110,21 @@ test("all MCP tools declare noauth for ChatGPT app discovery", () => {
 
 test("ChatGPT card tools declare app UI metadata", () => {
   const tools = createMcpToolRegistry({ cwd: process.cwd() });
-  const cardTools = ["open_workspace", "bash", "write", "edit", "show_changes", "create_handoff_report", "submit_reply_to_codex", "write_to_codex"];
+  const cardTools = [
+    "open_workspace",
+    "read_project_instructions",
+    "list_directory",
+    "search_workspace",
+    "read",
+    "write",
+    "edit",
+    "bash",
+    "command_history",
+    "show_changes",
+    "create_handoff_report",
+    "submit_reply_to_codex",
+    "write_to_codex"
+  ];
 
   for (const name of cardTools) {
     const tool = tools.find((item) => item.name === name);
@@ -117,8 +133,65 @@ test("ChatGPT card tools declare app UI metadata", () => {
     assert.equal(tool.config._meta["openai/outputTemplate"], CHATGPT_CARD_RESOURCE_URI, name);
   }
 
-  const readTool = tools.find((item) => item.name === "read");
-  assert.equal(readTool.config._meta?.["openai/outputTemplate"], undefined);
+  const bridgeStatus = tools.find((item) => item.name === "bridge_status");
+  assert.equal(bridgeStatus.config._meta?.["openai/outputTemplate"], undefined);
+});
+
+test("ChatGPT cards expose cardV2 and compatibility card summaries", () => {
+  const cwd = path.join("D:", "project", "demo-app");
+  const card = buildCardV2("bash", {
+    command: "npm test",
+    exitCode: 0,
+    durationMs: 1280,
+    stdoutPreview: "tests passed",
+    stderrPreview: "",
+    shellMode: "trusted"
+  }, { command: "npm test" }, { cwd });
+  const legacy = downgradeCardV2(card);
+
+  assert.equal(card.version, 2);
+  assert.equal(card.kind, "command");
+  assert.equal(card.project.name, "demo-app");
+  assert.equal(card.status, "ok");
+  assert.ok(card.metrics.some((metric) => metric.label === "Exit" && metric.value === "0"));
+  assert.ok(card.sections.some((section) => section.title === "Output" && section.items[0].includes("tests passed")));
+  assert.equal(card.nextAction, "Review the command output, then call show_changes when the task is complete.");
+  assert.equal(legacy.kind, "command");
+  assert.equal(legacy.command, "npm test");
+  assert.match(legacy.summary, /Command finished/);
+});
+
+test("MCP workspace tools return cardV2 for ChatGPT web cards", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-cardv2-"));
+  await fs.mkdir(path.join(cwd, "src"), { recursive: true });
+  await fs.writeFile(path.join(cwd, "AGENTS.md"), "Use tests.\n", "utf8");
+  await fs.writeFile(path.join(cwd, "src", "app.js"), "console.log('bridge');\n", "utf8");
+  await initProject({ cwd });
+
+  const opened = await runMcpTool("open_workspace", {}, { cwd });
+  const workspaceId = opened.workspaceId;
+  assert.equal(opened.cardV2.kind, "workspace");
+  assert.ok(opened.cardV2.metrics.some((metric) => metric.label === "Git"));
+
+  const instructions = await runMcpTool("read_project_instructions", { workspaceId }, { cwd });
+  assert.equal(instructions.cardV2.kind, "file");
+  assert.ok(instructions.cardV2.sections.some((section) => section.title === "Files"));
+
+  const listed = await runMcpTool("list_directory", { workspaceId, path: "." }, { cwd });
+  assert.equal(listed.cardV2.kind, "file");
+  assert.ok(listed.cardV2.metrics.some((metric) => metric.label === "Entries"));
+
+  const search = await runMcpTool("search_workspace", { workspaceId, query: "bridge" }, { cwd });
+  assert.equal(search.cardV2.kind, "search");
+  assert.ok(search.cardV2.metrics.some((metric) => metric.label === "Matches"));
+
+  const read = await runMcpTool("read", { workspaceId, path: "src/app.js" }, { cwd });
+  assert.equal(read.cardV2.kind, "file");
+  assert.ok(read.cardV2.sections.some((section) => section.title === "Read"));
+
+  const history = await runMcpTool("command_history", { workspaceId }, { cwd });
+  assert.equal(history.cardV2.kind, "command");
+  assert.ok(history.cardV2.sections.some((section) => section.title === "Recent Commands"));
 });
 
 test("review_current_project returns bounded project status and next action", async () => {
@@ -210,9 +283,23 @@ test("MCP tools create a handoff and a Codex review report", async () => {
   );
   assert.match(reply.id, /handoff-report/);
   assert.equal(await exists(reply.reportPath), true);
-  assert.match(await fs.readFile(reply.replyPath, "utf8"), /ChatGPT Native Bridge Handoff Report/);
-  assert.match(await fs.readFile(reply.replyPath, "utf8"), /Tighten the headline/);
+  const report = await fs.readFile(reply.replyPath, "utf8");
+  assert.match(report, /ChatGPT Native Bridge Handoff Report/);
+  assert.match(report, /## What ChatGPT Actually Did/);
+  assert.match(report, /## Modified Files/);
+  assert.match(report, /## Test Results/);
+  assert.match(report, /## Risks and Remaining Work/);
+  assert.match(report, /## Suggested Commit Message/);
+  assert.match(report, /Tighten the headline/);
+  assert.match(report, /No shell commands were recorded/);
+  assert.match(reply.cardV2.summary, /handoff report is ready/i);
+  assert.ok(reply.cardV2.metrics.some((metric) => metric.label === "Commands"));
+  assert.ok(reply.cardV2.sections.some((section) => section.title === "Codex Review"));
   assert.equal(await exists(reply.codexReadThisPath), true);
+  const codexPrompt = await fs.readFile(reply.codexReadThisPath, "utf8");
+  assert.match(codexPrompt, /Read the handoff report/);
+  assert.match(codexPrompt, /Inspect the actual diff/);
+  assert.match(codexPrompt, /Run relevant tests/);
 });
 
 test("MCP writeback works without a prior handoff", async () => {
@@ -403,9 +490,14 @@ test("ChatGPT card widget supports bridge notifications and OpenAI fallback", as
   const html = await readCardWidgetHtml();
 
   assert.match(html, /ui\/notifications\/tool-result/);
+  assert.match(html, /cardV2/);
+  assert.match(html, /renderCardV2/);
+  assert.match(html, /metrics/);
+  assert.match(html, /sections/);
+  assert.match(html, /nextAction/);
   assert.match(html, /window\.openai/);
   assert.match(html, /toolOutput/);
-  assert.match(html, /No extra details/);
+  assert.match(html, /No additional details/);
 });
 
 test("HTTP action OpenAPI exposes GPT Actions write-back fallback", async () => {

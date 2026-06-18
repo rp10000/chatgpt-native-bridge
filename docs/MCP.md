@@ -110,7 +110,12 @@ When ChatGPT supports MCP Apps UI for the current chat, these tools render compa
 
 ```text
 open_workspace
+read_project_instructions
+list_directory
+search_workspace
+read
 bash
+command_history
 write
 edit
 show_changes
@@ -119,7 +124,7 @@ write_to_codex
 submit_reply_to_codex
 ```
 
-The cards summarize the project, command exit code, changed files, and handoff report id. They are display-only. They do not add browser automation, hidden ChatGPT calls, or extra local permissions.
+The cards use the v1.3 `cardV2` result shape. They summarize the project, read/search results, command exit code, changed files, handoff report id, key metrics, bounded details, and the next useful action. They are display-only. They do not add browser automation, hidden ChatGPT calls, or extra local permissions.
 
 If you do not see cards, the tools can still work. The most common causes are account/workspace rollout, Developer Mode support, stale app metadata, or a ChatGPT mode that can call tools but does not render MCP Apps UI. Refresh the app tools or recreate the app with the latest `https://.../mcp` URL, then test again.
 

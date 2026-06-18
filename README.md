@@ -4,11 +4,11 @@
 
 English | [简体中文](README.zh-CN.md)
 
-**Connect MCP once, then work directly in ChatGPT web on the current local project.**
+**Connect once. Work in ChatGPT web. Let Codex review.**
 
-ChatGPT Native Bridge gives ChatGPT a visible MCP workspace for one selected project. ChatGPT can read files, edit files, run commands, show result cards, and create a handoff report for Codex review.
+ChatGPT Native Bridge turns ChatGPT web into a local project workspace through MCP. Pick one project in the desktop client, connect it, then ChatGPT can read files, edit files, run commands, show rich result cards, and create a handoff report for Codex to verify.
 
-![ChatGPT Native Bridge workflow](docs/assets/readme/hero-workflow.svg)
+![ChatGPT Native Bridge workflow](docs/assets/readme/v13-workflow.svg)
 
 ## Quick Start
 
@@ -18,13 +18,15 @@ Run this inside the project you want ChatGPT to work on:
 npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn start
 ```
 
-Use the desktop client:
+The first-run flow is only three steps:
 
 ```text
-Select project -> Connect ChatGPT -> Work in ChatGPT web -> Generate handoff report
+1. Select project
+2. Connect ChatGPT
+3. Work in ChatGPT web
 ```
 
-The desktop client is intentionally small. It only handles project selection, connection state, and local evidence. ChatGPT web is the main workspace.
+The desktop client stays small: project selection, connection state, local evidence, and handoff reports. ChatGPT web is the main workspace.
 
 ## Main Flow
 
@@ -75,10 +77,14 @@ When your ChatGPT mode supports MCP Apps UI, tool results appear as compact card
 Cards are attached to the main workspace actions:
 
 - open workspace
+- read instructions, files, directories, and search results
 - run command
 - write or edit file
+- command history
 - show changes
 - create handoff report
+
+The cards show the status, key metrics, bounded details, and the next useful action. They do not add new permissions; they only render the structured MCP tool result.
 
 If cards are not supported by your current ChatGPT account or mode, the tools still return normal structured results.
 
@@ -118,13 +124,16 @@ The current connection is project-scoped. ChatGPT cannot browse your whole compu
 
 The report includes:
 
-- git status
-- diff summary
-- recent MCP tool calls
-- recent shell commands
-- changed files
+- goal
+- what ChatGPT actually did
+- modified files
+- key diff summary
+- commands and results
+- test results
+- risks and remaining work
+- suggested commit message
 - ChatGPT notes
-- Codex review checklist
+- Codex review steps
 
 `write_to_codex` remains as a compatibility alias, but the preferred action is now `create_handoff_report`.
 
