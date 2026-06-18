@@ -10,8 +10,8 @@ const {
 } = require("./chatgpt-card");
 const { ensureDir, toPosix } = require("./fs-utils");
 const { getGitDiff, getGitStatus } = require("./git");
+const { createHandoffReport } = require("./handoff-report");
 const { getHandoffSummary } = require("./handoff-summary");
-const { importReply } = require("./import-reply");
 const {
   getAgentStatus,
   readAgentLog,
@@ -44,6 +44,7 @@ const TOOL_NAMES = [
   "agent_read_log",
   "agent_read_result",
   "agent_stop",
+  "create_handoff_report",
   "submit_reply_to_codex",
   "write_to_codex",
   ...WORKSPACE_TOOL_NAMES
@@ -56,7 +57,7 @@ function createMcpToolRegistry(options = {}) {
       name: "review_current_project",
       config: {
         title: "Review current project",
-        description: "Call this automatically when the user asks chatgpt-native-bridge to review, inspect, plan, or continue work on the current local project. It returns project status, git status, current diff when safe, and the expected next write-back step for Codex.",
+        description: "Call this automatically when the user asks chatgpt-native-bridge to review, inspect, plan, or continue work on the current local project. It returns project status, git status, current diff when safe, and the expected next handoff-report step for Codex review.",
         securitySchemes: noAuthSecuritySchemes(),
         outputSchema: looseOutputSchema(),
         inputSchema: {
@@ -98,7 +99,7 @@ function createMcpToolRegistry(options = {}) {
           diff,
           safety: safetySummary(),
           nextAction:
-            "Use this context to answer the user. Read only relevant repo files if needed, then call submit_reply_to_codex with final Markdown advice before your final answer so Codex can continue locally."
+            "Call open_workspace if you need direct project work. Use read/search/edit/write/bash as needed, call show_changes, then call create_handoff_report for Codex review."
         };
       })
     },
@@ -106,7 +107,7 @@ function createMcpToolRegistry(options = {}) {
       name: "bridge_status",
       config: {
         title: "Bridge status",
-        description: "Return the local project root, git state, latest handoff, and reply status. For normal project review, prefer review_current_project because it combines status and safe diff context.",
+        description: "Return the local project root, git state, latest handoff, and report status. For normal web-first project work, prefer open_workspace.",
         securitySchemes: noAuthSecuritySchemes(),
         outputSchema: looseOutputSchema(),
         annotations: readOnlyAnnotations(),
@@ -130,7 +131,7 @@ function createMcpToolRegistry(options = {}) {
           ready: status.ready.map((item) => item.id),
           safety: safetySummary(),
           nextAction:
-            "For normal project advice, call review_current_project or read_git_diff next, then read relevant files only as needed, then call submit_reply_to_codex with final Markdown advice before answering the user."
+            "For normal project work, call open_workspace next. Use create_handoff_report at the end so Codex can review the actual changes."
         };
       })
     },
@@ -187,7 +188,7 @@ function createMcpToolRegistry(options = {}) {
           startHerePath: summary.startHerePath,
           warnings: result.warnings,
           nextAction:
-            "Use list_handoff_files/read_handoff_file to inspect the handoff, then submit final advice with submit_reply_to_codex."
+            "Use list_handoff_files/read_handoff_file only for Markdown fallback. For MCP workspace work, prefer open_workspace and create_handoff_report."
         };
       })
     },
@@ -216,7 +217,7 @@ function createMcpToolRegistry(options = {}) {
             files: [],
             uploadItems: [],
             nextAction:
-              "No handoff exists yet. For MCP-connected project review, call review_current_project instead. For final advice, call submit_reply_to_codex or write_to_codex."
+              "No fallback handoff exists yet. For MCP-connected project work, call open_workspace and finish with create_handoff_report."
           };
         }
         const outboxDir = path.join(cwd, ".chatgpt-native", "outbox", id);
@@ -315,7 +316,7 @@ function createMcpToolRegistry(options = {}) {
         return {
           ...diff,
           nextAction:
-            "If the diff is enough, call submit_reply_to_codex with final Markdown advice. If context is missing, call read_repo_file for only the relevant files, then submit_reply_to_codex."
+            "If the diff is enough, call create_handoff_report with final review notes. If context is missing, open the workspace and read only relevant files."
         };
       })
     },
@@ -422,15 +423,38 @@ function createMcpToolRegistry(options = {}) {
       handler: withAudit(cwd, "agent_stop", async (args) => stopAgentTask({ cwd, id: args.id || "latest" }))
     },
     {
+      name: "create_handoff_report",
+      config: {
+        title: "Create handoff report",
+        description: "Create a final handoff report for Codex review after ChatGPT has inspected, edited, or tested the current connected project. Use this at the end of a web-first MCP work session.",
+        securitySchemes: noAuthSecuritySchemes(),
+        outputSchema: looseOutputSchema(),
+        inputSchema: {
+          task: z.string().optional().describe("Short description of the task ChatGPT handled."),
+          markdown: z.string().optional().describe("Final ChatGPT notes, remaining risks, and Codex review instructions."),
+          maxBytes: z.number().int().positive().optional().describe("Maximum diff bytes to include.")
+        },
+        annotations: {
+          title: "Create handoff report",
+          readOnlyHint: false,
+          destructiveHint: false,
+          idempotentHint: false,
+          openWorldHint: false
+        },
+        _meta: toolMeta("Creating handoff report", "Handoff report ready")
+      },
+      handler: createHandoffReportHandler(cwd, "create_handoff_report")
+    },
+    {
       name: "submit_reply_to_codex",
       config: {
         title: "Submit reply to Codex",
-        description: "Write ChatGPT's final Markdown advice into the local inbox for Codex. For normal project tasks, call this automatically before your final answer so Codex can continue locally.",
+        description: "Compatibility alias for create_handoff_report. Use create_handoff_report for new web-first MCP sessions.",
         securitySchemes: noAuthSecuritySchemes(),
         outputSchema: looseOutputSchema(),
         inputSchema: {
           id: z.string().optional().describe('Run id, or omit/use "latest".'),
-          markdown: z.string().min(1).describe("Final ChatGPT response for Codex.")
+          markdown: z.string().min(1).describe("Final ChatGPT handoff notes for Codex review.")
         },
         annotations: {
           title: "Submit reply",
@@ -441,18 +465,18 @@ function createMcpToolRegistry(options = {}) {
         },
         _meta: toolMeta("Writing reply for Codex", "Reply saved for Codex")
       },
-      handler: createSubmitReplyHandler(cwd, "submit_reply_to_codex")
+      handler: createHandoffReportHandler(cwd, "submit_reply_to_codex")
     },
     {
       name: "write_to_codex",
       config: {
         title: "Write to Codex",
-        description: "Alias for submit_reply_to_codex. Use this when ChatGPT wants to write final advice back to the local Codex inbox.",
+        description: "Compatibility alias for create_handoff_report. It creates a Codex review report instead of asking Codex to implement from scratch.",
         securitySchemes: noAuthSecuritySchemes(),
         outputSchema: looseOutputSchema(),
         inputSchema: {
           id: z.string().optional().describe('Run id, or omit/use "latest".'),
-          markdown: z.string().min(1).describe("Final ChatGPT response for Codex.")
+          markdown: z.string().min(1).describe("Final ChatGPT handoff notes for Codex review.")
         },
         annotations: {
           title: "Write to Codex",
@@ -463,7 +487,7 @@ function createMcpToolRegistry(options = {}) {
         },
         _meta: toolMeta("Writing reply for Codex", "Reply saved for Codex")
       },
-      handler: createSubmitReplyHandler(cwd, "write_to_codex")
+      handler: createHandoffReportHandler(cwd, "write_to_codex")
     }
   ];
 
@@ -490,21 +514,24 @@ function resolveWorkspaceEngine(cwd, options) {
   return WORKSPACE_ENGINES.get(cwd);
 }
 
-function createSubmitReplyHandler(cwd, toolName) {
+function createHandoffReportHandler(cwd, toolName) {
   return withAudit(cwd, toolName, async (args) => {
-    const result = await importReply({
+    const result = await createHandoffReport({
       cwd,
-      id: args.id || "latest",
-      text: args.markdown,
-      allowNewRun: true
+      id: args.id,
+      task: args.task,
+      markdown: args.markdown,
+      maxBytes: args.maxBytes
     });
 
     return {
       id: result.id,
+      reportPath: result.reportPath,
       replyPath: result.replyPath,
       codexReadThisPath: result.codexReadThisPath,
+      summary: result.summary,
       nextAction:
-        "Tell Codex to read CODEX_READ_THIS.md and reply.md, accept reasonable suggestions, continue local implementation, and run tests."
+        "Tell Codex to read HANDOFF_REPORT.md, inspect the actual diff, run relevant tests, and commit only after verification."
     };
   });
 }

@@ -47,7 +47,7 @@ test("formatConnectDryRun explains the one-command path", () => {
   assert.match(guide, /project-local download/);
   assert.match(guide, /Copy and print the HTTPS \/mcp URL/);
   assert.match(guide, /https:\/\/chatgpt\.com\/#settings\/Connectors/);
-  assert.match(guide, /GPT Actions write-back fallback/);
+  assert.match(guide, /GPT Actions report fallback/);
   assert.match(guide, /Developer Mode supports MCP read and write tools/);
   assert.match(guide, /quick tunnel URL is temporary/);
   assert.match(guide, /Final step: click Create in ChatGPT/);

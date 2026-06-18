@@ -26,7 +26,7 @@ test("demo prints the GUI-first bridge workflow", async () => {
   assert.match(io.output(), /cgn mcp web/);
   assert.match(io.output(), /cgn handoff --task "Review onboarding UX"/);
   assert.match(io.output(), /cgn done/);
-  assert.match(io.output(), /\.chatgpt-native\/inbox\/\{id\}\/reply\.md/);
+  assert.match(io.output(), /\.chatgpt-native\/reports\/\{id\}\/HANDOFF_REPORT\.md/);
 });
 
 test("help lists beginner guidance commands", async () => {
@@ -101,9 +101,8 @@ test("start dry-run explains the desktop client", async () => {
 
   assert.match(io.output(), /ChatGPT Native Bridge Desktop/);
   assert.match(io.output(), /连接 ChatGPT/);
-  assert.match(io.output(), /开始处理/);
-  assert.match(io.output(), /交给 Codex/);
-  assert.match(io.output(), /Pro 辅助规划/);
+  assert.match(io.output(), /生成交接报告/);
+  assert.match(io.output(), /current project/);
 
   const desktopIo = createIo(await fs.mkdtemp(path.join(os.tmpdir(), "cgn-desktop-dry-run-")));
   await main(["desktop", "--dry-run"], desktopIo);
@@ -149,7 +148,7 @@ test("guide codex prints a ready-to-copy Codex prompt", async () => {
   assert.match(io.output(), /restart Codex/);
   assert.match(io.output(), /cgn handoff/);
   assert.match(io.output(), /cgn done/);
-  assert.match(io.output(), /\.chatgpt-native\/inbox\/\{id\}\/reply\.md/);
+  assert.match(io.output(), /\.chatgpt-native\/reports\/\{id\}\/HANDOFF_REPORT\.md/);
   assert.match(io.output(), /CODEX_READ_THIS\.md/);
 });
 
@@ -236,7 +235,8 @@ test("mcp wait explains when ChatGPT selected the app but did not call it", asyn
   assert.match(io.output(), /No MCP tool call observed/);
   assert.match(io.output(), /selected in the UI/);
   assert.match(io.output(), /Latest Server URL/);
-  assert.match(io.output(), /review_current_project/);
+  assert.match(io.output(), /open_workspace/);
+  assert.match(io.output(), /create_handoff_report/);
 });
 
 test("mcp trace explains request and tool-call logs", async () => {

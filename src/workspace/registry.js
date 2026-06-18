@@ -2,6 +2,7 @@ const crypto = require("node:crypto");
 const path = require("node:path");
 
 const { isRootAllowed, listAllowedRoots } = require("../global-config");
+const { getProjectIdentity } = require("../project-identity");
 const { getCanonicalRoot } = require("./paths");
 
 function createWorkspaceRegistry(options = {}) {
@@ -13,7 +14,15 @@ function createWorkspaceRegistry(options = {}) {
     const requestedRoot = getRequestedRoot(defaultRoot, input);
     const canonical = await getCanonicalRoot(requestedRoot);
     const canonicalKey = canonicalKeyFor(canonical.canonicalRoot);
+    const defaultCanonical = await getCanonicalRoot(defaultRoot);
+    const defaultKey = canonicalKeyFor(defaultCanonical.canonicalRoot);
     const workspaceId = makeWorkspaceId(canonical.canonicalRoot);
+
+    if (canonicalKey !== defaultKey) {
+      throw new Error(
+        `This path is not the current connected project: ${canonical.root}. Switch projects in the desktop client, reconnect ChatGPT, then try again.`
+      );
+    }
 
     if (current && current.canonicalKey !== canonicalKey) {
       throw new Error(`A workspace is already open: ${current.canonicalRoot}`);
@@ -44,20 +53,25 @@ function createWorkspaceRegistry(options = {}) {
   async function listWorkspaces() {
     const listed = await listAllowedRoots(configOptions);
     const defaultCanonical = await getCanonicalRoot(defaultRoot);
+    const defaultKey = canonicalKeyFor(defaultCanonical.canonicalRoot);
     const roots = listed.roots.map((entry) => ({
       ...entry,
       workspaceId: makeWorkspaceId(entry.canonicalRoot),
       current: current ? current.canonicalKey === canonicalKeyFor(entry.canonicalRoot) : false,
-      runtimeDefault: canonicalKeyFor(entry.canonicalRoot) === canonicalKeyFor(defaultCanonical.canonicalRoot)
+      active: canonicalKeyFor(entry.canonicalRoot) === defaultKey,
+      availableButNotActive: canonicalKeyFor(entry.canonicalRoot) !== defaultKey,
+      runtimeDefault: canonicalKeyFor(entry.canonicalRoot) === defaultKey
     }));
 
-    if (!roots.some((entry) => canonicalKeyFor(entry.canonicalRoot) === canonicalKeyFor(defaultCanonical.canonicalRoot))) {
+    if (!roots.some((entry) => canonicalKeyFor(entry.canonicalRoot) === defaultKey)) {
       roots.unshift({
         root: defaultCanonical.root,
         canonicalRoot: defaultCanonical.canonicalRoot,
         name: path.basename(defaultCanonical.root) || defaultCanonical.root,
         workspaceId: makeWorkspaceId(defaultCanonical.canonicalRoot),
         current: current ? current.canonicalKey === canonicalKeyFor(defaultCanonical.canonicalRoot) : false,
+        active: true,
+        availableButNotActive: false,
         runtimeDefault: true,
         addedAt: null,
         lastUsedAt: null
@@ -77,7 +91,9 @@ function createWorkspaceRegistry(options = {}) {
         open: false,
         workspaceId: null,
         root: null,
-        canonicalRoot: null
+        canonicalRoot: null,
+        activeProjectRoot: defaultRoot,
+        activeProjectFingerprint: getProjectIdentity(defaultRoot).projectFingerprint
       };
     }
     return publicStatus(current);
@@ -141,11 +157,14 @@ function canonicalKeyFor(canonicalRoot) {
 }
 
 function publicStatus(workspace) {
+  const identity = getProjectIdentity(workspace.root);
   return {
     open: true,
     workspaceId: workspace.workspaceId,
     root: workspace.root,
-    canonicalRoot: workspace.canonicalRoot
+    canonicalRoot: workspace.canonicalRoot,
+    activeProjectRoot: identity.projectRoot,
+    activeProjectFingerprint: identity.projectFingerprint
   };
 }
 

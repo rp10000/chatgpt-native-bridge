@@ -21,7 +21,7 @@ function createWorkspaceMcpTools(engine) {
       name: "list_workspaces",
       config: {
         title: "List workspaces",
-        description: "List project roots allowed for ChatGPT workspace access. Use this before opening a non-current project.",
+        description: "List project roots known to the bridge. The active project is the only project ChatGPT can open in this connection.",
         securitySchemes: noAuthSecuritySchemes(),
         outputSchema: looseOutputSchema(),
         annotations: readOnlyAnnotations(),
@@ -33,11 +33,11 @@ function createWorkspaceMcpTools(engine) {
       name: "open_workspace",
       config: {
         title: "Open workspace",
-        description: "Open an allowed local project as a workspace. Call this once before read, write, edit, bash, show_changes, search_workspace, list_directory, command_history, or workspace_status.",
+        description: "Open the current connected project as a workspace. Call this once before read, write, edit, bash, show_changes, search_workspace, list_directory, command_history, or workspace_status. Do not guess or pass old project paths.",
         securitySchemes: noAuthSecuritySchemes(),
         outputSchema: looseOutputSchema(),
         inputSchema: {
-          path: z.string().optional().describe('Workspace path. Defaults to ".". Non-current projects must be added with cgn projects add first.')
+          path: z.string().optional().describe('Optional current project path. Defaults to ".". Other paths are rejected; switch projects in the desktop client first.')
         },
         annotations: readOnlyAnnotations(),
         _meta: toolMeta("Opening workspace", "Workspace opened")

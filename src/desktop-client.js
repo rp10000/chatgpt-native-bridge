@@ -18,25 +18,26 @@ What it opens:
   A desktop client window.
 
 Project connections:
-  Each project has its own MCP connection slot. If the current Server URL is still live,
-  Connect ChatGPT reuses it and opens ChatGPT connector settings.
+  Each project has its own MCP connection slot. ChatGPT can only work on the
+  currently selected project.
 
 Main buttons:
+  - 选择项目
   - 连接 ChatGPT
-  - 开始处理
-  - 查看结果
-  - 交给 Codex
+  - 生成交接报告
 
-Helper:
-  - Pro 辅助规划（复制上下文） only uses packaged context. It cannot read local files directly.
+Main flow:
+  Connect once, then work in ChatGPT web. ChatGPT can read files, edit files,
+  run commands, show cards, and generate a handoff report for Codex review.
 
-Workbench:
-  The right side shows ChatGPT tool calls, command output, file changes, and latest Codex write-back.
+Fallback:
+  Pro packaged context and Markdown handoff stay available in the client,
+  but they are hidden behind fallback sections.
 
 Default:
   Reuse the current project Server URL while it is live. Create a new URL only when needed.
 
-Fallback:
+Install fallback:
   If the desktop client is not installed in this checkout, open the latest GitHub Release:
   ${RELEASES_URL}
 

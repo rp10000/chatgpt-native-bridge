@@ -13,7 +13,7 @@ const DEFAULT_TUNNEL_HOST = "127.0.0.1";
 const DEFAULT_TUNNEL_PORT = 47832;
 const CHATGPT_CONNECTORS_URL = "https://chatgpt.com/#settings/Connectors";
 const CONNECTOR_NAME = "chatgpt-native-bridge";
-const CONNECTOR_DESCRIPTION = "Local Codex bridge. Automatically inspect bounded project context and diffs when useful, then submit final ChatGPT advice back to Codex.";
+const CONNECTOR_DESCRIPTION = "Local project bridge. Work in the current connected project, show changes, then create a handoff report for Codex review.";
 const CLOUDFLARED_WINDOWS_DOWNLOAD_URL = "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe";
 const WEB_CONNECTION_FILE = "mcp-web-connection.json";
 
@@ -43,7 +43,7 @@ Then copy the printed HTTPS /mcp URL into ChatGPT:
   Server URL: the printed https://.../mcp URL
   Authentication: No authentication
 
-GPT Actions write-back fallback:
+GPT Actions report fallback:
   Use only if your ChatGPT app cannot expose MCP tools in this chat.
   Import OpenAPI schema URL:
     https://.../action/openapi.json
@@ -56,7 +56,7 @@ Account support:
   ChatGPT Developer Mode supports MCP read and write tools.
   If ChatGPT cannot call tools, the usual causes are: wrong chat mode, app not selected, expired tunnel URL, or stale metadata.
 
-If ChatGPT says review_current_project or write_to_codex is unavailable:
+If ChatGPT says open_workspace or create_handoff_report is unavailable:
   Refresh tools in ChatGPT app settings, or recreate the app with the latest https://.../mcp URL and No authentication.
 
 Important:
@@ -98,7 +98,7 @@ ChatGPT fields:
   Authentication: No authentication
   Final step: click Create in ChatGPT
 
-GPT Actions write-back fallback:
+GPT Actions report fallback:
   Use only if your ChatGPT app cannot expose MCP tools in this chat.
   Import OpenAPI schema URL:
     https://.../action/openapi.json
@@ -111,7 +111,7 @@ Account support:
   ChatGPT Developer Mode supports MCP read and write tools.
   If ChatGPT cannot call tools, the usual causes are: wrong chat mode, app not selected, expired tunnel URL, or stale metadata.
 
-If ChatGPT says review_current_project or write_to_codex is unavailable:
+If ChatGPT says open_workspace or create_handoff_report is unavailable:
   Refresh tools in ChatGPT app settings, or recreate the app with the latest https://.../mcp URL and No authentication.
 
 Important:
@@ -246,12 +246,12 @@ async function runCloudflareTunnel({
       stdout.write(`  Server URL: ${serverUrl}\n`);
       stdout.write("  Authentication: No authentication\n");
       stdout.write("  Final step: click Create in ChatGPT\n\n");
-      stdout.write("GPT Actions write-back fallback:\n");
+      stdout.write("GPT Actions report fallback:\n");
       stdout.write("  Use only if your ChatGPT app cannot expose MCP tools in this chat.\n");
       stdout.write(`  Import OpenAPI schema URL: ${tunnelUrl}/action/openapi.json\n`);
       stdout.write("  If Import from URL says Something went wrong, paste the schema JSON manually from:\n");
       stdout.write(`    ${getActionOpenApiPath(cwd)}\n`);
-      stdout.write("  Action endpoint write-back: /action/write-to-codex\n\n");
+      stdout.write("  Action endpoint report: /action/write-to-codex\n\n");
       pendingWrites.push(
         writeActionOpenApiFile({ cwd, tunnelUrl }).catch((error) => {
           stderr.write(`Could not write GPT Actions schema file: ${error.message}\n`);
@@ -270,7 +270,7 @@ async function runCloudflareTunnel({
       stdout.write("Important:\n");
       stdout.write("  This Cloudflare quick tunnel URL is temporary.\n");
       stdout.write("  If you close this command or run connect again, update/recreate the ChatGPT app with the new Server URL.\n\n");
-      stdout.write("If ChatGPT says review_current_project or write_to_codex is unavailable:\n");
+      stdout.write("If ChatGPT says open_workspace or create_handoff_report is unavailable:\n");
       stdout.write("  Refresh tools in ChatGPT app settings, or recreate the app with this latest Server URL and No authentication.\n\n");
     }
     stdout.write(text);

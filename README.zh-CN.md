@@ -4,9 +4,9 @@
 
 [English](README.md) | 简体中文
 
-**ChatGPT Native Bridge 是一个连接 ChatGPT、Codex 和本地项目的桌面桥接工具。**
+**连接一次 MCP，然后直接在 ChatGPT 网页端操作当前本地项目。**
 
-它给 ChatGPT 一个可见的 MCP 工作区，让 ChatGPT 可以读取项目、运行命令、修改已连接项目、在 ChatGPT 网页端显示结果卡片，并把最终结果写回给 Codex 继续本地执行。
+ChatGPT Native Bridge 会给 ChatGPT 一个可见的 MCP 工作区。ChatGPT 可以读取当前项目、修改文件、运行命令、显示网页端卡片，并生成交接报告给 Codex 最后复核。
 
 ![ChatGPT Native Bridge 工作流](docs/assets/readme/hero-workflow.svg)
 
@@ -18,27 +18,53 @@
 npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn start
 ```
 
-然后在桌面客户端里按这个流程走：
+然后使用桌面客户端：
 
 ```text
-选择项目 -> 连接 ChatGPT -> 开始处理 -> 查看结果 -> 交给 Codex
+选择项目 -> 连接 ChatGPT -> 在 ChatGPT 网页端处理 -> 生成交接报告
 ```
 
-新手主要用桌面客户端。CLI 仍然保留，用于安装、诊断、自动化和高级操作。
+桌面客户端只做入口、状态和安全记录。真正的工作界面是 ChatGPT 网页端。
 
-## 客户端会显示什么
+## 主流程
 
-它不是只负责打开 ChatGPT。它会告诉你 ChatGPT 有没有真的连上、调用了什么工具、跑了什么命令、改了什么文件、有没有写回 Codex。
+1. 在客户端选择本地项目。
+2. 点击 `连接 ChatGPT`。
+3. 在 ChatGPT 里刷新或选择 `chatgpt-native-bridge` 工具。
+4. 让 ChatGPT 读取、修改、运行检查。
+5. 让 ChatGPT 生成交接报告。
+6. Codex 最后复核 diff、运行测试、提交和 push。
 
-![桌面端实时状态](docs/assets/readme/desktop-status.svg)
+复制给 ChatGPT 的提示是：
 
-状态来自本地真实记录：
+```text
+请使用 chatgpt-native-bridge 打开当前连接项目。你可以直接读取、修改文件并运行必要检查。完成后请生成交接报告，说明改了什么、跑了什么、还需要 Codex 复核什么。
+```
 
-- MCP 请求日志
-- MCP 工具调用审计日志
-- 命令历史
-- git status / diff
-- Codex inbox 回复
+## 桌面客户端
+
+客户端只显示一个项目和一个大状态灯：
+
+![桌面端状态](docs/assets/readme/desktop-status.svg)
+
+状态含义：
+
+- 灰色：未连接。
+- 蓝色：已连接。
+- 黄色：ChatGPT 已访问工具列表。
+- 绿色：ChatGPT 正在操作当前项目。
+- 紫色：已生成交接报告。
+- 红色：连接失效或项目不匹配。
+
+主按钮只有：
+
+```text
+选择项目
+连接 ChatGPT
+生成交接报告
+```
+
+工具调用、命令输出、文件变更、诊断和备用方式都放在折叠区域里。
 
 ## ChatGPT 网页端卡片
 
@@ -46,15 +72,15 @@ npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn start
 
 ![ChatGPT 网页端卡片](docs/assets/readme/chatgpt-cards.svg)
 
-卡片会出现在这些关键动作上：
+卡片会出现在这些动作上：
 
 - 打开项目
 - 运行命令
 - 写入或编辑文件
 - 查看变更
-- 写回 Codex
+- 生成交接报告
 
-如果当前账号或模式不支持卡片，工具仍然会返回普通结构化结果，不影响主流程。
+如果当前账号或模式不显示卡片，工具仍会返回普通结构化结果，主流程不受影响。
 
 ## MCP 工作区
 
@@ -72,28 +98,50 @@ edit
 bash
 command_history
 show_changes
+create_handoff_report
 write_to_codex
 ```
 
-当前项目可以直接打开。其他项目需要先加入允许列表：
+当前连接是项目级的。ChatGPT 默认不能浏览你的整台电脑。
 
-```bash
-cgn projects add D:\path\to\project
+`open_workspace` 只打开当前客户端选中的项目。如果 ChatGPT 请求其它路径，bridge 会拒绝，并提示先在客户端切换项目后重新连接。
+
+## 交接报告
+
+`create_handoff_report` 会生成：
+
+```text
+.chatgpt-native/reports/{id}/HANDOFF_REPORT.md
+.chatgpt-native/inbox/{id}/reply.md
+.chatgpt-native/inbox/{id}/CODEX_READ_THIS.md
 ```
+
+报告包含：
+
+- git status
+- diff 摘要
+- 最近 MCP 工具调用
+- 最近 shell 命令
+- 修改过的文件
+- ChatGPT 说明
+- Codex 复核清单
+
+`write_to_codex` 继续保留为兼容别名，但推荐使用 `create_handoff_report`。
 
 ## 安全边界
 
 ![安全边界](docs/assets/readme/safety-boundary.svg)
 
-这个项目的边界很明确：
+边界很明确：
 
 - 不需要 OpenAI API key。
 - 不做浏览器插件。
 - 不抓取 ChatGPT 网页。
 - 不调用隐藏接口。
-- 不会自动 commit 或 push。
+- 默认不开放全局文件系统。
+- 不自动 commit 或 push。
 - 命令输出和文件变更会显示在桌面客户端。
-- Codex 仍然负责最后本地复核、测试、提交和 push。
+- Codex 负责最后本地复核、测试、提交和 push。
 
 临时 MCP tunnel URL 要当作本地能力链接看待，不要公开泄露。
 
@@ -101,28 +149,28 @@ cgn projects add D:\path\to\project
 
 ```bash
 cgn start
-cgn setup --mcp
+cgn desktop
 cgn projects add .
 cgn projects list
-cgn auth rotate
-cgn sessions list
 cgn mcp connect --yes --open
 cgn mcp trace
 cgn mcp doctor
 cgn doctor
 ```
 
+普通用户用桌面客户端。CLI 用于安装、诊断、自动化和高级流程。
+
 ## Pro 辅助规划
 
-ChatGPT Pro 不能在任意对话里直接读取你的本地项目。只有当前 ChatGPT 会话能调用 MCP app 时，才可以走本地工具。
+当当前 ChatGPT 对话不能调用 MCP 工具时，Pro 辅助规划只是备用方式。
 
-客户端里的 Pro 辅助功能只是打包上下文：
+Pro 只能看客户端打包的上下文：
 
 ```text
-客户端复制项目摘要 -> 你粘贴给 Pro -> 客户端导入带标记的回复
+客户端复制项目上下文 -> 你粘贴给 Pro -> 客户端导入带标记的回复
 ```
 
-真正读取本地文件、运行命令、写回 Codex 的主路径是 Thinking / MCP。
+真正读取本地文件、修改文件和运行命令，要走 MCP 工作区。
 
 ## 备用方式
 
@@ -150,11 +198,12 @@ npm 包保持 CLI 轻量。桌面安装包通过 GitHub Release 发布。
 
 ## 当前状态
 
-`v1.0.0` 包含：
+`v1.2` 重点是：
 
-- 桌面客户端
-- MCP 工作区工具
-- shell 和文件变更可视化审计
+- Web-first MCP 工作流
+- 只允许当前项目的工作区访问
+- 极简桌面连接器
 - ChatGPT 网页端卡片
-- Codex inbox 写回
-- Markdown handoff 备用路径
+- 本地命令和文件变更可见
+- 给 Codex 复核的交接报告
+- Pro 和 Markdown 备用方式

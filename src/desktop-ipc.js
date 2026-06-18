@@ -4,6 +4,7 @@ const path = require("node:path");
 const { getAppStatus } = require("./app-server");
 const { startClipboardWatch } = require("./clipboard-watch");
 const { addAllowedRoot, isRootAllowed, listAllowedRoots, setLastSelectedProject } = require("./global-config");
+const { createHandoffReport } = require("./handoff-report");
 const { startMcpHttpServer } = require("./mcp-server");
 const {
   CHATGPT_CONNECTORS_URL,
@@ -23,8 +24,8 @@ const { readCommandHistory } = require("./workspace/command-history");
 const pkg = require("../package.json");
 
 const CHATGPT_URL = "https://chatgpt.com";
-const CHATGPT_REVIEW_PROMPT = "请使用 chatgpt-native-bridge 复核当前项目，可以读取文件、运行必要命令并修改文件。完成后请把最终建议写回 Codex。";
-const CONTINUE_PROMPT = "读取最新 Bridge 回复，检查变更摘要，然后继续执行、测试和总结。";
+const CHATGPT_REVIEW_PROMPT = "请使用 chatgpt-native-bridge 打开当前连接项目。你可以直接读取、修改文件并运行必要检查。完成后请生成交接报告，说明改了什么、跑了什么、还需要 Codex 复核什么。";
+const CONTINUE_PROMPT = "读取最新 Bridge 交接报告，检查变更摘要，然后复核、测试、提交和总结。";
 const NO_CHANGES_SUMMARY = "暂无可查看的项目变更。";
 
 function createDesktopHandlers(options = {}) {
@@ -268,6 +269,20 @@ function createDesktopHandlers(options = {}) {
       };
     },
 
+    async "handoff:create-report"(payload = {}) {
+      const result = await createHandoffReport({
+        cwd: state.cwd,
+        task: payload.task || "ChatGPT web MCP handoff",
+        markdown: payload.markdown || "Desktop-generated handoff report for Codex review.",
+        maxBytes: payload.maxBytes
+      });
+      clipboard.writeText(`读取最新 Bridge 交接报告并复核：${result.codexReadThisPath}`);
+      return {
+        ...result,
+        copied: true
+      };
+    },
+
     async "mcp:start"() {
       await addAllowedRoot(state.cwd, configOptions(state));
       if (!state.mcpStarting) {
@@ -368,22 +383,22 @@ function createDesktopHandlers(options = {}) {
 
 function computeBridgeState(status = {}) {
   if (hasLatestReply(status)) {
-    return { key: "written", label: "已写回", kind: "ok" };
+    return { key: "reported", label: "已生成交接报告", kind: "report" };
   }
   if (hasBlockingMcpError(status.mcp || {})) {
-    return { key: "error", label: "连接异常", kind: "bad" };
+    return { key: "error", label: hasWrongProjectError(status.mcp || {}) ? "项目不匹配" : "连接异常", kind: "bad" };
   }
   if (hasFreshToolCall(status.mcp || {})) {
-    return { key: "called", label: "ChatGPT 已调用", kind: "ok" };
+    return { key: "called", label: "ChatGPT 正在操作", kind: "ok" };
   }
   if (hasFreshToolRequest(status.mcp || {})) {
-    return { key: "called", label: "ChatGPT 已调用", kind: "ok" };
+    return { key: "called", label: "ChatGPT 正在操作", kind: "ok" };
   }
   if (hasFreshRequest(status.mcp || {})) {
-    return { key: "accessed", label: "ChatGPT 已访问", kind: "ok" };
+    return { key: "accessed", label: "ChatGPT 已访问", kind: "warn" };
   }
   if ((status.desktop && status.desktop.mcpServerRunning) || (status.mcp && status.mcp.webConnection)) {
-    return { key: "connected", label: "已连接", kind: "warn" };
+    return { key: "connected", label: "已连接", kind: "ok" };
   }
   return { key: "disconnected", label: "未连接", kind: "warn" };
 }
@@ -414,9 +429,20 @@ function hasFreshRequest(mcp = {}) {
 
 function hasBlockingMcpError(mcp = {}) {
   if (mcp.error) return true;
+  if (hasWrongProjectError(mcp)) return true;
   const latestRequest = mcp.latestRequest;
   if (latestRequest && Number(latestRequest.statusCode) >= 400) return true;
   return Boolean(mcp.latestToolCall && mcp.latestToolCall.ok === false && !mcp.latestSuccessfulToolCall);
+}
+
+function hasWrongProjectError(mcp = {}) {
+  const error = String(
+    (mcp.latestToolCall && mcp.latestToolCall.error) ||
+    (mcp.latestFailedToolCall && mcp.latestFailedToolCall.error) ||
+    mcp.lastError ||
+    ""
+  );
+  return /not the current connected project|Switch projects in the desktop client|项目不匹配/i.test(error);
 }
 
 function isFreshMcpEvent(event = {}, mcp = {}) {
@@ -494,6 +520,7 @@ function normalizeToolCalls(toolCalls) {
 
 function classifyTool(toolName) {
   if (/bash|command/i.test(toolName)) return "shell";
+  if (/handoff_report/i.test(toolName)) return "report";
   if (/write|edit|submit_reply|write_to_codex/i.test(toolName)) return "write";
   if (/status|diff|read|list|open|search/i.test(toolName)) return "read";
   if (/agent/i.test(toolName)) return "agent";
@@ -531,7 +558,7 @@ function buildCommandPanel({ commands, toolCalls }) {
 function buildEvidenceSummary({ changes, commands, latestReply, toolCalls }) {
   const files = changes.status && changes.status.entries ? changes.status.entries : [];
   const failedToolCalls = toolCalls.filter((event) => event.ok === false);
-  const last = latestReply ? "已有写回" : toolCalls.length ? "尚未写回" : "等待调用";
+  const last = latestReply ? "已有交接报告" : toolCalls.length ? "尚未生成报告" : "等待调用";
   return {
     headline: [
       toolCalls.length ? `ChatGPT 已调用 ${toolCalls.length} 次工具` : "等待 ChatGPT 调用工具",
@@ -575,7 +602,7 @@ function formatWorkbenchSummary({ changes, commands, latestReply, toolCalls }) {
     const last = commands[0];
     lines.push(`最近命令：${last.commandRedacted || "(unknown)"}，退出码 ${last.exitCode ?? "unknown"}。`);
   }
-  if (latestReply) lines.push(`写回：${latestReply.id}`);
+  if (latestReply) lines.push(`交接报告：${latestReply.id}`);
   return lines.length ? lines.join("\n") : NO_CHANGES_SUMMARY;
 }
 
@@ -593,7 +620,7 @@ function buildTimeline({ changes, commands, latestReply, toolCalls }) {
   const entries = changes.status && changes.status.entries ? changes.status.entries : [];
   if (entries.length) items.push({ state: "done", label: `检测到 ${entries.length} 个文件变更`, source: "git" });
   if (commands.length) items.push({ state: "done", label: `最近运行 ${commands.length} 条命令`, source: "command" });
-  if (latestReply) items.push({ state: "done", label: "已写回 Codex", source: "reply" });
+  if (latestReply) items.push({ state: "done", label: "已生成交接报告", source: "reply" });
   if (!entries.length && !commands.length && !latestReply && !toolCalls.length) {
     items.push({ state: "idle", label: "等待 ChatGPT 调用工具", source: "idle" });
   }

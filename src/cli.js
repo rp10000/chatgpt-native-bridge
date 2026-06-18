@@ -512,7 +512,7 @@ Desktop:
   cgn start    Open ChatGPT Native Bridge Desktop.
   cgn desktop  Alias for cgn start.
   cgn client   Alias for cgn start.
-  The desktop client has four main actions: connect ChatGPT, start work, view results, and hand back to Codex.
+  The desktop client has three main actions: select project, connect ChatGPT, and create a handoff report.
   Connect ChatGPT reuses a live project Server URL before creating a new one.
   GPT-5.5 Pro is a helper path that only uses packaged context.
 
@@ -532,7 +532,7 @@ MCP:
   cgn mcp doctor  Check the local bridge and list MCP tools.
 
 Projects:
-  cgn projects add .        Allow ChatGPT to open this project workspace.
+  cgn projects add .        Add a project to the desktop project list.
   cgn projects list         Show allowed project roots.
   cgn projects remove .     Remove a project from the allowed list.
   cgn auth rotate           Rotate the local owner token metadata.

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
   <title id="title">ChatGPT Native Bridge workflow</title>
-  <desc id="desc">A visual workflow showing Codex, the desktop client, ChatGPT with MCP cards, and Codex continuing from a written reply.</desc>
+  <desc id="desc">A visual workflow showing Codex, the desktop client, ChatGPT with MCP cards, and a handoff report for final Codex review.</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#ffc400"/>
@@ -43,7 +43,7 @@
   <circle cx="122" cy="760" r="280" fill="#120e1c" opacity=".10"/>
 
   <text class="title" x="92" y="105">ChatGPT Native Bridge</text>
-  <text class="subtitle" x="96" y="145">Desktop client + MCP workspace + ChatGPT cards + Codex hand-back</text>
+  <text class="subtitle" x="96" y="145">Desktop connector + MCP workspace + ChatGPT cards + handoff report</text>
 
   <g filter="url(#shadow)">
     <rect class="panel" x="82" y="220" width="345" height="470" rx="18"/>
@@ -69,15 +69,15 @@
     <rect x="568" y="330" width="460" height="100" rx="12" fill="rgba(49,217,139,.13)" stroke="#31d98b" stroke-width="2"/>
     <circle cx="610" cy="380" r="19" fill="#31d98b" filter="url(#greenGlow)"/>
     <text class="h" x="650" y="370">Connected and ready</text>
-    <text class="small" x="650" y="400">live status, calls, commands, changes</text>
+    <text class="small" x="650" y="400">project status, calls, commands, reports</text>
     <rect x="568" y="470" width="212" height="82" rx="10" fill="rgba(255,255,255,.08)"/>
     <text class="small" x="596" y="505">Tool calls</text>
     <text class="code" x="596" y="532">read, bash, write</text>
     <rect x="816" y="470" width="212" height="82" rx="10" fill="rgba(255,255,255,.08)"/>
-    <text class="small" x="844" y="505">Codex inbox</text>
-    <text class="code" x="844" y="532">reply.md</text>
+    <text class="small" x="844" y="505">Handoff report</text>
+    <text class="code" x="844" y="532">HANDOFF.md</text>
     <rect x="568" y="590" width="460" height="64" rx="10" fill="#ffc400"/>
-    <text class="h-dark" x="651" y="631">Hand to Codex</text>
+    <text class="h-dark" x="620" y="631">Create report</text>
   </g>
 
   <line class="line" x1="1085" y1="455" x2="1164" y2="455"/>
@@ -93,6 +93,6 @@
     <text class="small-dark" x="1240" y="524">Command card</text>
     <text class="small-dark" x="1240" y="550">Output summarized</text>
     <rect x="1215" y="598" width="260" height="58" rx="12" fill="#e9fff4" stroke="#31d98b" stroke-width="2"/>
-    <text class="small-dark" x="1240" y="634">Write back to Codex</text>
+    <text class="small-dark" x="1240" y="634">Report for Codex</text>
   </g>
 </svg>

@@ -5,22 +5,22 @@ function demoText() {
    cgn start
 
 2. Main path:
+   - click 选择项目 if needed
    - click 连接 ChatGPT
    - create or refresh the ChatGPT tool when the connection is ready
-   - click 开始处理
-   - paste the copied request into ChatGPT
-   - wait for ChatGPT to write back
-   - click 交给 Codex and paste the copied sentence into Codex
+   - send this in ChatGPT: 请使用 chatgpt-native-bridge 打开当前连接项目
+   - let ChatGPT read, edit, run checks, and show changes in the web chat
+   - ask ChatGPT to create a handoff report, or click 生成交接报告 in the client
 
 3. Pro helper path:
    - use Pro 辅助规划 when ChatGPT cannot call tools
    - Pro can only use the packaged context copied by the client
 
-4. Ask Codex to read:
-   .chatgpt-native/inbox/{id}/reply.md
+4. Ask Codex to review:
+   .chatgpt-native/reports/{id}/HANDOFF_REPORT.md
    .chatgpt-native/inbox/{id}/CODEX_READ_THIS.md
 
-5. Codex continues local implementation and runs relevant checks.
+5. Codex reviews the actual diff, runs relevant checks, then commits or pushes if appropriate.
 
 Install path:
 

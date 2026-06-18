@@ -13,18 +13,24 @@ No. It does not read the ChatGPT page, DOM, cookies, localStorage, IndexedDB, to
 Since `v1.0.0`, the main path is:
 
 ```text
-Connect ChatGPT -> Start Work -> Review Changes -> Hand to Codex
+Select project -> Connect ChatGPT -> Work in ChatGPT web -> Create handoff report
 ```
 
-ChatGPT Thinking/MCP is the path that can read the local project through workspace tools, run commands, edit files, and write advice back to Codex.
+ChatGPT Thinking/MCP is the path that can read the local project through workspace tools, run commands, edit files, show result cards, and create a handoff report for Codex review.
 
-When the current ChatGPT mode supports MCP Apps UI, key tool calls also show project, command, file-change, and Codex write-back cards in the ChatGPT web conversation.
+When the current ChatGPT mode supports MCP Apps UI, key tool calls also show project, command, file-change, and handoff report cards in the ChatGPT web conversation.
+
+## Can ChatGPT see my whole computer?
+
+No. By default, ChatGPT can only work in the current project selected in the desktop client.
+
+If ChatGPT asks for a different path, the bridge rejects it with a project-mismatch error. Switch projects in the desktop client and reconnect if you really want ChatGPT to work on another project.
 
 ## What is GPT-5.5 Pro used for?
 
 Pro is an auxiliary planning path. It cannot directly read local files or call the bridge tools in this design.
 
-The desktop client packages context, copies it to the clipboard, and imports a marked Pro reply back into the Codex inbox.
+The desktop client packages context, copies it to the clipboard, and imports a marked Pro reply as a fallback note.
 
 ## Why not automate the browser?
 

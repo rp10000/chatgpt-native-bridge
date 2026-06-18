@@ -64,7 +64,7 @@ Do not solve this by scraping ChatGPT web sessions, extracting cookies, or using
 
 ## ChatGPT says no bridge tools are available
 
-If ChatGPT says it cannot call `review_current_project`, `write_to_codex`, or `api_tool`, the app is selected but its tools were not exposed to that conversation.
+If ChatGPT says it cannot call `open_workspace`, `create_handoff_report`, or `api_tool`, the app is selected but its tools were not exposed to that conversation.
 
 Check these first:
 
@@ -80,9 +80,9 @@ If no tool call is observed:
 3. In ChatGPT app settings, make sure the app uses that exact latest `https://.../mcp` Server URL.
 4. Refresh tools. If tools still do not appear, delete and recreate the app with the latest URL.
 5. Set Authentication to `No authentication`.
-6. Start a new ChatGPT chat, choose Developer mode, select `chatgpt-native-bridge`, then ask it to use `write_to_codex`.
+6. Start a new ChatGPT chat, choose Developer mode, select `chatgpt-native-bridge`, then ask it to use `open_workspace`.
 
-Use version `0.4.1` or newer. Older versions did not include complete ChatGPT app tool descriptors, top-level `securitySchemes`, request tracing, session `GET /mcp` SSE support, GPT Actions write-back fallback, the local MCP agent tools, and npx command separator fixes.
+Use version `1.2.0` or newer for the Web-first workspace flow. Older versions emphasized write-back instead of direct ChatGPT web work plus a handoff report.
 
 If the request log shows `openai-mcp` `initialize` and `tools/list`, but the tool-call log has no new `tools/call`, the server is reachable and ChatGPT scanned the app. The remaining issue is on the ChatGPT side: the app was not exposed to that chat, the chat mode does not support custom apps, the app metadata is stale, or the model chose not to call a tool.
 
@@ -108,14 +108,14 @@ If ChatGPT shows "Something went wrong", paste the schema JSON manually from:
 Then tell the Custom GPT:
   First call review_current_project.
   Read relevant files only if needed.
-  Finally call write_to_codex with your final Markdown advice for Codex.
+  Finally call write_to_codex with your final Markdown notes for Codex review.
 ```
 
-This fallback uses ChatGPT's official GPT Actions/OpenAPI route instead of MCP write actions. It writes only to `.chatgpt-native/inbox`.
+This fallback uses ChatGPT's official GPT Actions/OpenAPI route instead of MCP workspace tools. It creates a local report under `.chatgpt-native`.
 
 ## I expected a shell tool
 
-The MCP server intentionally does not expose arbitrary shell execution. ChatGPT advises through bounded MCP tools, then Codex executes locally.
+The MCP workspace exposes `bash` for the current connected project. It does not expose the whole filesystem, and it does not automatically commit or push.
 
 Available MCP tools are listed by:
 
