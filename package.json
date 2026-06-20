@@ -16,8 +16,8 @@
   },
   "main": "desktop/main.js",
   "bin": {
-    "cgn": "./bin/cgn.js",
-    "chatgpt-native-bridge": "./bin/cgn.js"
+    "cgn": "bin/cgn.js",
+    "chatgpt-native-bridge": "bin/cgn.js"
   },
   "scripts": {
     "test": "node --test",
