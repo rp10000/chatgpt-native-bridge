@@ -11,6 +11,9 @@
     "url": "https://github.com/rp10000/chatgpt-native-bridge/issues"
   },
   "homepage": "https://github.com/rp10000/chatgpt-native-bridge#readme",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
   "main": "desktop/main.js",
   "bin": {
     "cgn": "./bin/cgn.js",

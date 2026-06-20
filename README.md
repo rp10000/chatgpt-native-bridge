@@ -12,7 +12,17 @@ ChatGPT Native Bridge turns ChatGPT web into a local project workspace through M
 
 ## Quick Start
 
-Run this inside the project you want ChatGPT to work on:
+For most Windows users, download the desktop installer:
+
+[Download the latest Windows release](https://github.com/rp10000/chatgpt-native-bridge/releases/latest)
+
+For CLI use, run this inside the project you want ChatGPT to work on:
+
+```bash
+npx --yes chatgpt-native-bridge start
+```
+
+If npm is unavailable, use the GitHub fallback:
 
 ```bash
 npx --yes --package github:rp10000/chatgpt-native-bridge -- cgn start
@@ -229,7 +239,7 @@ npm run desktop:dev
 npm run desktop:pack
 ```
 
-The npm package keeps the CLI lightweight. Desktop installers are intended for GitHub Releases.
+The npm package keeps the CLI lightweight. Desktop installers are published through GitHub Releases.
 
 ## Current Status
 
