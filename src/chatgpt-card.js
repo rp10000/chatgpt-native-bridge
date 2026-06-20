@@ -1,10 +1,11 @@
 const fs = require("node:fs/promises");
 const path = require("node:path");
 
-const CHATGPT_CARD_RESOURCE_URI = "ui://chatgpt-native-bridge/workspace-card.html";
+const CHATGPT_CARD_RESOURCE_URI = "ui://chatgpt-native-bridge/workspace-card-v14.html";
 const CHATGPT_CARD_MIME_TYPE = "text/html;profile=mcp-app";
 
 const CARD_TOOL_NAMES = new Set([
+  "bridge_card_test",
   "open_workspace",
   "read_project_instructions",
   "list_directory",
@@ -88,6 +89,8 @@ function withChatGptCardResult(toolName, result, args = {}, context = {}) {
   const cardV2 = result.cardV2 || buildCardV2(toolName, result, args, context);
   return {
     ...result,
+    bridge_tool: result.bridge_tool || toolName,
+    bridge_title: result.bridge_title || cardV2.title || toolName,
     cardV2,
     card: result.card || downgradeCardV2(cardV2)
   };
@@ -100,6 +103,30 @@ function buildCardV2(toolName, result = {}, args = {}, context = {}) {
 }
 
 const CARD_BUILDERS = {
+  bridge_card_test: (_toolName, result, _args, context) => ({
+    kind: "diagnostic",
+    title: "Bridge card test",
+    status: "ok",
+    summary: "The ChatGPT Apps card channel is receiving real tool data.",
+    metrics: [
+      metric("Widget", "ok", "ok"),
+      metric("Project", safeProjectName(context.cwd, result)),
+      metric("Payload", "cardV2")
+    ],
+    sections: [
+      section("What This Proves", [
+        "ChatGPT called the bridge_card_test tool.",
+        "The MCP tool returned structuredContent.cardV2.",
+        "The iframe received and rendered real bridge data."
+      ]),
+      section("Next", [
+        "Ask ChatGPT to call open_workspace for the current project.",
+        "If this card works but another card is empty, refresh the ChatGPT app/tool metadata."
+      ])
+    ],
+    nextAction: "Ask ChatGPT to call open_workspace, then continue the project task."
+  }),
+
   open_workspace: (_toolName, result) => ({
     kind: "workspace",
     title: "Workspace opened",

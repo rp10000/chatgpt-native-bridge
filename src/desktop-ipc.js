@@ -276,7 +276,7 @@ function createDesktopHandlers(options = {}) {
         markdown: payload.markdown || "Desktop-generated handoff report for Codex review.",
         maxBytes: payload.maxBytes
       });
-      clipboard.writeText(`读取最新 Bridge 交接报告并复核：${result.codexReadThisPath}`);
+      clipboard.writeText(buildDesktopCodexPrompt(result));
       return {
         ...result,
         copied: true
@@ -466,13 +466,15 @@ async function getWorkbenchSnapshot(cwd) {
     }))
   ]);
   const toolCalls = normalizeToolCalls(trace.toolCalls || []);
-  const latestReply = status.ready.at(-1) || null;
+  const latestReply = await resolveLatestProjectReply(cwd, status.ready);
   const replyText = latestReply && latestReply.replyPath
     ? await readTextPreview(latestReply.replyPath, 8000)
     : "";
-  const codexReadThisPath = latestReply && latestReply.replyPath
-    ? path.join(path.dirname(latestReply.replyPath), "CODEX_READ_THIS.md")
-    : null;
+  const codexReadThisPath = latestReply && latestReply.codexReadThisPath
+    ? latestReply.codexReadThisPath
+    : latestReply && latestReply.replyPath
+      ? path.join(path.dirname(latestReply.replyPath), "CODEX_READ_THIS.md")
+      : null;
   const files = changes.status && changes.status.entries
     ? changes.status.entries.map((entry) => ({ path: entry.path, code: entry.code }))
     : [];
@@ -500,11 +502,64 @@ async function getWorkbenchSnapshot(cwd) {
       id: latestReply.id,
       replyPath: latestReply.replyPath,
       codexReadThisPath,
+      reportPath: latestReply.reportPath || null,
+      projectRoot: latestReply.projectRoot || cwd,
+      projectFingerprint: latestReply.projectFingerprint || getProjectIdentity(cwd).projectFingerprint,
       text: replyText
     } : null,
     timeline: buildTimeline({ changes, commands, latestReply, toolCalls }),
     warnings: changes.warnings || []
   };
+}
+
+async function resolveLatestProjectReply(cwd, ready = []) {
+  const identity = getProjectIdentity(cwd);
+  for (const item of [...ready].reverse()) {
+    if (!item || !item.replyPath) continue;
+    const meta = await readReplyMeta(item.replyPath);
+    if (meta && meta.projectFingerprint && meta.projectFingerprint !== identity.projectFingerprint) continue;
+    if (!meta && !isInsidePath(cwd, item.replyPath)) continue;
+    return {
+      ...item,
+      reportPath: meta && meta.reportPath || null,
+      codexReadThisPath: meta && meta.codexReadThisPath || path.join(path.dirname(item.replyPath), "CODEX_READ_THIS.md"),
+      projectRoot: meta && meta.projectRoot || identity.projectRoot,
+      projectName: meta && meta.projectName || identity.projectName,
+      projectFingerprint: meta && meta.projectFingerprint || identity.projectFingerprint
+    };
+  }
+  return null;
+}
+
+async function readReplyMeta(replyPath) {
+  const metaPath = path.join(path.dirname(replyPath), "report-meta.json");
+  try {
+    return JSON.parse(await fs.readFile(metaPath, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+function isInsidePath(root, target) {
+  const relative = path.relative(path.resolve(root), path.resolve(target));
+  return Boolean(!relative || (!relative.startsWith("..") && !path.isAbsolute(relative)));
+}
+
+function buildDesktopCodexPrompt(report) {
+  const projectName = report.projectName || path.basename(report.projectRoot || "");
+  return [
+    "请复核这个 Bridge 交接报告。",
+    "",
+    "项目：" + projectName,
+    "项目路径：" + (report.projectRoot || ""),
+    "",
+    "如果当前 Codex 工作区不是上面的项目，请先切换/打开该项目，不要在错误项目里执行。",
+    "",
+    "报告：" + report.reportPath,
+    "Codex 入口：" + report.codexReadThisPath,
+    "",
+    "读取报告，检查实际 diff，运行相关测试，然后再提交和 push。"
+  ].join("\n");
 }
 
 function normalizeToolCalls(toolCalls) {

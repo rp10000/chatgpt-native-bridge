@@ -24,6 +24,7 @@ const pkg = require("../package.json");
 test("MCP tool list is the stable minimum bridge surface", () => {
   assert.deepEqual(TOOL_NAMES, [
     "review_current_project",
+    "bridge_card_test",
     "bridge_status",
     "create_handoff",
     "list_handoff_files",
@@ -82,6 +83,7 @@ test("MCP simple tool mode keeps the ChatGPT workspace surface short", () => {
 
   assert.deepEqual(names, [
     "review_current_project",
+    "bridge_card_test",
     "create_handoff_report",
     "open_workspace",
     "workspace_status",
@@ -111,6 +113,7 @@ test("all MCP tools declare noauth for ChatGPT app discovery", () => {
 test("ChatGPT card tools declare app UI metadata", () => {
   const tools = createMcpToolRegistry({ cwd: process.cwd() });
   const cardTools = [
+    "bridge_card_test",
     "open_workspace",
     "read_project_instructions",
     "list_directory",
@@ -159,6 +162,21 @@ test("ChatGPT cards expose cardV2 and compatibility card summaries", () => {
   assert.equal(legacy.kind, "command");
   assert.equal(legacy.command, "npm test");
   assert.match(legacy.summary, /Command finished/);
+});
+
+test("bridge_card_test returns a deterministic ChatGPT card payload", async () => {
+  const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "cgn-card-test-"));
+  await initProject({ cwd });
+
+  const result = await runMcpTool("bridge_card_test", {}, { cwd });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.bridge_tool, "bridge_card_test");
+  assert.equal(result.bridge_title, "Bridge card test");
+  assert.equal(result.cardV2.kind, "diagnostic");
+  assert.equal(result.cardV2.status, "ok");
+  assert.match(result.cardV2.summary, /receiving real tool data/i);
+  assert.ok(result.cardV2.sections.some((section) => section.title === "Next"));
 });
 
 test("MCP workspace tools return cardV2 for ChatGPT web cards", async () => {
@@ -297,9 +315,15 @@ test("MCP tools create a handoff and a Codex review report", async () => {
   assert.ok(reply.cardV2.sections.some((section) => section.title === "Codex Review"));
   assert.equal(await exists(reply.codexReadThisPath), true);
   const codexPrompt = await fs.readFile(reply.codexReadThisPath, "utf8");
+  assert.match(codexPrompt, /Project root:/);
+  assert.equal(codexPrompt.includes(cwd), true);
+  assert.match(codexPrompt, /Only use this handoff in a Codex session opened for the project root above/);
   assert.match(codexPrompt, /Read the handoff report/);
   assert.match(codexPrompt, /Inspect the actual diff/);
   assert.match(codexPrompt, /Run relevant tests/);
+  const reportMeta = JSON.parse(await fs.readFile(path.join(cwd, ".chatgpt-native", "inbox", reply.id, "report-meta.json"), "utf8"));
+  assert.equal(reportMeta.projectRoot, cwd);
+  assert.equal(reportMeta.projectFingerprint, reply.projectFingerprint);
 });
 
 test("MCP writeback works without a prior handoff", async () => {
@@ -490,14 +514,18 @@ test("ChatGPT card widget supports bridge notifications and OpenAI fallback", as
   const html = await readCardWidgetHtml();
 
   assert.match(html, /ui\/notifications\/tool-result/);
+  assert.match(html, /openai:set_globals/);
   assert.match(html, /cardV2/);
   assert.match(html, /renderCardV2/);
+  assert.match(html, /extractStructuredContent/);
   assert.match(html, /metrics/);
   assert.match(html, /sections/);
   assert.match(html, /nextAction/);
   assert.match(html, /window\.openai/);
   assert.match(html, /toolOutput/);
-  assert.match(html, /No additional details/);
+  assert.match(html, /toolResponseMetadata/);
+  assert.match(html, /bridge_card_test/);
+  assert.match(html, /Ask ChatGPT to call/);
 });
 
 test("HTTP action OpenAPI exposes GPT Actions write-back fallback", async () => {

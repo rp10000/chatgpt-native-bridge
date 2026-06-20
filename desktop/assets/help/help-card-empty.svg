@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-label="3. Empty Card Fix">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#ffc400"/><stop offset="1" stop-color="#ffd84d"/></linearGradient>
+    <linearGradient id="panel" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#171121"/><stop offset="1" stop-color="#2d1d3b"/></linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="12" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="960" height="540" rx="24" fill="url(#bg)"/>
+  <rect x="74" y="68" width="812" height="404" rx="18" fill="url(#panel)"/>
+  <circle cx="138" cy="132" r="26" fill="#b96cff" filter="url(#glow)"/>
+  <text x="184" y="126" fill="#fff8cf" font-family="Inter, Segoe UI, Arial" font-size="34" font-weight="800">3. Empty Card Fix</text>
+  <text x="184" y="164" fill="#d8cce8" font-family="Inter, Segoe UI, Arial" font-size="18">If a card is blank, run the built-in card test and refresh tool metadata.</text>
+  <rect x="116" y="214" width="290" height="142" rx="12" fill="#241936" stroke="rgba(255,255,255,.16)"/><text x="138" y="256" fill="#fff8cf" font-family="Inter, Segoe UI, Arial" font-size="20" font-weight="700">bridge_card_test</text>
+<rect x="448" y="214" width="390" height="142" rx="12" fill="#3a2245" stroke="#b96cff"/><text x="474" y="258" fill="#fff8cf" font-family="Inter, Segoe UI, Arial" font-size="22" font-weight="800">Real card data appears here</text><text x="474" y="298" fill="#d8cce8" font-family="Inter, Segoe UI, Arial" font-size="18">If this works, call open_workspace again.</text>
+<path d="M410 286H438" stroke="#fff8cf" stroke-width="6" stroke-linecap="round"/><path d="M438 286l-20-14v28z" fill="#fff8cf"/>
+</svg>

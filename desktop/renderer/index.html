@@ -12,6 +12,7 @@
       <img class="chrome-avatar" src="../assets/avatar.png" alt="">
       <span>ChatGPT Native Bridge</span>
     </div>
+    <button id="helpOpen" class="help-toggle" type="button" data-i18n="help">帮助</button>
     <button id="languageToggle" class="language-toggle" type="button" aria-label="Switch language">EN</button>
     <div class="window-controls">
       <button id="windowMinimize" class="window-control" type="button" aria-label="最小化">-</button>
@@ -47,43 +48,19 @@
     </section>
 
     <section class="summary-strip" aria-label="状态摘要">
-      <div>
-        <span data-i18n="calls">调用</span>
-        <strong id="toolCallCount">0</strong>
-      </div>
-      <div>
-        <span data-i18n="commands">命令</span>
-        <strong id="commandCount">0</strong>
-      </div>
-      <div>
-        <span data-i18n="changes">变更</span>
-        <strong id="changeCount">0</strong>
-      </div>
-      <div>
-        <span data-i18n="report">报告</span>
-        <strong id="reportState">暂无</strong>
-      </div>
+      <div><span data-i18n="calls">调用</span><strong id="toolCallCount">0</strong></div>
+      <div><span data-i18n="commands">命令</span><strong id="commandCount">0</strong></div>
+      <div><span data-i18n="changes">变更</span><strong id="changeCount">0</strong></div>
+      <div><span data-i18n="report">报告</span><strong id="reportState">暂无</strong></div>
     </section>
 
     <details class="details-panel" id="activityDetails">
       <summary data-i18n="activity">查看过程</summary>
       <section class="diagnostic-grid">
-        <article>
-          <h2 data-i18n="toolCalls">调用记录</h2>
-          <pre id="toolCalls">暂无调用。</pre>
-        </article>
-        <article>
-          <h2 data-i18n="commandOutput">命令输出</h2>
-          <pre id="commandOutput">暂无命令。</pre>
-        </article>
-        <article>
-          <h2 data-i18n="fileChanges">文件变更</h2>
-          <pre id="changeSummary">暂无变更。</pre>
-        </article>
-        <article>
-          <h2 data-i18n="handoffReport">交接报告</h2>
-          <pre id="replyPreview">暂无报告。</pre>
-        </article>
+        <article><h2 data-i18n="toolCalls">调用记录</h2><pre id="toolCalls">暂无调用。</pre></article>
+        <article><h2 data-i18n="commandOutput">命令输出</h2><pre id="commandOutput">暂无命令。</pre></article>
+        <article><h2 data-i18n="fileChanges">文件变更</h2><pre id="changeSummary">暂无变更。</pre></article>
+        <article><h2 data-i18n="handoffReport">交接报告</h2><pre id="replyPreview">暂无报告。</pre></article>
       </section>
     </details>
 
@@ -108,6 +85,27 @@
       <pre id="diagnostics">准备就绪。</pre>
     </details>
   </main>
+
+  <aside id="helpModal" class="help-modal" aria-hidden="true">
+    <div class="help-backdrop" id="helpCloseBackdrop"></div>
+    <section class="help-card" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+      <header class="help-header">
+        <div>
+          <p class="eyebrow" data-i18n="helpEyebrow">内置教程</p>
+          <h2 id="helpTitle" data-i18n="helpTitle">怎么用</h2>
+        </div>
+        <button id="helpClose" class="ghost help-close" type="button" data-i18n="close">关闭</button>
+      </header>
+      <nav class="help-tabs" aria-label="Help topics">
+        <button class="help-tab active" type="button" data-help-tab="connect" data-i18n="helpConnect">连接</button>
+        <button class="help-tab" type="button" data-help-tab="chatgpt" data-i18n="helpChatGPT">在 ChatGPT 里说什么</button>
+        <button class="help-tab" type="button" data-help-tab="empty" data-i18n="helpEmpty">卡片为空</button>
+        <button class="help-tab" type="button" data-help-tab="models" data-i18n="helpModels">Thinking / Pro</button>
+      </nav>
+      <img id="helpImage" class="help-image" src="../assets/help/help-connect.svg" alt="">
+      <div id="helpBody" class="help-body"></div>
+    </section>
+  </aside>
 
   <script src="./app.js"></script>
 </body>

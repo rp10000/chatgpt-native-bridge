@@ -5,6 +5,7 @@ const { ensureDir } = require("./fs-utils");
 const { makeRunId } = require("./id");
 const { getWorkspaceChangeSummary } = require("./workspace/change-tracker");
 const { readCommandHistory } = require("./workspace/command-history");
+const { getProjectIdentity } = require("./project-identity");
 
 async function createHandoffReport(options = {}) {
   const cwd = path.resolve(options.cwd || process.cwd());
@@ -14,11 +15,15 @@ async function createHandoffReport(options = {}) {
   const reportPath = path.join(reportDir, "HANDOFF_REPORT.md");
   const replyPath = path.join(inboxDir, "reply.md");
   const codexReadThisPath = path.join(inboxDir, "CODEX_READ_THIS.md");
+  const reportMetaPath = path.join(reportDir, "report-meta.json");
+  const inboxMetaPath = path.join(inboxDir, "report-meta.json");
+  const project = getProjectIdentity(cwd);
 
   const snapshot = await collectReportSnapshot(cwd, options);
   const markdown = buildHandoffReport({
     id,
     cwd,
+    project,
     task: options.task || "",
     notes: options.markdown || options.notes || "",
     snapshot
@@ -26,15 +31,30 @@ async function createHandoffReport(options = {}) {
 
   await ensureDir(reportDir);
   await ensureDir(inboxDir);
+  const meta = {
+    id,
+    createdAt: new Date().toISOString(),
+    projectRoot: project.projectRoot,
+    projectName: project.projectName,
+    projectFingerprint: project.projectFingerprint,
+    reportPath,
+    replyPath,
+    codexReadThisPath
+  };
   await fs.writeFile(reportPath, markdown, "utf8");
   await fs.writeFile(replyPath, markdown, "utf8");
-  await fs.writeFile(codexReadThisPath, buildCodexReviewPrompt({ id, reportPath, replyPath }), "utf8");
+  await fs.writeFile(reportMetaPath, JSON.stringify(meta, null, 2) + "\n", "utf8");
+  await fs.writeFile(inboxMetaPath, JSON.stringify(meta, null, 2) + "\n", "utf8");
+  await fs.writeFile(codexReadThisPath, buildCodexReviewPrompt({ id, reportPath, replyPath, project }), "utf8");
 
   return {
     id,
     reportPath,
     replyPath,
     codexReadThisPath,
+    projectRoot: project.projectRoot,
+    projectName: project.projectName,
+    projectFingerprint: project.projectFingerprint,
     summary: summarizeReport(snapshot)
   };
 }
@@ -94,7 +114,7 @@ function normalizeReportId(id, now) {
   return makeRunId("handoff-report", now);
 }
 
-function buildHandoffReport({ id, cwd, task, notes, snapshot }) {
+function buildHandoffReport({ id, cwd, project, task, notes, snapshot }) {
   const changes = snapshot.changes || {};
   const statusEntries = changes.status && changes.status.entries ? changes.status.entries : [];
   const diffFiles = changes.diff && changes.diff.files ? changes.diff.files : [];
@@ -107,7 +127,9 @@ function buildHandoffReport({ id, cwd, task, notes, snapshot }) {
   return `# ChatGPT Native Bridge Handoff Report
 
 Run: ${id}
-Project: ${cwd}
+Project: ${project && project.projectName ? project.projectName : path.basename(cwd)}
+Project root: ${cwd}
+Project fingerprint: ${project && project.projectFingerprint ? project.projectFingerprint : "unknown"}
 
 ## Goal
 
@@ -170,16 +192,24 @@ ${suggestCommitMessage(task, statusEntries, diffFiles)}
 `;
 }
 
-function buildCodexReviewPrompt({ id, reportPath, replyPath }) {
-  return `# Codex: review the latest Bridge handoff
-
-Run: ${id}
-
-- Report: \`${reportPath}\`
-- Inbox copy: \`${replyPath}\`
-
-Read the handoff report. Inspect the actual diff. Run relevant tests. Fix anything unsafe or incomplete. Commit and push only after verification.
-`;
+function buildCodexReviewPrompt({ id, reportPath, replyPath, project }) {
+  const projectRoot = project && project.projectRoot ? project.projectRoot : path.dirname(path.dirname(path.dirname(reportPath)));
+  const projectName = project && project.projectName ? project.projectName : path.basename(projectRoot);
+  return [
+    "# Codex: review this Bridge handoff",
+    "",
+    `Run: ${id}`,
+    `Project: ${projectName}`,
+    `Project root: \`${projectRoot}\``,
+    "",
+    "Only use this handoff in a Codex session opened for the project root above. If your current workspace is a different project, stop and switch/open that project first.",
+    "",
+    `- Report: \`${reportPath}\``,
+    `- Inbox copy: \`${replyPath}\``,
+    "",
+    "Read the handoff report. Inspect the actual diff in that project. Run relevant tests. Fix anything unsafe or incomplete. Commit and push only after verification.",
+    ""
+  ].join("\n");
 }
 
 function summarizeReport(snapshot) {

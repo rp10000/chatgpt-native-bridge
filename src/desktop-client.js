@@ -14,36 +14,29 @@ Aliases:
   cgn client
   cgn start
 
-What it opens:
-  A desktop client window.
-
 First-run flow:
   1. 选择项目
   2. 连接 ChatGPT
-  3. 在 ChatGPT 里开始改项目
+  3. 在 ChatGPT 网页端直接操作当前本地项目
 
-Connected message:
-  已连接。去 ChatGPT 刷新工具，然后发送这句话。
-
-Project connections:
-  Each project has its own MCP connection slot. ChatGPT can only work on the
-  currently selected project.
+After connecting, send this in ChatGPT:
+  请使用 chatgpt-native-bridge 打开当前连接项目。你可以直接读取、修改文件并运行必要检查。完成后请生成交接报告，说明改了什么、跑了什么、还需要 Codex 复核什么。
 
 Main buttons:
   - 选择项目
   - 连接 ChatGPT
   - 生成交接报告
+  - 帮助
 
-Main flow:
-  Connect once, then work in ChatGPT web. ChatGPT can read files, edit files,
-  run commands, show cards, and generate a handoff report for Codex review.
+What the client shows:
+  - current project
+  - connection state
+  - ChatGPT tool calls
+  - command history
+  - file changes
+  - handoff report for Codex review
 
-Fallback:
-  Pro packaged context and Markdown handoff stay available in the client,
-  but they are hidden behind fallback sections.
-
-Default:
-  Reuse the current project Server URL while it is live. Create a new URL only when needed.
+Each project has its own MCP connection slot. ChatGPT can only work on the currently selected project.
 
 Install fallback:
   If the desktop client is not installed in this checkout, open the latest GitHub Release:

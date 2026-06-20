@@ -196,15 +196,29 @@
     const nextEl = document.getElementById("nextAction");
 
     function renderFromStructuredContent(data) {
-      if (data && data.cardV2) {
-        renderCardV2(data.cardV2);
+      const structured = extractStructuredContent(data);
+      if (structured && structured.cardV2) {
+        renderCardV2(structured.cardV2);
         return;
       }
-      if (data && data.card) {
-        renderCardV2(cardV2FromLegacy(data.card));
+      if (structured && structured.card) {
+        renderCardV2(cardV2FromLegacy(structured.card));
         return;
       }
-      renderCardV2(fallbackCardV2(data));
+      renderCardV2(fallbackCardV2(structured));
+    }
+
+    function extractStructuredContent(value) {
+      if (!value) return null;
+      if (value.structuredContent) return value.structuredContent;
+      if (value.result && value.result.structuredContent) return value.result.structuredContent;
+      if (value.params && value.params.structuredContent) return value.params.structuredContent;
+      if (value.params && value.params.result && value.params.result.structuredContent) return value.params.result.structuredContent;
+      if (value.globals && value.globals.toolOutput) return extractStructuredContent(value.globals.toolOutput);
+      if (value.globals && value.globals.toolResponseMetadata) return extractStructuredContent(value.globals.toolResponseMetadata);
+      if (value.cardV2 || value.card || value.bridge_tool || value.bridge_title) return value;
+      if (value._meta && (value._meta.cardV2 || value._meta.card)) return value._meta;
+      return value;
     }
 
     function renderCardV2(cardV2) {
@@ -212,7 +226,7 @@
       titleEl.textContent = card.title || "Bridge result";
       projectEl.textContent = (card.project && card.project.name) || "Local workspace";
       statusEl.textContent = card.status || "ok";
-      statusEl.className = `status ${card.status || ""}`;
+      statusEl.className = "status " + (card.status || "");
       summaryEl.textContent = card.summary || "Tool result is available.";
 
       metricsEl.textContent = "";
@@ -233,14 +247,14 @@
       sectionsEl.textContent = "";
       const sections = Array.isArray(card.sections) ? card.sections.slice(0, 5) : [];
       if (!sections.length) {
-        sectionsEl.append(buildSection("Details", ["No additional details."]));
+        sectionsEl.append(buildSection("Details", ["No additional details were returned by this tool."]));
       } else {
         for (const section of sections) {
           sectionsEl.append(buildSection(section.title || "Details", section.items || []));
         }
       }
 
-      nextEl.textContent = card.nextAction || "No additional details.";
+      nextEl.textContent = card.nextAction || "Ask ChatGPT to call bridge_card_test if this card stays empty.";
       if (window.openai && typeof window.openai.notifyIntrinsicHeight === "function") {
         window.openai.notifyIntrinsicHeight();
       }
@@ -252,11 +266,11 @@
       const summary = document.createElement("summary");
       summary.textContent = title;
       const list = document.createElement("ul");
-      const values = Array.isArray(items) && items.length ? items.slice(0, 8) : ["No additional details."];
+      const values = Array.isArray(items) && items.length ? items.slice(0, 8) : ["No additional details were returned by this tool."];
       for (const value of values) {
         const item = document.createElement("li");
         if (!value) item.className = "empty";
-        item.textContent = String(value || "No additional details.");
+        item.textContent = String(value || "No additional details were returned by this tool.");
         list.append(item);
       }
       details.append(summary, list);
@@ -282,37 +296,53 @@
     }
 
     function fallbackCardV2(data) {
+      const keys = data && typeof data === "object" ? Object.keys(data).filter((key) => key !== "_meta") : [];
       return {
         version: 2,
-        kind: "result",
-        status: "ok",
+        kind: "diagnostic",
+        status: "warn",
         title: "Bridge result",
         project: { name: "Local workspace" },
-        summary: data ? "Tool result is available. The desktop client has the full details." : "Waiting for tool result.",
-        metrics: [],
-        sections: [{ title: "Details", items: data ? Object.keys(data).slice(0, 6).map((key) => `${key}: ${shortValue(data[key])}`) : [] }],
-        nextAction: "No additional details."
+        summary: keys.length
+          ? "Tool data arrived, but it did not include a bridge card payload."
+          : "Waiting for a real bridge tool result.",
+        metrics: keys.length ? [{ label: "Keys", value: String(keys.length) }] : [],
+        sections: [{
+          title: "Empty Card Check",
+          items: keys.length
+            ? keys.slice(0, 8).map((key) => key + ": " + shortValue(data[key]))
+            : [
+              "Ask ChatGPT to call bridge_card_test.",
+              "If bridge_card_test renders, refresh the app/tool metadata and call the real tool again.",
+              "If it still stays empty, the selected ChatGPT mode may not be delivering Apps tool results."
+            ]
+        }],
+        nextAction: "Ask ChatGPT to call bridge_card_test, then call open_workspace."
       };
     }
 
     function shortValue(value) {
       if (value === null || value === undefined) return "";
       if (typeof value === "string") return value.slice(0, 90);
-      if (Array.isArray(value)) return `${value.length} item(s)`;
+      if (Array.isArray(value)) return value.length + " item(s)";
       if (typeof value === "object") return "object";
       return String(value);
     }
+
+    window.addEventListener("openai:set_globals", (event) => {
+      renderFromStructuredContent(event.detail && event.detail.globals);
+    }, { passive: true });
 
     window.addEventListener("message", (event) => {
       if (event.source !== window.parent) return;
       const message = event.data;
       if (!message || message.jsonrpc !== "2.0") return;
       if (message.method === "ui/notifications/tool-result") {
-        renderFromStructuredContent(message.params && message.params.structuredContent);
+        renderFromStructuredContent(message.params || message);
       }
     }, { passive: true });
 
-    renderFromStructuredContent(window.openai && window.openai.toolOutput);
+    renderFromStructuredContent(window.openai && (window.openai.toolOutput || window.openai.toolResponseMetadata));
   </script>
 </body>
 </html>

@@ -3,13 +3,16 @@ const state = {
   busy: false,
   lastStatus: null,
   lang: localStorage.getItem("cgn-lang") || "zh-CN",
-  proTaskEdited: false
+  proTaskEdited: false,
+  helpTab: "connect"
 };
 
 const $ = (id) => document.getElementById(id);
 
 const I18N = {
   "zh-CN": {
+    help: "帮助",
+    close: "关闭",
     currentProject: "当前项目",
     loadingProject: "正在读取项目",
     loadingPath: "请稍等",
@@ -44,9 +47,9 @@ const I18N = {
     disconnectedTitle: "未连接",
     disconnectedText: "选择项目后连接 ChatGPT。",
     connectedTitle: "已连接",
-    connectedText: "在 ChatGPT 里刷新或选择这个工具，然后发送任务。",
+    connectedText: "去 ChatGPT 刷新这个工具，然后发送任务。",
     accessedTitle: "ChatGPT 已访问",
-    accessedText: "ChatGPT 已经看到工具，发送任务后这里会显示操作记录。",
+    accessedText: "ChatGPT 已经看到工具。发送任务后这里会显示操作记录。",
     calledTitle: "ChatGPT 正在操作",
     calledText: "ChatGPT 正在读取、修改或运行当前项目。",
     reportedTitle: "已生成交接报告",
@@ -75,9 +78,17 @@ const I18N = {
     selected: "已选择项目：",
     latestFallback: "上次备用上下文：",
     languageToggle: "EN",
-    languageAria: "Switch to English"
+    languageAria: "Switch to English",
+    helpEyebrow: "内置教程",
+    helpTitle: "怎么用",
+    helpConnect: "连接",
+    helpChatGPT: "在 ChatGPT 里说什么",
+    helpEmpty: "卡片为空",
+    helpModels: "Thinking / Pro"
   },
   en: {
+    help: "Help",
+    close: "Close",
     currentProject: "Current Project",
     loadingProject: "Loading project",
     loadingPath: "Please wait",
@@ -143,7 +154,28 @@ const I18N = {
     selected: "Selected project: ",
     latestFallback: "Latest fallback context: ",
     languageToggle: "中文",
-    languageAria: "切换到中文"
+    languageAria: "Switch to Chinese",
+    helpEyebrow: "Built-in Guide",
+    helpTitle: "How to use it",
+    helpConnect: "Connect",
+    helpChatGPT: "What to ask",
+    helpEmpty: "Empty cards",
+    helpModels: "Thinking / Pro"
+  }
+};
+
+const HELP = {
+  "zh-CN": {
+    connect: { image: "../assets/help/help-connect.svg", title: "第一次只做三步", items: ["选择你要让 ChatGPT 操作的项目。", "点击连接 ChatGPT。客户端会复制连接地址并打开 ChatGPT 的工具设置页。", "在 ChatGPT 里创建或刷新这个工具；地址还活着时不用重复创建。"] },
+    chatgpt: { image: "../assets/help/help-chatgpt.svg", title: "连好以后，在 ChatGPT 里发这句话", prompt: "请使用 chatgpt-native-bridge 打开当前连接项目。你可以直接读取、修改文件并运行必要检查。完成后请生成交接报告，说明改了什么、跑了什么、还需要 Codex 复核什么。", items: ["ChatGPT 应该调用 open_workspace，然后按需 read/edit/write/bash/show_changes。", "完成后让它调用 create_handoff_report。", "客户端状态灯变绿说明 ChatGPT 已经在操作当前项目。"] },
+    empty: { image: "../assets/help/help-card-empty.svg", title: "卡片空白时怎么判断", items: ["先让 ChatGPT 调用 bridge_card_test。", "如果测试卡片正常，说明 UI 通道没问题；刷新工具后再调用 open_workspace。", "如果测试卡片也空，通常是当前 ChatGPT 模式没有把 Apps 工具结果传给 iframe，换支持工具的模式或重建工具。"] },
+    models: { image: "../assets/help/help-pro.svg", title: "Thinking 和 Pro 的分工", items: ["支持工具的 Thinking/ChatGPT 模式可以通过 MCP 直接读写当前项目。", "Pro 不要假设能直接调用 MCP；如果当前 Pro 看不到工具，就用备用方式打包上下文给它做规划。", "xhigh/high 是 ChatGPT 模型侧能力，不由 Bridge 控制；能否调用工具取决于当前账号、模式和 Developer Mode 支持。"] }
+  },
+  en: {
+    connect: { image: "../assets/help/help-connect.svg", title: "First run: three steps", items: ["Select the project ChatGPT should operate on.", "Click Connect ChatGPT. The client copies the server URL and opens ChatGPT tool settings.", "Create or refresh the tool in ChatGPT. Reuse the URL while it is still live."] },
+    chatgpt: { image: "../assets/help/help-chatgpt.svg", title: "After connecting, send this in ChatGPT", prompt: "Use chatgpt-native-bridge to open the current connected project. You may read files, edit files, and run required checks. When finished, create a handoff report describing what changed, what ran, and what Codex should review.", items: ["ChatGPT should call open_workspace, then read/edit/write/bash/show_changes as needed.", "At the end, ask it to call create_handoff_report.", "The client turns green when ChatGPT is operating on the current project."] },
+    empty: { image: "../assets/help/help-card-empty.svg", title: "When a card is empty", items: ["Ask ChatGPT to call bridge_card_test.", "If the test card works, refresh the tool metadata and call open_workspace again.", "If the test card is still empty, the selected ChatGPT mode may not be delivering Apps tool results. Switch to a tool-capable mode or recreate the tool."] },
+    models: { image: "../assets/help/help-pro.svg", title: "Thinking and Pro split", items: ["Tool-capable Thinking/ChatGPT modes can use MCP to read and edit the current project directly.", "Do not assume Pro can call MCP. If Pro cannot see tools, use the fallback packaged context for planning.", "xhigh/high is controlled by ChatGPT, not Bridge. Tool access depends on your account, mode, and Developer Mode support."] }
   }
 };
 
@@ -170,24 +202,19 @@ function setBusy(value) {
 
 function applyLanguage() {
   document.documentElement.lang = state.lang;
-  for (const element of document.querySelectorAll("[data-i18n]")) {
-    element.textContent = t(element.dataset.i18n);
-  }
-
+  for (const element of document.querySelectorAll("[data-i18n]")) element.textContent = t(element.dataset.i18n);
   $("languageToggle").textContent = t("languageToggle");
   $("languageToggle").setAttribute("aria-label", t("languageAria"));
-
   if (!state.proTaskEdited) $("taskInput").value = t("proTaskDefault");
   if (!$("proSummary").dataset.state) $("proSummary").textContent = t("proSummaryDefault");
   if (!$("diagnostics").dataset.touched) $("diagnostics").textContent = t("ready");
-
+  renderHelp();
   if (state.lastStatus) {
     renderProject(state.lastStatus.project || {});
     renderBridgeState(state.lastStatus.bridgeState || { key: "disconnected" });
     refreshActivity().catch(() => {});
     return;
   }
-
   $("projectName").textContent = t("loadingProject");
   $("projectPath").textContent = t("loadingPath");
   renderBridgeState({ key: "disconnected" });
@@ -197,7 +224,7 @@ function log(line) {
   const diagnostics = $("diagnostics");
   const stamp = new Date().toLocaleTimeString();
   diagnostics.dataset.touched = "true";
-  diagnostics.textContent = `${stamp} ${line}\n${diagnostics.textContent}`;
+  diagnostics.textContent = stamp + " " + line + "\n" + diagnostics.textContent;
 }
 
 async function call(channel, payload) {
@@ -212,12 +239,9 @@ async function refresh() {
   renderProject(status.project || {});
   renderBridgeState(status.bridgeState || { key: "disconnected" });
   await refreshActivity();
-
   const latest = status.relay && status.relay.latest;
   if (latest && latest.id) state.currentRelayId = latest.id;
-  if (latest && latest.promptPath && !$("proSummary").dataset.state) {
-    $("proSummary").textContent = `${t("latestFallback")}${latest.id}`;
-  }
+  if (latest && latest.promptPath && !$("proSummary").dataset.state) $("proSummary").textContent = t("latestFallback") + latest.id;
 }
 
 function renderProject(project) {
@@ -230,30 +254,19 @@ function renderBridgeState(bridge) {
   const copy = statusCopy(key);
   $("statusTitle").textContent = copy.title;
   $("statusText").textContent = copy.text;
-  $("statusLamp").className = `status-lamp status-${key}`;
+  $("statusLamp").className = "status-lamp status-" + key;
 }
 
 async function refreshActivity() {
-  const [commands, changes, trace] = await Promise.all([
-    call("command:list"),
-    call("changes:get"),
-    call("mcp:trace").catch(() => null)
-  ]);
-
-  const toolCalls = Array.isArray(changes.toolCalls) && changes.toolCalls.length
-    ? changes.toolCalls
-    : trace && Array.isArray(trace.toolCalls)
-      ? trace.toolCalls
-      : [];
+  const [commands, changes, trace] = await Promise.all([call("command:list"), call("changes:get"), call("mcp:trace").catch(() => null)]);
+  const toolCalls = Array.isArray(changes.toolCalls) && changes.toolCalls.length ? changes.toolCalls : trace && Array.isArray(trace.toolCalls) ? trace.toolCalls : [];
   const commandRows = Array.isArray(commands.commands) ? commands.commands : [];
   const changedFiles = Array.isArray(changes.files) ? changes.files : [];
   const latestReply = changes.latestReply || null;
-
   $("toolCallCount").textContent = String(toolCalls.length);
   $("commandCount").textContent = String(commandRows.length);
   $("changeCount").textContent = String(changedFiles.length);
   $("reportState").textContent = latestReply ? t("generated") : t("none");
-
   renderToolCalls(toolCalls);
   renderCommands(commandRows, changes.commandPanel || commands);
   renderChanges(changes);
@@ -265,43 +278,27 @@ function renderToolCalls(toolCalls) {
     $("toolCalls").textContent = t("noCalls");
     return;
   }
-
-  $("toolCalls").textContent = toolCalls
-    .slice(-12)
-    .map((toolCall) => {
-      const status = toolCall.ok === false
-        ? `${t("failed")}: ${toolCall.error || t("unknownError")}`
-        : t("success");
-      return `${toolCall.ts || ""}  ${toolCall.toolName || toolCall.name || "tool"}  ${status}`;
-    })
-    .join("\n");
+  $("toolCalls").textContent = toolCalls.slice(-12).map((toolCall) => {
+    const status = toolCall.ok === false ? t("failed") + ": " + (toolCall.error || t("unknownError")) : t("success");
+    return [toolCall.ts || "", toolCall.toolName || toolCall.name || "tool", status].join("  ");
+  }).join("\n");
 }
 
 function renderCommands(commands, commandPanel = {}) {
   if (!commands.length) {
-    const fallback = Array.isArray(commandPanel.fallbackItems) && commandPanel.fallbackItems.length
-      ? commandPanel.fallbackItems
-        .map((item) => `${item.ts || ""}  ${item.toolName || "tool"}  ${item.ok === false ? t("failed") : t("success")}`)
-        .join("\n")
-      : t("noCommands");
+    const fallback = Array.isArray(commandPanel.fallbackItems) && commandPanel.fallbackItems.length ? commandPanel.fallbackItems.map((item) => [item.ts || "", item.toolName || "tool", item.ok === false ? t("failed") : t("success")].join("  ")).join("\n") : t("noCommands");
     $("commandOutput").textContent = fallback;
     return;
   }
-
-  $("commandOutput").textContent = commands.slice(0, 8).map((command) => [
-    `$ ${command.commandRedacted || "(unknown)"}`,
-    `exit: ${command.exitCode ?? "unknown"}  time: ${command.durationMs ?? 0}ms`,
-    command.stdoutPreview ? `stdout: ${command.stdoutPreview}` : "",
-    command.stderrPreview ? `stderr: ${command.stderrPreview}` : ""
-  ].filter(Boolean).join("\n")).join("\n\n");
+  $("commandOutput").textContent = commands.slice(0, 8).map((command) => ["$ " + (command.commandRedacted || "(unknown)"), "exit: " + (command.exitCode ?? "unknown") + "  time: " + (command.durationMs ?? 0) + "ms", command.stdoutPreview ? "stdout: " + command.stdoutPreview : "", command.stderrPreview ? "stderr: " + command.stderrPreview : ""].filter(Boolean).join("\n")).join("\n\n");
 }
 
 function renderChanges(changes) {
   const lines = [t("noChanges")];
   if (Array.isArray(changes.files) && changes.files.length) {
-    lines[0] = changes.summary || `${changes.files.length} ${t("files")}`;
+    lines[0] = changes.summary || String(changes.files.length) + " " + t("files");
     lines.push("", t("files"));
-    for (const file of changes.files.slice(0, 16)) lines.push(`${file.code || ""} ${file.path}`);
+    for (const file of changes.files.slice(0, 16)) lines.push((file.code || "") + " " + file.path);
   } else if (changes.git && changes.git.clean) {
     lines.push("", t("cleanGit"));
   }
@@ -313,14 +310,7 @@ function renderReply(reply) {
     $("replyPreview").textContent = t("noReport");
     return;
   }
-
-  $("replyPreview").textContent = [
-    reply.id,
-    reply.codexReadThisPath,
-    reply.replyPath,
-    "",
-    reply.text || ""
-  ].filter(Boolean).join("\n");
+  $("replyPreview").textContent = [reply.id, reply.projectRoot ? "Project: " + reply.projectRoot : "", reply.reportPath ? "Report: " + reply.reportPath : "", reply.codexReadThisPath ? "Codex: " + reply.codexReadThisPath : "", "", reply.text || ""].filter(Boolean).join("\n");
 }
 
 async function run(action) {
@@ -336,6 +326,30 @@ async function run(action) {
   }
 }
 
+function openHelp(tab) {
+  state.helpTab = tab || state.helpTab;
+  $("helpModal").classList.add("open");
+  $("helpModal").setAttribute("aria-hidden", "false");
+  renderHelp();
+}
+
+function closeHelp() {
+  $("helpModal").classList.remove("open");
+  $("helpModal").setAttribute("aria-hidden", "true");
+}
+
+function renderHelp() {
+  const content = HELP[state.lang][state.helpTab] || HELP[state.lang].connect;
+  for (const tab of document.querySelectorAll(".help-tab")) tab.classList.toggle("active", tab.dataset.helpTab === state.helpTab);
+  $("helpImage").src = content.image;
+  const prompt = content.prompt ? '<pre class="help-prompt">' + escapeHtml(content.prompt) + '</pre>' : '';
+  $("helpBody").innerHTML = '<h3>' + escapeHtml(content.title) + '</h3>' + prompt + '<ul>' + content.items.map((item) => '<li>' + escapeHtml(item) + '</li>').join('') + '</ul>';
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+}
+
 $("connectChatGPT").addEventListener("click", () => run(async () => {
   const result = await call("mcp:connect-or-refresh");
   log(result.message || (result.reused ? t("reusedConnection") : t("creatingConnection")));
@@ -343,26 +357,23 @@ $("connectChatGPT").addEventListener("click", () => run(async () => {
 
 $("createHandoffReport").addEventListener("click", () => run(async () => {
   const report = await call("handoff:create-report");
-  log(`${t("reportCreated")}${report.reportPath}`);
+  log(t("reportCreated") + report.reportPath);
 }));
 
 $("proPlan").addEventListener("click", () => run(async () => {
-  const pack = await call("pro:create-pack", {
-    task: $("taskInput").value,
-    includeDiff: true
-  });
+  const pack = await call("pro:create-pack", { task: $("taskInput").value, includeDiff: true });
   state.currentRelayId = pack.id;
   $("proSummary").dataset.state = "packed";
-  $("proSummary").textContent = pack.summary || `${t("copiedFallback")}${pack.id}`;
-  log(`${t("copiedFallback")}${pack.id}`);
+  $("proSummary").textContent = pack.summary || t("copiedFallback") + pack.id;
+  log(t("copiedFallback") + pack.id);
 }));
 
 $("copyLatestProPack").addEventListener("click", () => run(async () => {
   const pack = await call("pro:copy-latest-pack");
   state.currentRelayId = pack.id;
   $("proSummary").dataset.state = "packed";
-  $("proSummary").textContent = pack.summary || `${t("recopiedFallback")}${pack.id}`;
-  log(`${t("recopiedFallback")}${pack.id}`);
+  $("proSummary").textContent = pack.summary || t("recopiedFallback") + pack.id;
+  log(t("recopiedFallback") + pack.id);
 }));
 
 $("startProWatch").addEventListener("click", () => run(async () => {
@@ -375,16 +386,13 @@ $("manualImport").addEventListener("click", () => run(async () => {
   const text = $("manualReply").value.trim();
   if (!text) throw new Error(t("pasteFallbackFirst"));
   if (!state.currentRelayId) throw new Error(t("copyFallbackFirst"));
-  const imported = await call("pro:manual-import", {
-    id: state.currentRelayId,
-    text
-  });
-  log(`${t("imported")}${imported.codexReadThisPath}`);
+  const imported = await call("pro:manual-import", { id: state.currentRelayId, text });
+  log(t("imported") + imported.codexReadThisPath);
 }));
 
 $("selectProject").addEventListener("click", () => run(async () => {
   const result = await call("project:add");
-  log(`${t("selected")}${result.selected.cwd}`);
+  log(t("selected") + result.selected.cwd);
 }));
 
 $("languageToggle").addEventListener("click", () => {
@@ -393,9 +401,11 @@ $("languageToggle").addEventListener("click", () => {
   applyLanguage();
 });
 
-$("taskInput").addEventListener("input", () => {
-  state.proTaskEdited = true;
-});
+$("taskInput").addEventListener("input", () => { state.proTaskEdited = true; });
+$("helpOpen").addEventListener("click", () => openHelp("connect"));
+$("helpClose").addEventListener("click", closeHelp);
+$("helpCloseBackdrop").addEventListener("click", closeHelp);
+for (const tab of document.querySelectorAll(".help-tab")) tab.addEventListener("click", () => openHelp(tab.dataset.helpTab));
 
 $("windowMinimize").addEventListener("click", () => call("window:minimize").catch((error) => log(error.message)));
 $("windowMaximize").addEventListener("click", () => call("window:toggle-maximize").catch((error) => log(error.message)));

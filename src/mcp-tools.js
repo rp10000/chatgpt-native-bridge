@@ -34,6 +34,7 @@ const WORKSPACE_ENGINES = new Map();
 const TOOL_MODES = new Set(["standard", "simple"]);
 const SIMPLE_TOOL_NAMES = new Set([
   "review_current_project",
+  "bridge_card_test",
   "create_handoff_report",
   "open_workspace",
   "workspace_status",
@@ -48,6 +49,7 @@ const SIMPLE_TOOL_NAMES = new Set([
 ]);
 const TOOL_NAMES = [
   "review_current_project",
+  "bridge_card_test",
   "bridge_status",
   "create_handoff",
   "list_handoff_files",
@@ -118,6 +120,23 @@ function createMcpToolRegistry(options = {}) {
             "Call open_workspace if you need direct project work. Use read/search/edit/write/bash as needed, call show_changes, then call create_handoff_report for Codex review."
         };
       })
+    },
+    {
+      name: "bridge_card_test",
+      config: {
+        title: "Bridge card test",
+        description: "Use this when a ChatGPT card looks empty or the user wants to verify that the ChatGPT Apps card channel receives real bridge tool data.",
+        securitySchemes: noAuthSecuritySchemes(),
+        outputSchema: looseOutputSchema(),
+        annotations: readOnlyAnnotations(),
+        _meta: toolMeta("Testing bridge card", "Bridge card test ready")
+      },
+      handler: withAudit(cwd, "bridge_card_test", async () => ({
+        ok: true,
+        projectRoot: cwd,
+        packageVersion: require("../package.json").version,
+        nextAction: "If this rendered as a real card, ask ChatGPT to call open_workspace for the current connected project."
+      }))
     },
     {
       name: "bridge_status",
@@ -556,6 +575,9 @@ function createHandoffReportHandler(cwd, toolName) {
       reportPath: result.reportPath,
       replyPath: result.replyPath,
       codexReadThisPath: result.codexReadThisPath,
+      projectRoot: result.projectRoot,
+      projectName: result.projectName,
+      projectFingerprint: result.projectFingerprint,
       summary: result.summary,
       nextAction:
         "Tell Codex to read HANDOFF_REPORT.md, inspect the actual diff, run relevant tests, and commit only after verification."

@@ -30,7 +30,7 @@ body {
 
 .window-chrome {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
   height: var(--chrome-height);
   background: linear-gradient(90deg, var(--panel) 0%, var(--panel-2) 58%, var(--yellow) 100%);
   -webkit-app-region: drag;
@@ -59,6 +59,7 @@ body {
   -webkit-app-region: no-drag;
 }
 
+.help-toggle,
 .language-toggle {
   align-self: center;
   min-width: 58px;
@@ -150,6 +151,11 @@ button.full-width {
 button:disabled {
   cursor: wait;
   opacity: .68;
+}
+
+.help-toggle {
+  min-width: 58px;
+  margin-right: 8px;
 }
 
 button.window-control {
@@ -553,5 +559,129 @@ textarea {
 
   .project-hero {
     display: grid;
+  }
+}
+
+
+.help-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: none;
+}
+
+.help-modal.open {
+  display: block;
+}
+
+.help-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 8, 16, .58);
+}
+
+.help-card {
+  position: absolute;
+  inset: 52px 28px 28px;
+  display: grid;
+  grid-template-rows: auto auto minmax(180px, 42vh) minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid rgba(255, 196, 0, .38);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(25, 18, 36, .98), rgba(14, 10, 20, .98));
+  box-shadow: 0 22px 70px rgba(17, 16, 26, .44);
+}
+
+.help-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.help-header h2 {
+  margin: 4px 0 0;
+  font-size: 24px;
+}
+
+.help-close {
+  min-height: 36px;
+}
+
+.help-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px 18px;
+}
+
+.help-tab {
+  min-height: 36px;
+  padding: 0 10px;
+  font-size: 13px;
+  white-space: normal;
+}
+
+.help-tab.active {
+  border-color: rgba(255, 196, 0, .8);
+  background: linear-gradient(135deg, rgba(255, 196, 0, .26), rgba(255, 61, 148, .22));
+}
+
+.help-image {
+  width: calc(100% - 36px);
+  height: 100%;
+  min-height: 180px;
+  margin: 0 18px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .04);
+}
+
+.help-body {
+  overflow: auto;
+  padding: 16px 18px 20px;
+}
+
+.help-body h3 {
+  margin: 0 0 10px;
+  color: var(--cream);
+  font-size: 18px;
+}
+
+.help-body ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.help-body li {
+  border-left: 3px solid var(--blue);
+  border-radius: 7px;
+  padding: 9px 10px;
+  background: rgba(255, 255, 255, .07);
+  color: var(--cream);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.help-prompt {
+  max-height: none;
+  margin-bottom: 12px;
+  border-left: 3px solid var(--pink);
+  background: rgba(255, 61, 148, .1);
+}
+
+@media (max-width: 720px) {
+  .help-card {
+    inset: 42px 10px 10px;
+    grid-template-rows: auto auto minmax(120px, 28vh) minmax(0, 1fr);
+  }
+
+  .help-tabs {
+    grid-template-columns: 1fr 1fr;
   }
 }

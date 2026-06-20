@@ -19,20 +19,18 @@ test("desktop dry-run explains the final client entry", () => {
   assert.match(text, /cgn desktop/);
   assert.match(text, /cgn client/);
   assert.match(text, /cgn start/);
-  assert.match(text, /选择项目/);
-  assert.match(text, /连接 ChatGPT/);
-  assert.match(text, /生成交接报告/);
   assert.match(text, /1\. 选择项目/);
   assert.match(text, /2\. 连接 ChatGPT/);
-  assert.match(text, /3\. 在 ChatGPT 里开始改项目/);
-  assert.match(text, /已连接。去 ChatGPT 刷新工具，然后发送这句话。/);
-  assert.match(text, /work in ChatGPT web/);
+  assert.match(text, /3\. 在 ChatGPT 网页端直接操作当前本地项目/);
+  assert.match(text, /请使用 chatgpt-native-bridge 打开当前连接项目/);
+  assert.match(text, /生成交接报告/);
+  assert.match(text, /帮助/);
   assert.match(text, /handoff report for Codex review/);
   assert.match(text, /Each project has its own MCP connection slot/);
   assert.match(text, /No API key/);
 });
 
-test("desktop renderer keeps the main client surface minimal", async () => {
+test("desktop renderer keeps the main client surface minimal and includes built-in help", async () => {
   const root = path.join(__dirname, "..");
   const html = await fs.readFile(path.join(root, "desktop", "renderer", "index.html"), "utf8");
   const css = await fs.readFile(path.join(root, "desktop", "renderer", "styles.css"), "utf8");
@@ -48,15 +46,30 @@ test("desktop renderer keeps the main client surface minimal", async () => {
   assert.match(html, /id="statusTitle"/);
   assert.match(html, /id="statusText"/);
   assert.match(html, /id="languageToggle"/);
+  assert.match(html, /id="helpOpen"/);
+  assert.match(html, /id="helpModal"/);
+  assert.match(html, /data-help-tab="connect"/);
+  assert.match(html, /data-help-tab="chatgpt"/);
+  assert.match(html, /data-help-tab="empty"/);
+  assert.match(html, /data-help-tab="models"/);
   assert.match(html, /data-i18n="connectChatGPT"/);
   assert.match(html, /选择项目/);
   assert.match(html, /连接 ChatGPT/);
   assert.match(html, /生成交接报告/);
-  assert.doesNotMatch(html, /开始处理/);
   assert.match(html, /查看过程/);
   assert.match(html, /备用方式/);
   assert.match(html, /id="copyLatestProPack"/);
   assert.doesNotMatch(html, />打开 ChatGPT</);
+
+  for (const asset of [
+    "help-connect.svg",
+    "help-chatgpt.svg",
+    "help-card-empty.svg",
+    "help-pro.svg"
+  ]) {
+    assert.equal(await exists(path.join(root, "desktop", "assets", "help", asset)), true, asset);
+  }
+
   assert.match(css, /\.status-lamp/);
   assert.match(css, /\.status-connected/);
   assert.match(css, /\.status-accessed/);
@@ -65,6 +78,10 @@ test("desktop renderer keeps the main client surface minimal", async () => {
   assert.match(css, /\.status-error/);
   assert.match(css, /\.lamp-orb/);
   assert.match(css, /\.language-toggle/);
+  assert.match(css, /\.help-toggle/);
+  assert.match(css, /\.help-modal/);
+  assert.match(css, /\.help-card/);
+  assert.match(css, /\.help-tabs/);
   assert.match(css, /\.primary-action/);
   assert.match(css, /\.report-action/);
   assert.match(css, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
@@ -75,11 +92,7 @@ test("desktop renderer keeps the main client surface minimal", async () => {
   assert.match(css, /\.window-chrome/);
   assert.match(css, /-webkit-app-region: drag/);
   assert.match(css, /prefers-reduced-motion/);
-  assert.match(app, /status-\$\{key\}/);
-  assert.match(app, /renderBridgeState/);
-  assert.match(app, /已生成交接报告/);
-  assert.match(app, /暂无调用/);
-  assert.match(app, /发送任务后这里会显示操作记录/);
+
   assert.match(app, /"zh-CN"/);
   assert.match(app, /currentProject: "当前项目"/);
   assert.match(app, /connectChatGPT: "连接 ChatGPT"/);
@@ -88,6 +101,11 @@ test("desktop renderer keeps the main client surface minimal", async () => {
   assert.match(app, /connectChatGPT: "Connect ChatGPT"/);
   assert.match(app, /reportedTitle: "Handoff Report Created"/);
   assert.match(app, /languageToggle: "中文"/);
+  assert.match(app, /bridge_card_test/);
+  assert.match(app, /xhigh\/high/);
+  assert.match(app, /status-lamp status-/);
+  assert.match(app, /renderHelp/);
+  assert.match(app, /help-card-empty\.svg/);
   assert.match(app, /mcp:connect-or-refresh/);
   assert.match(app, /handoff:create-report/);
   assert.match(app, /command:list/);
@@ -152,6 +170,16 @@ test("desktop launcher opens release page when client is not installed", async (
   assert.equal(opened, RELEASES_URL);
   assert.match(io.output(), /Desktop is not installed/);
 });
+
+async function exists(filePath) {
+  try {
+    await fs.stat(filePath);
+    return true;
+  } catch (error) {
+    if (error.code === "ENOENT") return false;
+    throw error;
+  }
+}
 
 function createIo() {
   let stdout = "";
